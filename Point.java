@@ -3,7 +3,7 @@ package com.ariweiland.biophysics;
 /**
 * @author Ari Weiland
 */
-class Point implements Comparable<Point> {
+class Point {
     final int x;
     final int y;
 
@@ -42,15 +42,6 @@ class Point implements Comparable<Point> {
         int result = x;
         result = 31 * result + y;
         return result;
-    }
-
-    @Override
-    public int compareTo(Point o) {
-        int compare = Integer.compare(y, o.y);
-        if (compare == 0) {
-            compare = Integer.compare(x, o.x);
-        }
-        return compare;
     }
 
     @Override

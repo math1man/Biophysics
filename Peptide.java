@@ -4,6 +4,7 @@ package com.ariweiland.biophysics;
  * @author Ari Weiland
  */
 public class Peptide {
+
     private final int index;
     private final Type type;
 
@@ -21,7 +22,7 @@ public class Peptide {
     }
 
     public double interaction(Peptide p) {
-        return type.interaction(p == null ? null : p.getType());
+        return type.interaction(p == null ? Type.H2O : p.getType());
     }
 
     public double minInteraction() {

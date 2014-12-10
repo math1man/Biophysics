@@ -10,12 +10,6 @@ public class Polypeptide {
     private final List<Type> polypeptide;
     private final Map<Type, Integer> typeCount = new HashMap<Type, Integer>();
 
-    {
-        for (Type t : Type.values()) {
-            typeCount.put(t, 0);
-        }
-    }
-
     public Polypeptide() {
         this(new ArrayList<Type>());
     }
@@ -41,6 +35,9 @@ public class Polypeptide {
     }
 
     public boolean add(Type type) {
+        if (!typeCount.containsKey(type)) {
+            typeCount.put(type, 0);
+        }
         typeCount.put(type, 1 + typeCount.get(type));
         return polypeptide.add(type);
     }
@@ -71,10 +68,9 @@ public class Polypeptide {
 
     public double getMinEnergy() {
         double minEnergy = 0;
-        minEnergy += 2 * typeCount.get(Type.POSITIVE) * Type.POSITIVE.minInteraction();
-        minEnergy += 2 * typeCount.get(Type.NEGATIVE) * Type.NEGATIVE.minInteraction();
-        minEnergy += 2 * typeCount.get(Type.POLAR)    * Type.POLAR.minInteraction();
-        minEnergy += 2 * typeCount.get(Type.NONPOLAR) * Type.NONPOLAR.minInteraction();
+        for (Map.Entry<Type, Integer> e : typeCount.entrySet()) {
+            minEnergy += 2 * e.getKey().minInteraction() * e.getValue();
+        }
         return minEnergy;
     }
 

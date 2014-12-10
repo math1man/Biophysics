@@ -4,35 +4,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
-* @author Ari Weiland
-*/
-public enum Type {
-    POSITIVE("(+)"), NEGATIVE("(-)"), POLAR("(P)"), NONPOLAR("(N)"), NEUTRAL("( )");
+ * @author Ari Weiland
+ */
+public class Type {
 
-    public static final double CHARGE_INTERACTION_ENERGY = 2;
-    public static final double POLAR_INTERACTION_ENERGY = -0;
-    public static final double NONPOLAR_INTERACTION_ENERGY = -1;
-    public static final double CROSS_POLAR_INTERACTION_ENERGY = 0;
-    public static final double H2O_POLAR_INTERACTION_ENERGY = -0;
-    public static final double H2O_NONPOLAR_INTERACTION_ENERGY = 1;
-
-    private static final Map<Pairing, Double> ENERGIES = new HashMap<Pairing, Double>();
+    public static final Type P = new Type("(P)");
+    public static final Type H = new Type("(H)");
+    public static final Type H2O = null;
+    private static final EnergyMap ENERGY_MAP = new EnergyMap();
 
     static {
-        ENERGIES.put(new Pairing(POSITIVE,  POSITIVE),  CHARGE_INTERACTION_ENERGY);
-        ENERGIES.put(new Pairing(NEGATIVE,  NEGATIVE),  CHARGE_INTERACTION_ENERGY);
-        ENERGIES.put(new Pairing(POSITIVE,  NEGATIVE), -CHARGE_INTERACTION_ENERGY);
-        ENERGIES.put(new Pairing(POLAR,     POLAR),     POLAR_INTERACTION_ENERGY);
-        ENERGIES.put(new Pairing(POLAR,     NONPOLAR),  CROSS_POLAR_INTERACTION_ENERGY);
-        ENERGIES.put(new Pairing(POLAR,     null),      H2O_POLAR_INTERACTION_ENERGY);
-        ENERGIES.put(new Pairing(NONPOLAR,  NONPOLAR),  NONPOLAR_INTERACTION_ENERGY);
-        ENERGIES.put(new Pairing(NONPOLAR,  null),      H2O_NONPOLAR_INTERACTION_ENERGY);
+        ENERGY_MAP.put(H, H,  -1.0);
+        ENERGY_MAP.put(H, H2O, 1.0);
     }
 
     private final String symbol;
 
-    Type(String symbol) {
+    private Type(String symbol) {
         this.symbol = symbol;
+    }
+
+    public double interaction(Type t) {
+        return interaction(this, t);
+    }
+
+    public double minInteraction() {
+        return minInteraction(this);
     }
 
     @Override
@@ -40,50 +37,50 @@ public enum Type {
         return symbol;
     }
 
-    public double interaction(Type p) {
-        return interaction(this, p);
+    public static double interaction(Type t1, Type t2) {
+        return ENERGY_MAP.get(t1, t2);
     }
 
-    public double minInteraction() {
-        double minEnergy = interaction(null);
-        for (Type t : values()) {
-            double energy = interaction(t);
-            if (energy < minEnergy) {
-                minEnergy = energy;
+    public static double minInteraction(Type t) {
+        return ENERGY_MAP.getMin(t);
+    }
+
+    private static class EnergyMap {
+        private final Map<Type, Map<Type, Double>> map = new HashMap<Type, Map<Type, Double>>();
+        
+        public void put(Type t1, Type t2, double d) {
+            if (!map.containsKey(t1)) {
+                map.put(t1, new HashMap<Type, Double>());
             }
+            map.get(t1).put(t2, d);
+            if (!map.containsKey(t2)) {
+                map.put(t2, new HashMap<Type, Double>());
+            }
+            map.get(t2).put(t1, d);
         }
-        return minEnergy;
-    }
-
-    public static double interaction(Type p1, Type p2) {
-        Pairing pairing = new Pairing(p1, p2);
-        return ENERGIES.containsKey(pairing) ? ENERGIES.get(pairing) : 0;
-    }
-
-    private static class Pairing {
-        final Type t1;
-        final Type t2;
-
-        private Pairing(Type t1, Type t2) {
-            this.t1 = t1;
-            this.t2 = t2;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Pairing)) return false;
-
-            Pairing pairing = (Pairing) o;
-
-            return t1 == pairing.t1 && t2 == pairing.t2 || t1 == pairing.t2 && t2 == pairing.t1;
-
+        
+        public double get(Type t1, Type t2) {
+            if (map.containsKey(t1)) {
+                Map<Type, Double> sub = map.get(t1);
+                if (sub.containsKey(t2)) {
+                    return sub.get(t2);
+                }
+            }
+            return 0;
         }
 
-        @Override
-        public int hashCode() {
-            // needs to be symmetrical
-            return (t1 != null ? t1.hashCode() : 0) + (t2 != null ? t2.hashCode() : 0);
+        public double getMin(Type t) {
+            double min = 0;
+            if (map.containsKey(t)) {
+                Map<Type, Double> sub = map.get(t);
+                min = get(t, t);
+                for (double d : sub.values()) {
+                    if (d < min) {
+                        min = d;
+                    }
+                }
+            }
+            return min;
         }
     }
 }

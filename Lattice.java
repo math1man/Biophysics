@@ -15,6 +15,7 @@ public class Lattice {
     private int plusYBound;
     private int minusYBound;
     private double energy = 0;
+    private int perimeter = 0;
 
     public Lattice() {
         lattice = new HashMap<Point, Peptide>();
@@ -32,6 +33,7 @@ public class Lattice {
         this.plusYBound = lattice.plusYBound;
         this.minusYBound = lattice.minusYBound;
         this.energy = lattice.energy;
+        this.perimeter = lattice.perimeter;
     }
 
     public int size() {
@@ -87,11 +89,13 @@ public class Lattice {
         for (Point.Direction d : Point.Direction.values()) {
             Peptide adj = get(point.getAdjacent(d));
             if (adj != null) {
+                perimeter -= 1;
                 if (adj.getIndex() != p.getIndex() + 1 && adj.getIndex() != p.getIndex() - 1) {
                     energy += p.interaction(adj);
                 }
                 energy -= adj.interaction(null);
             } else {
+                perimeter += 1;
                 energy += p.interaction(null);
             }
         }
@@ -124,6 +128,14 @@ public class Lattice {
         return energy;
     }
 
+    public int getPerimeter() {
+        return perimeter;
+    }
+
+    public int getMaxPerim() {
+        return 2 * (plusXBound - minusXBound + plusYBound - minusYBound + 2);
+    }
+
     public void visualize() {
         for (int i=minusYBound; i<=plusYBound; i++) {
             String latticeString = "";
@@ -152,5 +164,4 @@ public class Lattice {
             System.out.println(connectionsString);
         }
     }
-
 }
