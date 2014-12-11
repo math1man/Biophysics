@@ -14,7 +14,7 @@ public class Modeler {
 
     public static void main(String[] args) {
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<26; i++) {
+        for (int i=0; i<29; i++) {
             if (Math.random() < 0.4) {
                 polypeptide.add(Type.H);
             } else {
@@ -27,7 +27,7 @@ public class Modeler {
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice lattice = fold(polypeptide, 10000);
+        Lattice lattice = fold(polypeptide, 100000);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");

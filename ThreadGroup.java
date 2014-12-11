@@ -127,8 +127,8 @@ public class ThreadGroup {
                     }
                 }
                 count++;
-                if (count % 100000 == 0) {
-                    System.out.println(getName() + ": " + count + " states visited, " + heap.size() + " states in heap");
+                if (count % 1000000 == 0) {
+                    System.out.println(getName() + ": " + count/1000000 + "M states visited, " + heap.size() + " states in heap");
                 }
             }
         }
