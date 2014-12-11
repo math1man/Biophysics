@@ -6,11 +6,11 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class Type {
+public class PType {
 
-    public static final Type P = new Type("(P)");
-    public static final Type H = new Type("(H)");
-    public static final Type H2O = null;
+    public static final PType P = new PType("(P)");
+    public static final PType H = new PType("(H)");
+    public static final PType H2O = null;
     private static final EnergyMap ENERGY_MAP = new EnergyMap();
 
     static {
@@ -20,11 +20,11 @@ public class Type {
 
     private final String symbol;
 
-    private Type(String symbol) {
+    private PType(String symbol) {
         this.symbol = symbol;
     }
 
-    public double interaction(Type t) {
+    public double interaction(PType t) {
         return interaction(this, t);
     }
 
@@ -37,31 +37,31 @@ public class Type {
         return symbol;
     }
 
-    public static double interaction(Type t1, Type t2) {
+    public static double interaction(PType t1, PType t2) {
         return ENERGY_MAP.get(t1, t2);
     }
 
-    public static double minInteraction(Type t) {
+    public static double minInteraction(PType t) {
         return ENERGY_MAP.getMin(t);
     }
 
     private static class EnergyMap {
-        private final Map<Type, Map<Type, Double>> map = new HashMap<Type, Map<Type, Double>>();
+        private final Map<PType, Map<PType, Double>> map = new HashMap<PType, Map<PType, Double>>();
         
-        public void put(Type t1, Type t2, double d) {
+        public void put(PType t1, PType t2, double d) {
             if (!map.containsKey(t1)) {
-                map.put(t1, new HashMap<Type, Double>());
+                map.put(t1, new HashMap<PType, Double>());
             }
             map.get(t1).put(t2, d);
             if (!map.containsKey(t2)) {
-                map.put(t2, new HashMap<Type, Double>());
+                map.put(t2, new HashMap<PType, Double>());
             }
             map.get(t2).put(t1, d);
         }
         
-        public double get(Type t1, Type t2) {
+        public double get(PType t1, PType t2) {
             if (map.containsKey(t1)) {
-                Map<Type, Double> sub = map.get(t1);
+                Map<PType, Double> sub = map.get(t1);
                 if (sub.containsKey(t2)) {
                     return sub.get(t2);
                 }
@@ -69,10 +69,10 @@ public class Type {
             return 0;
         }
 
-        public double getMin(Type t) {
+        public double getMin(PType t) {
             double min = 0;
             if (map.containsKey(t)) {
-                Map<Type, Double> sub = map.get(t);
+                Map<PType, Double> sub = map.get(t);
                 min = get(t, t);
                 for (double d : sub.values()) {
                     if (d < min) {

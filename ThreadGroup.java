@@ -15,8 +15,6 @@ public class ThreadGroup {
      * that limiting it to a rectangle of perimeter 4 larger
      * does not seem to restrict the solution at all.
      */
-    private int maxPerimFudgeFactor = 4;
-    private boolean usePerimBound = true;
     private int totalHeapSize = 4194304;
 
     private final Polypeptide polypeptide;
@@ -48,41 +46,6 @@ public class ThreadGroup {
         return solutions.poll().lattice;
     }
 
-    /**
-     * Returns the perimeter of the smallest
-     * rectangle with an area of at least n.
-     * For m^2 < n <= (m+1)^2,
-     *  - returns 4m + 2 if n <= m(m+1)
-     *  - returns 4m + 4 otherwise
-     * Adds on the maxPerimFudgeFactor before returning
-     * @param n
-     * @return
-     */
-    private int getPerimBound(int n) {
-        int m = (int) Math.sqrt(n-1);
-        int maxPerim = 4 * m + 2;
-        if (n > m * (m+1)) {
-            maxPerim += 2;
-        }
-        return maxPerim + maxPerimFudgeFactor;
-    }
-
-    public int getMaxPerimFudgeFactor() {
-        return maxPerimFudgeFactor;
-    }
-
-    public void setMaxPerimFudgeFactor(int maxPerimFudgeFactor) {
-        this.maxPerimFudgeFactor = maxPerimFudgeFactor;
-    }
-
-    public boolean usePerimBound() {
-        return usePerimBound;
-    }
-
-    public void setUsePerimBound(boolean usePerimBound) {
-        this.usePerimBound = usePerimBound;
-    }
-
     public int getTotalHeapSize() {
         return totalHeapSize;
     }
@@ -106,29 +69,29 @@ public class ThreadGroup {
             boolean running = !initialHeap.isEmpty();
             while (running) {
                 if (heap.isEmpty()) {
-                    if (!initialHeap.isEmpty()) {
-                        PState next = initialHeap.poll();
-                        if (solutions.isEmpty() || next.compareTo(solutions.peek()) < 0) {
-                            heap.add(next);
-                        } else {
-                            // all other states will be worse
-                            initialHeap.clear();
-                            running = false;
-                        }
+                    PState next = initialHeap.poll();
+                    if (next != null && (solutions.isEmpty() || next.compareTo(solutions.peek()) < 0)) {
+                        heap.add(next);
                     } else {
+                        // all other states will be worse
+                        initialHeap.clear();
                         running = false;
                     }
                 }
                 if (!heap.isEmpty()) {
                     PState state = Modeler.iterate(polypeptide, heap);
                     if (state != null) {
-                        solutions.put(state);
+                        // don't bother with the solution if it isn't better than the current best
+                        // this will help conserve memory for larger polypeptides
+                        if (solutions.isEmpty() || state.compareTo(solutions.peek()) < 0) {
+                            solutions.put(state);
+                        }
                         heap.clear();
                     }
                 }
                 count++;
                 if (count % 1000000 == 0) {
-                    System.out.println(getName() + ": " + count/1000000 + "M states visited, " + heap.size() + " states in heap");
+                    System.out.println(getName() + ": " + count/1000000 + "M states visited, " + heap.size() + " states in heap, " + initialHeap.size() + " states left in initial heap");
                 }
             }
         }

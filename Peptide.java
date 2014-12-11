@@ -6,9 +6,9 @@ package com.ariweiland.biophysics;
 public class Peptide {
 
     private final int index;
-    private final Type type;
+    private final PType type;
 
-    public Peptide(int index, Type type) {
+    public Peptide(int index, PType type) {
         this.index = index;
         this.type = type;
     }
@@ -17,12 +17,12 @@ public class Peptide {
         return index;
     }
 
-    public Type getType() {
+    public PType getType() {
         return type;
     }
 
     public double interaction(Peptide p) {
-        return type.interaction(p == null ? Type.H2O : p.getType());
+        return type.interaction(p == null ? PType.H2O : p.getType());
     }
 
     public double minInteraction() {

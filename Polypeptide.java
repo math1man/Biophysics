@@ -7,14 +7,14 @@ import java.util.*;
  */
 public class Polypeptide {
     
-    private final List<Type> polypeptide;
-    private final Map<Type, Integer> typeCount = new HashMap<Type, Integer>();
+    private final List<PType> polypeptide;
+    private final Map<PType, Integer> typeCount = new HashMap<PType, Integer>();
 
     public Polypeptide() {
-        this(new ArrayList<Type>());
+        this(new ArrayList<PType>());
     }
 
-    public Polypeptide(List<Type> polypeptide) {
+    public Polypeptide(List<PType> polypeptide) {
         this.polypeptide = polypeptide;
     }
 
@@ -26,15 +26,15 @@ public class Polypeptide {
         return polypeptide.isEmpty();
     }
 
-    public boolean contains(Type p) {
+    public boolean contains(PType p) {
         return polypeptide.contains(p);
     }
 
-    public Iterator<Type> iterator() {
+    public Iterator<PType> iterator() {
         return polypeptide.iterator();
     }
 
-    public boolean add(Type type) {
+    public boolean add(PType type) {
         if (!typeCount.containsKey(type)) {
             typeCount.put(type, 0);
         }
@@ -42,9 +42,9 @@ public class Polypeptide {
         return polypeptide.add(type);
     }
 
-    public boolean addAll(Collection<? extends Type> c) {
+    public boolean addAll(Collection<? extends PType> c) {
         boolean changed = false;
-        for (Type t : c) {
+        for (PType t : c) {
             changed = changed || polypeptide.add(t);
         }
         return changed;
@@ -58,17 +58,17 @@ public class Polypeptide {
         return new Peptide(index, polypeptide.get(index));
     }
 
-    public int indexOf(Type type) {
+    public int indexOf(PType type) {
         return polypeptide.indexOf(type);
     }
 
-    public int lastIndexOf(Type type) {
+    public int lastIndexOf(PType type) {
         return polypeptide.lastIndexOf(type);
     }
 
     public double getMinEnergy() {
         double minEnergy = 0;
-        for (Map.Entry<Type, Integer> e : typeCount.entrySet()) {
+        for (Map.Entry<PType, Integer> e : typeCount.entrySet()) {
             minEnergy += 2 * e.getKey().minInteraction() * e.getValue();
         }
         return minEnergy;
