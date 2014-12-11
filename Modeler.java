@@ -21,14 +21,13 @@ public class Modeler {
                 polypeptide.add(Type.P);
             }
         }
-        Modeler modeler = new Modeler(polypeptide);
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
-        System.out.println("Perimeter Bound: " + modeler.getPerimBound(polypeptide.size()));
+        System.out.println("Perimeter Bound: " + getPerimBound(polypeptide.size()));
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice lattice = modeler.fold(10000);
+        Lattice lattice = fold(polypeptide, 10000);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
@@ -44,47 +43,30 @@ public class Modeler {
 //        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
     }
 
-    /**
-     * Though limiting the protein to the smallest possible
-     * rectangle is overly restrictive, empirically it seems
-     * that limiting it to a rectangle of perimeter 4 larger
-     * does not seem to restrict the solution at all.
-     */
-    private int maxPerimFudgeFactor = 4;
-    private boolean usePerimBound = true;
-    private boolean usePerimHeuristic = true;
-    private int maxHeapSize = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
-
-    private final Polypeptide polypeptide;
-    private final int size;
-
-    public Modeler(Polypeptide polypeptide) {
-        this.polypeptide = polypeptide;
-        this.size = polypeptide.size();
-    }
+    private static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
 
     /**
      * Returns the perimeter of the smallest
      * rectangle with an area of at least n.
      * For m^2 < n <= (m+1)^2,
-     *  - returns 4m + 2 if n <= m(m+1)
-     *  - returns 4m + 4 otherwise
-     * Adds on the maxPerimFudgeFactor before returning
+     *  - returns 4m + 6 if n <= m(m+1)
+     *  - returns 4m + 8 otherwise
      * @param n
      * @return
      */
-    private int getPerimBound(int n) {
+    private static int getPerimBound(int n) {
         int m = (int) Math.sqrt(n-1);
         int maxPerim = 4 * m + 2;
         if (n > m * (m+1)) {
             maxPerim += 2;
         }
-        return maxPerim + maxPerimFudgeFactor;
+        return maxPerim + 4;
     }
 
     @Deprecated
-    public Lattice foldOld1() {
+    public static Lattice foldOld1(Polypeptide polypeptide) {
         // initialize the lattices
+        int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice();
         line.put(0, 0, first);
@@ -131,7 +113,7 @@ public class Modeler {
                         // though limiting the protein to the smallest possible rectangle is
                         // overly limiting, empirically it seems that limiting it to a rectangle
                         // of perimeter 4 larger does not seem to restrict the solution at all
-                        if (!usePerimBound || l.getMaxPerim() <= getPerimBound(size)) {
+                        if (l.getMaxPerim() <= getPerimBound(size)) {
                             double lb;
                             if (index < size - 1) {
                                 lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
@@ -164,8 +146,9 @@ public class Modeler {
     }
 
     @Deprecated
-    public Lattice foldOld2() {
+    public static Lattice foldOld2(Polypeptide polypeptide) {
         // initialize the lattices
+        int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice();
         line.put(0, 0, first);
@@ -179,7 +162,7 @@ public class Modeler {
         }
 
         // fill the queue
-        FixedHeap<PState> heap = new FixedHeap<PState>(maxHeapSize - 1);
+        FixedHeap<PState> heap = new FixedHeap<PState>(MAX_HEAP_SIZE - 1);
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -198,7 +181,7 @@ public class Modeler {
         PState solution = null;
         int count = 0;
         while (solution == null) {
-            solution = iterate(heap);
+            solution = iterate(polypeptide, heap);
             count++;
             if (count % 100000 == 0) {
                 System.out.println(count + " states visited, " + heap.size() + " states in queue");
@@ -217,8 +200,9 @@ public class Modeler {
      * @param seedCount
      * @return
      */
-    public Lattice fold(int seedCount) {
+    public static Lattice fold(Polypeptide polypeptide, int seedCount) {
         // initialize the lattices
+        int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice();
         line.put(0, 0, first);
@@ -250,7 +234,7 @@ public class Modeler {
         // iterate a few times to make the initial heap bigger
         int count = 0;
         while (count < seedCount) {
-            PState solution = iterate(initialHeap);
+            PState solution = iterate(polypeptide, initialHeap);
             if (solution != null) {
                 return solution.lattice;
             }
@@ -258,11 +242,12 @@ public class Modeler {
         }
 
         ThreadGroup group = new ThreadGroup(polypeptide, initialHeap);
-        group.setTotalHeapSize(maxHeapSize);
+        group.setTotalHeapSize(MAX_HEAP_SIZE);
         return group.process();
     }
 
-    private PState iterate(Queue<PState> queue) {
+    public static PState iterate(Polypeptide polypeptide, Queue<PState> queue) {
+        int size = polypeptide.size();
         PState state = queue.poll();
         int index = state.index + 1;
         if (index < size) {
@@ -277,7 +262,7 @@ public class Modeler {
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (!usePerimBound || l.getMaxPerim() <= getPerimBound(size)) {
+                    if (l.getMaxPerim() <= getPerimBound(size)) {
                         double lb;
                         if (index < size - 1) {
                             lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
@@ -301,37 +286,5 @@ public class Modeler {
         } else {
             return state;
         }
-    }
-
-    public int getMaxPerimFudgeFactor() {
-        return maxPerimFudgeFactor;
-    }
-
-    public void setMaxPerimFudgeFactor(int maxPerimFudgeFactor) {
-        this.maxPerimFudgeFactor = maxPerimFudgeFactor;
-    }
-
-    public boolean isUsePerimBound() {
-        return usePerimBound;
-    }
-
-    public void setUsePerimBound(boolean usePerimBound) {
-        this.usePerimBound = usePerimBound;
-    }
-
-    public boolean isUsePerimHeuristic() {
-        return usePerimHeuristic;
-    }
-
-    public void setUsePerimHeuristic(boolean usePerimHeuristic) {
-        this.usePerimHeuristic = usePerimHeuristic;
-    }
-
-    public int getMaxHeapSize() {
-        return maxHeapSize;
-    }
-
-    public void setMaxHeapSize(int maxHeapSize) {
-        this.maxHeapSize = maxHeapSize;
     }
 }

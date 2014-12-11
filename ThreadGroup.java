@@ -102,7 +102,6 @@ public class ThreadGroup {
         @Override
         public void run() {
             super.run();
-            int size = polypeptide.size();
             int count = 0;
             boolean running = !initialHeap.isEmpty();
             while (running) {
@@ -121,41 +120,8 @@ public class ThreadGroup {
                     }
                 }
                 if (!heap.isEmpty()) {
-                    PState state = heap.poll();
-                    int index = state.index + 1;
-                    if (index < size) {
-                        Peptide p = polypeptide.get(index);
-                        Point point = state.point;
-                        double bound = state.energyBound - 2 * p.minInteraction();
-                        for (Point.Direction d : Point.Direction.values()) {
-                            Point next = point.getAdjacent(d);
-                            if (!state.lattice.containsPoint(next)) {
-                                Lattice l = new Lattice(state.lattice);
-                                l.put(next, p);
-                                // though limiting the protein to the smallest possible rectangle is
-                                // overly limiting, empirically it seems that limiting it to a rectangle
-                                // of perimeter 4 larger does not seem to restrict the solution at all
-                                if (!usePerimBound || l.getMaxPerim() <= getPerimBound(size)) {
-                                    double lb;
-                                    if (index < size - 1) {
-                                        lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
-                                        if (l.containsPoint(next.getAdjacent(d))) {
-                                            lb += p.interaction(l.get(next.getAdjacent(d)));
-                                        }
-                                        if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
-                                            lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
-                                        }
-                                        if (l.containsPoint(next.getAdjacent(d.getRight()))) {
-                                            lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
-                                        }
-                                    } else {
-                                        lb = l.getEnergy();
-                                    }
-                                    heap.add(new PState(l, next, index, lb));
-                                }
-                            }
-                        }
-                    } else {
+                    PState state = Modeler.iterate(polypeptide, heap);
+                    if (state != null) {
                         solutions.put(state);
                         heap.clear();
                     }
