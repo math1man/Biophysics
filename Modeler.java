@@ -14,11 +14,11 @@ public class Modeler {
 
     public static void main(String[] args) {
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<29; i++) {
+        for (int i=0; i<30; i++) {
             if (Math.random() < 0.4) {
-                polypeptide.add(Type.H);
+                polypeptide.add(PType.H);
             } else {
-                polypeptide.add(Type.P);
+                polypeptide.add(PType.P);
             }
         }
         System.out.println(polypeptide);
@@ -27,7 +27,7 @@ public class Modeler {
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice lattice = fold(polypeptide, 100000);
+        Lattice lattice = fold(polypeptide, 500000);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
