@@ -1,16 +1,13 @@
 package com.ariweiland.biophysics;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * This is a heap implementation with a fixed size.
  * When the heap fills up to the fixed size, the next element
  * @author Ari Weiland
  */
-public class FixedHeap<T extends Comparable<T>> implements Iterable<T> {
+public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
 
     private Comparable<T>[] array;
     private int size;
@@ -32,9 +29,11 @@ public class FixedHeap<T extends Comparable<T>> implements Iterable<T> {
         buildHeap();
     }
 
-    public void push(T t) {
+    @Override
+    public boolean add(T t) {
         int currNode = size;
         int parentNode;
+        boolean modified = false;
         if (size == array.length - 1) {
             // currNode refers to the buffer index at the end
             // parentNode refers to the next node to be replaced
@@ -45,6 +44,7 @@ public class FixedHeap<T extends Comparable<T>> implements Iterable<T> {
             // parentNode refers to the parent of that node
             parentNode = findParentNode(currNode);
             size++;
+            modified = true;
         }
         array[currNode] = t;
         while (currNode > 0 && array[parentNode].compareTo(t) > 0) {
@@ -52,18 +52,57 @@ public class FixedHeap<T extends Comparable<T>> implements Iterable<T> {
             array[parentNode] = t;
             currNode = parentNode;
             parentNode = findParentNode(currNode);
+            modified = true;
         }
+        return modified;
     }
 
-    public T peek() {
-        if (size > 0) {
-            return (T) array[0];
+    @Override
+    public boolean remove(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> c) {
+        boolean modified = false;
+        for (T t : c) {
+            modified = modified || add(t);
+        }
+        return modified;
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean offer(T t) {
+        return add(t);
+    }
+
+    @Override
+    public T remove() {
+        T t = poll();
+        if (t == null) {
+            throw new NoSuchElementException();
         } else {
-            return null;
+            return t;
         }
     }
 
-    public T pop() {
+    @Override
+    public T poll() {
         T largest = peek();
         size--;
         if (largest != null && size > 0) {
@@ -81,8 +120,41 @@ public class FixedHeap<T extends Comparable<T>> implements Iterable<T> {
         return largest;
     }
 
+    @Override
+    public T element() {
+        if (size > 0) {
+            return (T) array[0];
+        } else {
+            throw new NoSuchElementException();
+        }
+    }
+
+    @Override
+    public T peek() {
+        if (size > 0) {
+            return (T) array[0];
+        } else {
+            return null;
+        }
+    }
+
     public int size() {
         return size;
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return false;
+    }
+
+    public void clear() {
+        Arrays.fill(array, null);
+        size = 0;
+        overflowAddIndex = 0;
     }
 
     private int findParentNode(int index) {
@@ -125,7 +197,7 @@ public class FixedHeap<T extends Comparable<T>> implements Iterable<T> {
     public List<T> sort() {
         int oldSize = size;
         for (int i=size-1; i > 0; i--) {
-            T next = pop();
+            T next = poll();
             array[i] = next;
         }
         size = oldSize;
@@ -143,27 +215,19 @@ public class FixedHeap<T extends Comparable<T>> implements Iterable<T> {
     }
 
     @Override
+    public Object[] toArray() {
+        return sort().toArray();
+    }
+
+    @Override
+    public <T1> T1[] toArray(T1[] a) {
+        return sort().toArray(a);
+    }
+
+    @Override
     public String toString() {
         Comparable<T>[] output = new Comparable[size];
         System.arraycopy(array, 0, output, 0, size);
         return Arrays.toString(output);
-    }
-
-    public static void main(String[] args) {
-        FixedHeap<Integer> heap = new FixedHeap<Integer>(1, 2, 3, 4, 5, 6, 7);
-        System.out.println(heap);
-        for (int i=8; i<33; i++) {
-            heap.push(i);
-            System.out.println(heap);
-        }
-        System.out.println(heap.sort());
-        System.out.println(heap);
-
-        FixedHeap<String> stringHeap = new FixedHeap<String>("a", "b", "c", "d");
-        System.out.println(stringHeap);
-        stringHeap.push("x");
-        System.out.println(stringHeap);
-        System.out.println(stringHeap.sort());
-        System.out.println(stringHeap);
     }
 }

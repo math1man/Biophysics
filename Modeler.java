@@ -1,10 +1,8 @@
 package com.ariweiland.biophysics;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Possibly add to the Heuristic some function of the perimeter?
@@ -14,15 +12,56 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Modeler {
 
+    public static void main(String[] args) {
+        Polypeptide polypeptide = new Polypeptide();
+        for (int i=0; i<26; i++) {
+            if (Math.random() < 0.4) {
+                polypeptide.add(Type.H);
+            } else {
+                polypeptide.add(Type.P);
+            }
+        }
+        Modeler modeler = new Modeler(polypeptide);
+        System.out.println(polypeptide);
+        System.out.println("Node count: " + polypeptide.size());
+        System.out.println("Perimeter Bound: " + modeler.getPerimBound(polypeptide.size()));
+        System.out.println();
+
+        long start = System.currentTimeMillis();
+        Lattice lattice = modeler.fold(10000);
+        long elapsed = System.currentTimeMillis() - start;
+        lattice.visualize();
+        System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
+        System.out.println("Lattice energy: " + lattice.getEnergy());
+        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
+//        System.out.println();
+//        start = System.currentTimeMillis();
+//        lattice = modeler.fold(500);
+//        elapsed = System.currentTimeMillis() - start;
+//        lattice.visualize();
+//        System.out.println("Elapsed time: " + (elapsed/1000.0) + " s");
+//        System.out.println("Lattice energy: " + lattice.getEnergy());
+//        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
+    }
+
     /**
      * Though limiting the protein to the smallest possible
      * rectangle is overly restrictive, empirically it seems
      * that limiting it to a rectangle of perimeter 4 larger
      * does not seem to restrict the solution at all.
      */
-    public static int MAX_PERIM_FUDGE_FACTOR = 4;
-    public static boolean USE_MAX_PERIM = true;
-    public static boolean USE_PERIMETER = true;
+    private int maxPerimFudgeFactor = 4;
+    private boolean usePerimBound = true;
+    private boolean usePerimHeuristic = true;
+    private int maxHeapSize = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
+
+    private final Polypeptide polypeptide;
+    private final int size;
+
+    public Modeler(Polypeptide polypeptide) {
+        this.polypeptide = polypeptide;
+        this.size = polypeptide.size();
+    }
 
     /**
      * Returns the perimeter of the smallest
@@ -30,24 +69,22 @@ public class Modeler {
      * For m^2 < n <= (m+1)^2,
      *  - returns 4m + 2 if n <= m(m+1)
      *  - returns 4m + 4 otherwise
-     * Adds on the MAX_PERIM_FUDGE_FACTOR before returning
+     * Adds on the maxPerimFudgeFactor before returning
      * @param n
      * @return
      */
-    private static int getPerimBound(int n) {
+    private int getPerimBound(int n) {
         int m = (int) Math.sqrt(n-1);
         int maxPerim = 4 * m + 2;
         if (n > m * (m+1)) {
             maxPerim += 2;
         }
-        return maxPerim + MAX_PERIM_FUDGE_FACTOR;
+        return maxPerim + maxPerimFudgeFactor;
     }
 
-    public static Lattice fold(Polypeptide polypeptide) {
-        // the perimeter preference is generally unproductive
-        USE_PERIMETER = false;
+    @Deprecated
+    public Lattice foldOld1() {
         // initialize the lattices
-        int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice();
         line.put(0, 0, first);
@@ -61,7 +98,7 @@ public class Modeler {
         }
 
         // fill the queue
-        PriorityQueue<State> pq = new PriorityQueue<State>(6000000);
+        PriorityQueue<PState> pq = new PriorityQueue<PState>();
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -71,16 +108,16 @@ public class Modeler {
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
             }
-            pq.add(new State(bend, i-1, 1, i, lowerBound));
+            pq.add(new PState(bend, i - 1, 1, i, lowerBound));
             line.put(i, 0, next);
         }
-        pq.add(new State(line, size-1, 0, size-1, lowerBound));
+        pq.add(new PState(line, size - 1, 0, size - 1, lowerBound));
 
         // begin the iteration
         Lattice solution = null;
         int count = 0;
         while (solution == null) {
-            State state = pq.poll();
+            PState state = pq.poll();
             int index = state.index + 1;
             if (index < size) {
                 Peptide p = polypeptide.get(index);
@@ -94,7 +131,7 @@ public class Modeler {
                         // though limiting the protein to the smallest possible rectangle is
                         // overly limiting, empirically it seems that limiting it to a rectangle
                         // of perimeter 4 larger does not seem to restrict the solution at all
-                        if (!USE_MAX_PERIM || l.getMaxPerim() <= getPerimBound(size)) {
+                        if (!usePerimBound || l.getMaxPerim() <= getPerimBound(size)) {
                             double lb;
                             if (index < size - 1) {
                                 lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
@@ -110,7 +147,7 @@ public class Modeler {
                             } else {
                                 lb = l.getEnergy();
                             }
-                            pq.add(new State(l, next, index, lb));
+                            pq.add(new PState(l, next, index, lb));
                         }
                     }
                 }
@@ -126,12 +163,9 @@ public class Modeler {
         return solution;
     }
 
-    public static Lattice foldLimited(Polypeptide polypeptide) {
-        // need as much preference as we can get
-        // since we are cutting off states
-        USE_PERIMETER = true;
+    @Deprecated
+    public Lattice foldOld2() {
         // initialize the lattices
-        int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice();
         line.put(0, 0, first);
@@ -145,7 +179,7 @@ public class Modeler {
         }
 
         // fill the queue
-        FixedHeap<State> heap = new FixedHeap<State>(4194303); // 262143, 524287, 1048575, 2097151, 4194303
+        FixedHeap<PState> heap = new FixedHeap<PState>(maxHeapSize - 1);
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -155,66 +189,36 @@ public class Modeler {
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
             }
-            heap.push(new State(bend, i - 1, 1, i, lowerBound));
+            heap.add(new PState(bend, i - 1, 1, i, lowerBound));
             line.put(i, 0, next);
         }
-        heap.push(new State(line, size - 1, 0, size - 1, lowerBound));
+        heap.add(new PState(line, size - 1, 0, size - 1, lowerBound));
 
         // begin the iteration
-        Lattice solution = null;
+        PState solution = null;
         int count = 0;
         while (solution == null) {
-            State state = heap.pop();
-            int index = state.index + 1;
-            if (index < size) {
-                Peptide p = polypeptide.get(index);
-                Point point = state.point;
-                double bound = state.energyBound - 2 * p.minInteraction();
-                for (Point.Direction d : Point.Direction.values()) {
-                    Point next = point.getAdjacent(d);
-                    if (!state.lattice.containsPoint(next)) {
-                        Lattice l = new Lattice(state.lattice);
-                        l.put(next, p);
-                        // though limiting the protein to the smallest possible rectangle is
-                        // overly limiting, empirically it seems that limiting it to a rectangle
-                        // of perimeter 4 larger does not seem to restrict the solution at all
-                        if (!USE_MAX_PERIM || l.getMaxPerim() <= getPerimBound(size)) {
-                            double lb;
-                            if (index < size - 1) {
-                                lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
-                                if (l.containsPoint(next.getAdjacent(d))) {
-                                    lb += p.interaction(l.get(next.getAdjacent(d)));
-                                }
-                                if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
-                                    lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
-                                }
-                                if (l.containsPoint(next.getAdjacent(d.getRight()))) {
-                                    lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
-                                }
-                            } else {
-                                lb = l.getEnergy();
-                            }
-                            heap.push(new State(l, next, index, lb));
-                        }
-                    }
-                }
-            } else {
-                solution = state.lattice;
-            }
+            solution = iterate(heap);
             count++;
-            if (count % 10000 == 0) {
+            if (count % 100000 == 0) {
                 System.out.println(count + " states visited, " + heap.size() + " states in queue");
             }
         }
         System.out.println(count + " states visited, " + heap.size() + " states left in queue");
-        return solution;
+        return solution.lattice;
     }
 
-    public static Lattice foldParallelized(final Polypeptide polypeptide) {
-        // the perimeter preference is generally unproductive
-        USE_PERIMETER = false;
+    /**
+     * The fastest version of the algorithm yet. Parallelization works!
+     * Useful for all sizes of Polypeptides, assuming an appropriate seed
+     * count is used. Seed count should be kept small (~1000) but may need
+     * to be increased so that the heaps don't fill up.
+     *     *
+     * @param seedCount
+     * @return
+     */
+    public Lattice fold(int seedCount) {
         // initialize the lattices
-        int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice();
         line.put(0, 0, first);
@@ -228,7 +232,7 @@ public class Modeler {
         }
 
         // fill the queue initially.  this removes symmetrical solutions
-        PriorityBlockingQueue<State> pbq = new PriorityBlockingQueue<State>(6000000);
+        PriorityBlockingQueue<PState> initialHeap = new PriorityBlockingQueue<PState>();
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -238,176 +242,96 @@ public class Modeler {
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
             }
-            pbq.put(new State(bend, i - 1, 1, i, lowerBound));
+            initialHeap.add(new PState(bend, i - 1, 1, i, lowerBound));
             line.put(i, 0, next);
         }
-        pbq.put(new State(line, size - 1, 0, size - 1, lowerBound));
+        initialHeap.add(new PState(line, size - 1, 0, size - 1, lowerBound));
 
-        // begin parallelization steps
-        int processors = Runtime.getRuntime().availableProcessors();
-        System.out.println(processors);
-        List<PeptideThread> threads = new ArrayList<PeptideThread>();
-        for (int i=0; i<processors; i++) {
-            PeptideThread thread = new PeptideThread(polypeptide, pbq);
-            threads.add(thread);
-            thread.start();
-        }
-
-        // collect solutions
-        List<Lattice> solutions = new ArrayList<Lattice>();
-        for (int i=0; i<processors; i++) {
-            try {
-                threads.get(i).join();
-                solutions.add(threads.get(i).getSolution());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        // iterate a few times to make the initial heap bigger
+        int count = 0;
+        while (count < seedCount) {
+            PState solution = iterate(initialHeap);
+            if (solution != null) {
+                return solution.lattice;
             }
+            count++;
         }
 
-        // find best solution
-        Lattice solution = solutions.get(0);
-        double energy = solution.getEnergy();
-        for (Lattice l : solutions) {
-            if (l.getEnergy() < energy) {
-                solution = l;
-                energy = l.getEnergy();
-            }
-        }
-        return solution;
+        ThreadGroup group = new ThreadGroup(polypeptide, initialHeap);
+        group.setTotalHeapSize(maxHeapSize);
+        return group.process();
     }
 
-    private static class PeptideThread extends Thread {
-
-        public static AtomicInteger count = new AtomicInteger(0);
-
-        private final Polypeptide polypeptide;
-        private final PriorityBlockingQueue<Modeler.State> pbq;
-        private Lattice solution = null;
-
-        private PeptideThread(Polypeptide polypeptide, PriorityBlockingQueue<Modeler.State> pbq) {
-            this.polypeptide = polypeptide;
-            this.pbq = pbq;
-        }
-
-        public Lattice getSolution() {
-            return solution;
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            int size = polypeptide.size();
-            while (solution == null) {
-                try {
-                    Modeler.State state = pbq.take();
-                    int index = state.index + 1;
-                    if (index < size) {
-                        Peptide p = polypeptide.get(index);
-                        Point point = state.point;
-                        double bound = state.energyBound - 2 * p.minInteraction();
-                        for (Point.Direction d : Point.Direction.values()) {
-                            Point next = point.getAdjacent(d);
-                            if (!state.lattice.containsPoint(next)) {
-                                Lattice l = new Lattice(state.lattice);
-                                l.put(next, p);
-                                if (!USE_MAX_PERIM || l.getMaxPerim() <= getPerimBound(size)) {
-                                    double lb;
-                                    if (index < size - 1) {
-                                        lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
-                                        if (l.containsPoint(next.getAdjacent(d))) {
-                                            lb += p.interaction(l.get(next.getAdjacent(d)));
-                                        }
-                                        if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
-                                            lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
-                                        }
-                                        if (l.containsPoint(next.getAdjacent(d.getRight()))) {
-                                            lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
-                                        }
-                                    } else {
-                                        lb = l.getEnergy();
-                                    }
-                                    pbq.add(new Modeler.State(l, next, index, lb));
-                                }
+    private PState iterate(Queue<PState> queue) {
+        PState state = queue.poll();
+        int index = state.index + 1;
+        if (index < size) {
+            Peptide p = polypeptide.get(index);
+            Point point = state.point;
+            double bound = state.energyBound - 2 * p.minInteraction();
+            for (Point.Direction d : Point.Direction.values()) {
+                Point next = point.getAdjacent(d);
+                if (!state.lattice.containsPoint(next)) {
+                    Lattice l = new Lattice(state.lattice);
+                    l.put(next, p);
+                    // though limiting the protein to the smallest possible rectangle is
+                    // overly limiting, empirically it seems that limiting it to a rectangle
+                    // of perimeter 4 larger does not seem to restrict the solution at all
+                    if (!usePerimBound || l.getMaxPerim() <= getPerimBound(size)) {
+                        double lb;
+                        if (index < size - 1) {
+                            lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
+                            if (l.containsPoint(next.getAdjacent(d))) {
+                                lb += p.interaction(l.get(next.getAdjacent(d)));
                             }
+                            if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
+                                lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
+                            }
+                            if (l.containsPoint(next.getAdjacent(d.getRight()))) {
+                                lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
+                            }
+                        } else {
+                            lb = l.getEnergy();
                         }
-                    } else {
-                        solution = state.lattice;
-                        pbq.offer(state);
+                        queue.add(new PState(l, next, index, lb));
                     }
-                    int temp = count.incrementAndGet();
-                    if (temp % 10000 == 0) {
-                        System.out.println(temp + " states visited, " + pbq.size() + " states in queue");
-                    }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 }
             }
+            return null;
+        } else {
+            return state;
         }
     }
 
-    private static class State implements Comparable<State> {
-        final Lattice lattice;
-        final Point point;
-        final int index;
-        final double energyBound;
-        final int perimeter;
-
-        private State(Lattice lattice, int x, int y, int index, double energyBound) {
-            this(lattice, new Point(x, y), index, energyBound);
-        }
-
-        private State(Lattice lattice, Point point, int index, double energyBound) {
-            this.lattice = lattice;
-            this.point = point;
-            this.index = index;
-            this.energyBound = energyBound;
-            this.perimeter = lattice.getPerimeter();
-        }
-
-        @Override
-        public int compareTo(State o) {
-            int compare = Double.compare(energyBound, o.energyBound);
-            if (compare == 0 && USE_PERIMETER) {
-                compare = Integer.compare(perimeter, o.perimeter);
-            }
-            return compare;
-        }
-
-        @Override
-        public String toString() {
-            return energyBound + "/" + perimeter;
-        }
+    public int getMaxPerimFudgeFactor() {
+        return maxPerimFudgeFactor;
     }
 
-    public static void main(String[] args) {
-        Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<24; i++) {
-            if (Math.random() < 0.4) {
-                polypeptide.add(Type.H);
-            } else {
-                polypeptide.add(Type.P);
-            }
-        }
-        USE_MAX_PERIM = true;
-        System.out.println(polypeptide);
-        System.out.println("Node count: " + polypeptide.size());
-        System.out.println("Perimeter Bound: " + getPerimBound(polypeptide.size()));
-        long start = System.currentTimeMillis();
-        Lattice lattice = foldLimited(polypeptide);
-        long elapsed = System.currentTimeMillis() - start;
-        lattice.visualize();
-        System.out.println("Elapsed time: " + (elapsed/1000.0) + " s");
-        System.out.println("Lattice energy: " + lattice.getEnergy());
-        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
-//        System.out.println();
-//        USE_MAX_PERIM = false;
-//        System.out.println("Not using max perimeter");
-        start = System.currentTimeMillis();
-        lattice = fold(polypeptide);
-        elapsed = System.currentTimeMillis() - start;
-        lattice.visualize();
-        System.out.println("Elapsed time: " + (elapsed/1000.0) + " s");
-        System.out.println("Lattice energy: " + lattice.getEnergy());
-        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
+    public void setMaxPerimFudgeFactor(int maxPerimFudgeFactor) {
+        this.maxPerimFudgeFactor = maxPerimFudgeFactor;
+    }
+
+    public boolean isUsePerimBound() {
+        return usePerimBound;
+    }
+
+    public void setUsePerimBound(boolean usePerimBound) {
+        this.usePerimBound = usePerimBound;
+    }
+
+    public boolean isUsePerimHeuristic() {
+        return usePerimHeuristic;
+    }
+
+    public void setUsePerimHeuristic(boolean usePerimHeuristic) {
+        this.usePerimHeuristic = usePerimHeuristic;
+    }
+
+    public int getMaxHeapSize() {
+        return maxHeapSize;
+    }
+
+    public void setMaxHeapSize(int maxHeapSize) {
+        this.maxHeapSize = maxHeapSize;
     }
 }
