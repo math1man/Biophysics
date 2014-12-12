@@ -13,21 +13,23 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class Modeler {
 
     public static void main(String[] args) {
-        Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<30; i++) {
-            if (Math.random() < 0.4) {
-                polypeptide.add(PType.H);
-            } else {
-                polypeptide.add(PType.P);
-            }
-        }
+        Polypeptide polypeptide = new Polypeptide("+-+-HHHH+-+-+-+-HHHH+-+-");
+//        Polypeptide polypeptide = new Polypeptide("PPPPHHHHPPPPPPPPHHHHPPPP");
+//        Polypeptide polypeptide = new Polypeptide("PPHPHPPPPPPHHHH");
+//        for (int i=0; i<20; i++) {
+//            if (Math.random() < 0.4) {
+//                polypeptide.add(PType.H);
+//            } else {
+//                polypeptide.add(PType.P);
+//            }
+//        }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
         System.out.println("Perimeter Bound: " + getPerimBound(polypeptide.size()));
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice lattice = fold(polypeptide, 500000);
+        Lattice lattice = fold(polypeptide, 10000);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");

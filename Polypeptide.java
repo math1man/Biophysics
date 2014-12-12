@@ -6,6 +6,8 @@ import java.util.*;
  * @author Ari Weiland
  */
 public class Polypeptide {
+
+    public static final Polypeptide GLUCAGON = new Polypeptide("+PP PHPP-HP+HH-P++HP-HHPHHHPP");
     
     private final List<PType> polypeptide;
     private final Map<PType, Integer> typeCount = new HashMap<PType, Integer>();
@@ -18,20 +20,38 @@ public class Polypeptide {
         this.polypeptide = polypeptide;
     }
 
+    public Polypeptide(String peptideString) {
+        this();
+        peptideString = peptideString.toUpperCase();
+        for (int i=0; i<peptideString.length(); i++) {
+            switch (peptideString.charAt(i)) {
+                case '+':
+                    add(PType.POS);
+                    break;
+                case '-':
+                    add(PType.NEG);
+                    break;
+                case 'P':
+                    add(PType.P);
+                    break;
+                case 'H':
+                    add(PType.H);
+                    break;
+                case ' ':
+                    add(PType.NEUT);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     public int size() {
         return polypeptide.size();
     }
 
     public boolean isEmpty() {
         return polypeptide.isEmpty();
-    }
-
-    public boolean contains(PType p) {
-        return polypeptide.contains(p);
-    }
-
-    public Iterator<PType> iterator() {
-        return polypeptide.iterator();
     }
 
     public boolean add(PType type) {
@@ -42,28 +62,12 @@ public class Polypeptide {
         return polypeptide.add(type);
     }
 
-    public boolean addAll(Collection<? extends PType> c) {
-        boolean changed = false;
-        for (PType t : c) {
-            changed = changed || polypeptide.add(t);
-        }
-        return changed;
-    }
-
     public void clear() {
         polypeptide.clear();
     }
 
     public Peptide get(int index) {
         return new Peptide(index, polypeptide.get(index));
-    }
-
-    public int indexOf(PType type) {
-        return polypeptide.indexOf(type);
-    }
-
-    public int lastIndexOf(PType type) {
-        return polypeptide.lastIndexOf(type);
     }
 
     public double getMinEnergy() {

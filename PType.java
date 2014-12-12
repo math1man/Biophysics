@@ -8,14 +8,36 @@ import java.util.Map;
  */
 public class PType {
 
+    public static final PType POS = new PType("(+)");
+    public static final PType NEG = new PType("(-)");
     public static final PType P = new PType("(P)");
     public static final PType H = new PType("(H)");
+    public static final PType NEUT = new PType("( )");
     public static final PType H2O = null;
     private static final EnergyMap ENERGY_MAP = new EnergyMap();
 
     static {
-        ENERGY_MAP.put(H, H,  -1.0);
-        ENERGY_MAP.put(H, H2O, 1.0);
+        // all in ev/kT for T=310K
+        // ion-ion: +-1.24
+        ENERGY_MAP.put(POS, POS,  1.24);
+        ENERGY_MAP.put(POS, NEG, -1.24);
+        ENERGY_MAP.put(NEG, NEG,  1.24);
+
+        // ion-dipole: ~0.62
+        ENERGY_MAP.put(POS, P,   -0.62);
+        ENERGY_MAP.put(NEG, P,   -0.62);
+//        ENERGY_MAP.put(POS, H2O, -0.62);
+//        ENERGY_MAP.put(NEG, H2O, -0.62);
+
+        // dipole-dipole: ~0.11
+        ENERGY_MAP.put(P,   P,   -0.11);
+//        ENERGY_MAP.put(P,   H2O, -0.11);
+
+        // hydrophobic: +-1.16 (?)
+        // (assuming 3 kJ/mol)
+        ENERGY_MAP.put(H,   H,   -1.16);
+        ENERGY_MAP.put(H,   H2O,  1.16);
+        // TODO: add more interactions with H2O?
     }
 
     private final String symbol;

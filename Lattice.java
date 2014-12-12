@@ -125,7 +125,7 @@ public class Lattice {
     }
 
     public double getEnergy() {
-        return energy;
+        return Math.round(energy * 100) / 100.0;
     }
 
     public int getPerimeter() {
