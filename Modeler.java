@@ -13,36 +13,26 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class Modeler {
 
     public static void main(String[] args) {
-        Polypeptide polypeptide = new Polypeptide("+-+-HHHH+-+-+-+-HHHH+-+-");
-//        Polypeptide polypeptide = new Polypeptide("PPPPHHHHPPPPPPPPHHHHPPPP");
-//        Polypeptide polypeptide = new Polypeptide("PPHPHPPPPPPHHHH");
-//        for (int i=0; i<20; i++) {
-//            if (Math.random() < 0.4) {
-//                polypeptide.add(PType.H);
-//            } else {
-//                polypeptide.add(PType.P);
-//            }
-//        }
+        Polypeptide polypeptide = new Polypeptide();
+        for (int i=0; i<20; i++) {
+            if (Math.random() < 0.4) {
+                polypeptide.add(PType.H);
+            } else {
+                polypeptide.add(PType.P);
+            }
+        }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
         System.out.println("Perimeter Bound: " + getPerimBound(polypeptide.size()));
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice lattice = fold(polypeptide, 10000);
+        Lattice lattice = fold(polypeptide, 1000);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Lattice energy: " + lattice.getEnergy());
         System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
-//        System.out.println();
-//        start = System.currentTimeMillis();
-//        lattice = modeler.fold(500);
-//        elapsed = System.currentTimeMillis() - start;
-//        lattice.visualize();
-//        System.out.println("Elapsed time: " + (elapsed/1000.0) + " s");
-//        System.out.println("Lattice energy: " + lattice.getEnergy());
-//        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
     }
 
     private static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
@@ -62,6 +52,7 @@ public class Modeler {
         if (n > m * (m+1)) {
             maxPerim += 2;
         }
+        // add 4 because the ideal perimeter bound is overly limiting
         return maxPerim + 4;
     }
 
