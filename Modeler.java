@@ -12,9 +12,11 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class Modeler {
 
+    private static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
+
     public static void main(String[] args) {
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<25; i++) {
             if (Math.random() < 0.4) {
                 polypeptide.add(PType.H);
             } else {
@@ -27,15 +29,13 @@ public class Modeler {
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice lattice = fold(polypeptide, 1000);
+        Lattice lattice = fold(polypeptide, 10000);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Lattice energy: " + lattice.getEnergy());
         System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
     }
-
-    private static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
 
     /**
      * Returns the perimeter of the smallest
@@ -73,7 +73,7 @@ public class Modeler {
         }
 
         // fill the queue
-        PriorityQueue<PState> pq = new PriorityQueue<PState>();
+        PriorityQueue<PState> pq = new PriorityQueue<>();
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -96,7 +96,7 @@ public class Modeler {
             int index = state.index + 1;
             if (index < size) {
                 Peptide p = polypeptide.get(index);
-                Point point = state.point;
+                Point point = state.lastPoint;
                 double bound = state.energyBound - 2 * p.minInteraction();
                 for (Point.Direction d : Point.Direction.values()) {
                     Point next = point.getAdjacent(d);
@@ -155,7 +155,7 @@ public class Modeler {
         }
 
         // fill the queue
-        FixedHeap<PState> heap = new FixedHeap<PState>(MAX_HEAP_SIZE - 1);
+        FixedHeap<PState> heap = new FixedHeap<>(MAX_HEAP_SIZE - 1);
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -189,7 +189,7 @@ public class Modeler {
      * Useful for all sizes of Polypeptides, assuming an appropriate seed
      * count is used. Seed count should be kept small (~1000) but may need
      * to be increased so that the heaps don't fill up.
-     *     *
+     *
      * @param seedCount
      * @return
      */
@@ -209,7 +209,7 @@ public class Modeler {
         }
 
         // fill the queue initially.  this removes symmetrical solutions
-        PriorityBlockingQueue<PState> initialHeap = new PriorityBlockingQueue<PState>();
+        PriorityBlockingQueue<PState> initialHeap = new PriorityBlockingQueue<>();
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -234,21 +234,19 @@ public class Modeler {
             count++;
         }
 
-        ThreadGroup group = new ThreadGroup(polypeptide, initialHeap);
-        group.setTotalHeapSize(MAX_HEAP_SIZE);
-        return group.process();
+        int processors = Runtime.getRuntime().availableProcessors();
+        return process(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
     }
 
     public static PState iterate(Polypeptide polypeptide, Queue<PState> queue) {
         int size = polypeptide.size();
         PState state = queue.poll();
-        int index = state.index + 1;
-        if (index < size) {
-            Peptide p = polypeptide.get(index);
-            Point point = state.point;
+        int nextIndex = state.index + 1;
+        if (nextIndex < size) {
+            Peptide p = polypeptide.get(nextIndex);
             double bound = state.energyBound - 2 * p.minInteraction();
             for (Point.Direction d : Point.Direction.values()) {
-                Point next = point.getAdjacent(d);
+                Point next = state.lastPoint.getAdjacent(d);
                 if (!state.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(state.lattice);
                     l.put(next, p);
@@ -257,7 +255,7 @@ public class Modeler {
                     // of perimeter 4 larger does not seem to restrict the solution at all
                     if (l.getMaxPerim() <= getPerimBound(size)) {
                         double lb;
-                        if (index < size - 1) {
+                        if (nextIndex < size - 1) {
                             lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
                             if (l.containsPoint(next.getAdjacent(d))) {
                                 lb += p.interaction(l.get(next.getAdjacent(d)));
@@ -271,7 +269,7 @@ public class Modeler {
                         } else {
                             lb = l.getEnergy();
                         }
-                        queue.add(new PState(l, next, index, lb));
+                        queue.add(new PState(l, next, nextIndex, lb));
                     }
                 }
             }
@@ -279,5 +277,30 @@ public class Modeler {
         } else {
             return state;
         }
+    }
+
+    /**
+     * Primary method that generates a folded protein from the
+     * @param processors
+     * @return
+     */
+    public static Lattice process(Polypeptide polypeptide, PriorityBlockingQueue<PState> initialHeap,
+                           int processors, int processHeapSize) {
+        System.out.println("Processors: " + processors);
+        PThread[] threads = new PThread[processors];
+        PriorityBlockingQueue<PState> solutions = new PriorityBlockingQueue<>();
+
+        for (int i=0; i<processors; i++) {
+            threads[i] = new PThread(polypeptide, initialHeap, solutions, processHeapSize);
+            threads[i].start();
+        }
+        for (int i=0; i<processors; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return solutions.poll().lattice;
     }
 }

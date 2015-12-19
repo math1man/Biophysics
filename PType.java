@@ -37,6 +37,7 @@ public class PType {
         // (assuming 3 kJ/mol)
         ENERGY_MAP.put(H,   H,   -1.16);
         ENERGY_MAP.put(H,   H2O,  1.16);
+
         // TODO: add more interactions with H2O?
     }
 
@@ -68,7 +69,7 @@ public class PType {
     }
 
     private static class EnergyMap {
-        private final Map<PType, Map<PType, Double>> map = new HashMap<PType, Map<PType, Double>>();
+        private final Map<PType, Map<PType, Double>> map = new HashMap<>();
         
         public void put(PType t1, PType t2, double d) {
             if (!map.containsKey(t1)) {

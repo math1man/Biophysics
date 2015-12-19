@@ -18,7 +18,7 @@ public class Lattice {
     private int perimeter = 0;
 
     public Lattice() {
-        lattice = new HashMap<Point, Peptide>();
+        lattice = new HashMap<>();
     }
 
     public Lattice(Map<Point, Peptide> lattice) {
@@ -27,7 +27,7 @@ public class Lattice {
     }
 
     public Lattice(Lattice lattice) {
-        this.lattice = new HashMap<Point, Peptide>(lattice.lattice);
+        this.lattice = new HashMap<>(lattice.lattice);
         this.plusXBound = lattice.plusXBound;
         this.minusXBound = lattice.minusXBound;
         this.plusYBound = lattice.plusYBound;

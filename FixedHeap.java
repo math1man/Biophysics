@@ -9,24 +9,25 @@ import java.util.*;
  */
 public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
 
-    private Comparable<T>[] array;
+    private final Comparable<T>[] array;
     private int size;
     private int overflowAddIndex = 0;
 
+    /**
+     * Creates a hea with capacity 1023.
+     */
     public FixedHeap() {
         this(1023);
     }
 
-    public FixedHeap(int initialCap) {
-        array = new Comparable[initialCap + 1]; // add in an extra index as a buffer
-        size = 0;
-    }
-
-    public FixedHeap(T... array) {
-        this.array = new Comparable[array.length + 1]; // add in an extra place as a buffer
-        System.arraycopy(array, 0, this.array, 0, array.length);
-        size = array.length;
-        buildHeap();
+    /**
+     * Creates a heap with the specified capacity.
+     * Ideal capacity is of the form 2^n - 1.
+     * @param capacity
+     */
+    public FixedHeap(int capacity) {
+        this.array = new Comparable[capacity + 1]; // add in an extra index as a buffer
+        this.size = 0;
     }
 
     @Override
@@ -201,7 +202,7 @@ public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
             array[i] = next;
         }
         size = oldSize;
-        List<T> list = new ArrayList<T>(size);
+        List<T> list = new ArrayList<>(size);
         for (int i=0; i<size; i++) {
             list.add((T) array[i]);
         }

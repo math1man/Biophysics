@@ -10,7 +10,7 @@ public class Polypeptide {
     public static final Polypeptide GLUCAGON = new Polypeptide("+PP PHPP-HP+HH-P++HP-HHPHHHPP");
     
     private final List<PType> polypeptide;
-    private final Map<PType, Integer> typeCount = new HashMap<PType, Integer>();
+    private final Map<PType, Integer> typeCount = new HashMap<>();
 
     public Polypeptide() {
         this(new ArrayList<PType>());
