@@ -3,17 +3,21 @@ package com.ariweiland.biophysics;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
-* @author Ari Weiland
-*/
-class PThread extends Thread {
+ * This thread implementation is used to parallelize Modeler's iterate method.
+ * It builds its own heap starting with Foldings it pulls from the initialHeap,
+ * and if it finds a solution, adds it to solutions and pulls a new seed from
+ * the initialHeap to try.
+ * @author Ari Weiland
+ */
+class PeptideThread extends Thread {
 
     private final Polypeptide polypeptide;
-    private final PriorityBlockingQueue<PState> initialHeap;
-    private final PriorityBlockingQueue<PState> solutions;
-    private final FixedHeap<PState> heap;
+    private final PriorityBlockingQueue<Folding> initialHeap;
+    private final PriorityBlockingQueue<Folding> solutions;
+    private final FixedHeap<Folding> heap;
 
-    PThread(Polypeptide polypeptide, PriorityBlockingQueue<PState> initialHeap,
-            PriorityBlockingQueue<PState> solutions, int heapSize) {
+    public PeptideThread(Polypeptide polypeptide, PriorityBlockingQueue<Folding> initialHeap,
+                         PriorityBlockingQueue<Folding> solutions, int heapSize) {
         this.polypeptide = polypeptide;
         this.initialHeap = initialHeap;
         this.solutions = solutions;
@@ -27,7 +31,7 @@ class PThread extends Thread {
             heap.add(initialHeap.poll());
         }
         while (!heap.isEmpty()) {
-            PState state = Modeler.iterate(polypeptide, heap);
+            Folding state = Modeler.iterate(polypeptide, heap);
             if (state != null) { // found a solution
                 // don't bother with the solution if it isn't better than the current best
                 // this will help conserve memory for larger polypeptides
@@ -37,7 +41,7 @@ class PThread extends Thread {
                 heap.clear();
             }
             if (heap.isEmpty()) {
-                PState next = initialHeap.poll();
+                Folding next = initialHeap.poll();
                 if (next != null && isWorthExploring(next)) {
                     heap.add(next);
                 }
@@ -49,7 +53,7 @@ class PThread extends Thread {
         }
     }
 
-    public boolean isWorthExploring(PState next) {
+    public boolean isWorthExploring(Folding next) {
         return solutions.isEmpty() || next.compareTo(solutions.peek()) < 0;
     }
 }

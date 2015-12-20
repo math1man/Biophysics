@@ -4,7 +4,11 @@ import java.util.*;
 
 /**
  * This is a heap implementation with a fixed size.
- * When the heap fills up to the fixed size, the next element
+ * When the heap fills up to the fixed size, the next element replaces
+ * the oldest leaf node. The ideal capacity of the heap is 2^n - 1 for
+ * some integer n, and the implementation may not function properly if
+ * the capacity is not of this form.
+ *
  * @author Ari Weiland
  */
 public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
@@ -139,10 +143,12 @@ public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
         }
     }
 
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public boolean isEmpty() {
         return size == 0;
     }
@@ -152,6 +158,7 @@ public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
         return false;
     }
 
+    @Override
     public void clear() {
         Arrays.fill(array, null);
         size = 0;
@@ -195,6 +202,10 @@ public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
         }
     }
 
+    /**
+     * Returns the heap as a list in sorted order.
+     * @return
+     */
     public List<T> sort() {
         int oldSize = size;
         for (int i=size-1; i > 0; i--) {

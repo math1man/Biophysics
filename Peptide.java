@@ -1,28 +1,22 @@
 package com.ariweiland.biophysics;
 
 /**
+ * This class wraps a residue with an index, which is useful for a variety of things.
+ * It includes wrapper methods for the Residue methods too.
  * @author Ari Weiland
  */
 public class Peptide {
 
-    private final int index;
-    private final PType type;
+    public final int index;
+    public final Residue type;
 
-    public Peptide(int index, PType type) {
+    public Peptide(int index, Residue type) {
         this.index = index;
         this.type = type;
     }
 
-    public int getIndex() {
-        return index;
-    }
-
-    public PType getType() {
-        return type;
-    }
-
     public double interaction(Peptide p) {
-        return type.interaction(p == null ? PType.H2O : p.getType());
+        return type.interaction(p == null ? Residue.H2O : p.type);
     }
 
     public double minInteraction() {

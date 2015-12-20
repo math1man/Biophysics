@@ -1,28 +1,29 @@
 package com.ariweiland.biophysics;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
+ * This class represents a folded polypeptide, laid out in 2D rectangular grid.
+ * It also keeps track of various relevant properties, such as the bounding box
+ * and perimeter of the polypeptide in the lattice and the lattice energy.
  * @author Ari Weiland
  */
 public class Lattice {
 
     private final Map<Point, Peptide> lattice;
-    private int plusXBound;
-    private int minusXBound;
-    private int plusYBound;
-    private int minusYBound;
-    private double energy = 0;
+    private int plusXBound = 0;
+    private int minusXBound = 0;
+    private int plusYBound = 0;
+    private int minusYBound = 0;
     private int perimeter = 0;
+    private double energy = 0;
 
     public Lattice() {
-        lattice = new HashMap<>();
+        this(new HashMap<Point, Peptide>());
     }
 
     public Lattice(Map<Point, Peptide> lattice) {
-        this();
+        this.lattice = new HashMap<>();
         putAll(lattice);
     }
 
@@ -32,43 +33,93 @@ public class Lattice {
         this.minusXBound = lattice.minusXBound;
         this.plusYBound = lattice.plusYBound;
         this.minusYBound = lattice.minusYBound;
-        this.energy = lattice.energy;
         this.perimeter = lattice.perimeter;
+        this.energy = lattice.energy;
     }
 
+    /**
+     * Returns the number of peptides in the lattice
+     * @return
+     */
     public int size() {
         return lattice.size();
     }
 
+    /**
+     * Returns true if the lattice is empty
+     * @return
+     */
     public boolean isEmpty() {
         return lattice.isEmpty();
     }
 
+    /**
+     * Returns true if the specified point is occupied
+     * @param x
+     * @param y
+     * @return
+     */
     public boolean containsPoint(int x, int y) {
         return containsPoint(new Point(x, y));
     }
 
+    /**
+     * Returns true if the specified point is occupied
+     * @param point
+     * @return
+     */
     public boolean containsPoint(Point point) {
         return lattice.containsKey(point);
     }
 
-    public boolean containsValue(Peptide p) {
-        return lattice.containsValue(p);
+    /**
+     * Returns true if the specified peptide is in the lattice
+     * @param peptide
+     * @return
+     */
+    public boolean containsValue(Peptide peptide) {
+        return lattice.containsValue(peptide);
     }
 
+    /**
+     * Returns the peptide at the specified point, or null
+     * @param x
+     * @param y
+     * @return
+     */
     public Peptide get(int x, int y) {
         return get(new Point(x, y));
     }
 
+    /**
+     * Returns the peptide at the specified point, or null
+     * @param point
+     * @return
+     */
     public Peptide get(Point point) {
         return lattice.get(point);
     }
 
-    public Peptide put(int x, int y, Peptide p) {
-        return put(new Point(x, y), p);
+    /**
+     * Puts the peptide in the lattice at the specified point.
+     * Returns the peptide that previously occupied the point.
+     * @param x
+     * @param y
+     * @param peptide
+     * @return
+     */
+    public Peptide put(int x, int y, Peptide peptide) {
+        return put(new Point(x, y), peptide);
     }
 
-    public Peptide put(Point point, Peptide p) {
+    /**
+     * Puts the peptide in the lattice at the specified point.
+     * Returns the peptide that previously occupied the point.
+     * @param point
+     * @param peptide
+     * @return
+     */
+    public Peptide put(Point point, Peptide peptide) {
         if (isEmpty()) {
             plusXBound = point.x;
             minusXBound = point.x;
@@ -90,67 +141,94 @@ public class Lattice {
             Peptide adj = get(point.getAdjacent(d));
             if (adj != null) {
                 perimeter -= 1;
-                if (adj.getIndex() != p.getIndex() + 1 && adj.getIndex() != p.getIndex() - 1) {
-                    energy += p.interaction(adj);
+                if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
+                    energy += peptide.interaction(adj);
                 }
                 energy -= adj.interaction(null);
             } else {
                 perimeter += 1;
-                energy += p.interaction(null);
+                energy += peptide.interaction(null);
             }
         }
-        return lattice.put(point, p);
+        return lattice.put(point, peptide);
     }
 
+    /**
+     * Puts the contents of another lattice map into this lattice
+     * @param lattice
+     */
     public void putAll(Map<Point, Peptide> lattice) {
         for (Map.Entry<Point, Peptide> e : lattice.entrySet()) {
             put(e.getKey(), e.getValue());
         }
     }
 
-    public Peptide remove(int x, int y) {
-        return remove(new Point(x, y));
-    }
-
-    public Peptide remove(Point point) {
-        return lattice.remove(point);
-    }
-
+    /**
+     * Resets the lattice to an empty state
+     */
     public void clear() {
         lattice.clear();
+        plusXBound = 0;
+        minusXBound = 0;
+        plusYBound = 0;
+        minusYBound = 0;
+        perimeter = 0;
+        energy = 0;
     }
 
+    /**
+     * Returns a set of all occupied points in the lattice
+     * @return
+     */
     public Set<Point> keySet() {
         return lattice.keySet();
     }
 
+    /**
+     * Returns the lattice energy
+     * @return
+     */
     public double getEnergy() {
         return Math.round(energy * 100) / 100.0;
     }
 
+    /**
+     * Returns the perimeter of the peptides in the lattice
+     * @return
+     */
     public int getPerimeter() {
         return perimeter;
     }
 
-    public int getMaxPerim() {
+    /**
+     * Returns the perimeter of the smallest bounding
+     * box that contains the peptides in the lattice
+     * @return
+     */
+    public int boundingPerimeter() {
         return 2 * (plusXBound - minusXBound + plusYBound - minusYBound + 2);
     }
 
-    public void visualize() {
+    /**
+     * Draws an ASCII visualization of the peptides in the lattice to the console.
+     * Also returns the drawing as a list of strings.
+     */
+    public List<String> visualize() {
+        List<String> lines = new ArrayList<>();
         for (int i=minusYBound; i<=plusYBound; i++) {
             String latticeString = "";
             String connectionsString = "";
             for (int j=minusXBound; j<=plusXBound; j++) {
                 Peptide p = get(j, i);
                 if (p != null) {
-                    latticeString += p.getType();
-                    int index = p.getIndex();
-                    if (containsPoint(j + 1, i) && (get(j + 1, i).getIndex() == index + 1 || get(j + 1, i).getIndex() == index - 1)) {
+                    latticeString += p.type;
+                    int index = p.index;
+                    if (containsPoint(j + 1, i) && (get(j + 1, i).index == index + 1 || get(j + 1, i).index == index - 1)) {
                         latticeString += "-";
                     } else {
                         latticeString += " ";
                     }
-                    if (containsPoint(j, i + 1) && (get(j, i + 1).getIndex() == index + 1 || get(j, i + 1).getIndex() == index - 1)) {
+                    if (containsPoint(j, i + 1) && (get(j, i + 1).index == index + 1 || get(j, i + 1).index == index - 1)) {
                         connectionsString += " |  ";
                     } else {
                         connectionsString += "    ";
@@ -160,8 +238,11 @@ public class Lattice {
                     connectionsString += "    ";
                 }
             }
+            lines.add(latticeString);
+            lines.add(connectionsString);
             System.out.println(latticeString);
             System.out.println(connectionsString);
         }
+        return lines;
     }
 }

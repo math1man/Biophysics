@@ -3,20 +3,21 @@ package com.ariweiland.biophysics;
 import java.util.*;
 
 /**
+ * This class represents a polypeptide sequence
  * @author Ari Weiland
  */
 public class Polypeptide {
 
     public static final Polypeptide GLUCAGON = new Polypeptide("+PP PHPP-HP+HH-P++HP-HHPHHHPP");
     
-    private final List<PType> polypeptide;
-    private final Map<PType, Integer> typeCount = new HashMap<>();
+    private final List<Residue> polypeptide;
+    private final Map<Residue, Integer> typeCount = new HashMap<>();
 
     public Polypeptide() {
-        this(new ArrayList<PType>());
+        this(new ArrayList<Residue>());
     }
 
-    public Polypeptide(List<PType> polypeptide) {
+    public Polypeptide(List<Residue> polypeptide) {
         this.polypeptide = polypeptide;
     }
 
@@ -26,19 +27,19 @@ public class Polypeptide {
         for (int i=0; i<peptideString.length(); i++) {
             switch (peptideString.charAt(i)) {
                 case '+':
-                    add(PType.POS);
+                    add(Residue.POS);
                     break;
                 case '-':
-                    add(PType.NEG);
+                    add(Residue.NEG);
                     break;
                 case 'P':
-                    add(PType.P);
+                    add(Residue.P);
                     break;
                 case 'H':
-                    add(PType.H);
+                    add(Residue.H);
                     break;
                 case ' ':
-                    add(PType.NEUT);
+                    add(Residue.NEUT);
                     break;
                 default:
                     break;
@@ -46,33 +47,57 @@ public class Polypeptide {
         }
     }
 
+    /**
+     * Returns the number of peptides that compose this polypeptide
+     * @return
+     */
     public int size() {
         return polypeptide.size();
     }
 
+    /**
+     * Returns true if this polypeptide is empty
+     * @return
+     */
     public boolean isEmpty() {
         return polypeptide.isEmpty();
     }
 
-    public boolean add(PType type) {
+    /**
+     * Adds a residue to this polypeptide
+     * @param type
+     */
+    public void add(Residue type) {
         if (!typeCount.containsKey(type)) {
             typeCount.put(type, 0);
         }
         typeCount.put(type, 1 + typeCount.get(type));
-        return polypeptide.add(type);
+        polypeptide.add(type);
     }
 
+    /**
+     * Removes all peptides from this polypeptide
+     */
     public void clear() {
         polypeptide.clear();
     }
 
+    /**
+     * Returns the peptide at the given index
+     * @param index
+     * @return
+     */
     public Peptide get(int index) {
         return new Peptide(index, polypeptide.get(index));
     }
 
+    /**
+     * Returns the absolute minimum energy of this polypeptide
+     * @return
+     */
     public double getMinEnergy() {
         double minEnergy = 0;
-        for (Map.Entry<PType, Integer> e : typeCount.entrySet()) {
+        for (Map.Entry<Residue, Integer> e : typeCount.entrySet()) {
             minEnergy += 2 * e.getKey().minInteraction() * e.getValue();
         }
         return minEnergy;

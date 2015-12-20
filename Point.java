@@ -1,17 +1,24 @@
 package com.ariweiland.biophysics;
 
 /**
-* @author Ari Weiland
-*/
-class Point {
+ * Simple wrapper class for a coordinate in a lattice.
+ * Also has a convenience method to get adjacent points.
+ * @author Ari Weiland
+ */
+public class Point {
     final int x;
     final int y;
 
-    Point(int x, int y) {
+    public Point(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
+    /**
+     * Returns a new point that is
+     * @param direction
+     * @return
+     */
     public Point getAdjacent(Direction direction) {
         switch (direction) {
             case EAST:

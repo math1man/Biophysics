@@ -4,20 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * This class enumerates the different types of Peptide residues and their energy interactions.
  * @author Ari Weiland
  */
-public class PType {
+public class Residue {
 
-    public static final PType POS = new PType("(+)");
-    public static final PType NEG = new PType("(-)");
-    public static final PType P = new PType("(P)");
-    public static final PType H = new PType("(H)");
-    public static final PType NEUT = new PType("( )");
-    public static final PType H2O = null;
+    public static final Residue POS = new Residue("(+)");
+    public static final Residue NEG = new Residue("(-)");
+    public static final Residue P = new Residue("(P)");
+    public static final Residue H = new Residue("(H)");
+    public static final Residue NEUT = new Residue("( )");
+    public static final Residue H2O = null;
     private static final EnergyMap ENERGY_MAP = new EnergyMap();
 
     static {
         // all in ev/kT for T=310K
+        // note that favorable (negative) interactions with water disrupt the algorithm
         // ion-ion: +-1.24
         ENERGY_MAP.put(POS, POS,  1.24);
         ENERGY_MAP.put(POS, NEG, -1.24);
@@ -43,14 +45,23 @@ public class PType {
 
     private final String symbol;
 
-    private PType(String symbol) {
+    private Residue(String symbol) {
         this.symbol = symbol;
     }
 
-    public double interaction(PType t) {
-        return interaction(this, t);
+    /**
+     * Returns the interaction energy between this and another residue, in eV/kT for T=310K
+     * @param residue
+     * @return
+     */
+    public double interaction(Residue residue) {
+        return interaction(this, residue);
     }
 
+    /**
+     * Returns the lowest interaction energy between this and any other residue, in eV/kT for T=310K
+     * @return
+     */
     public double minInteraction() {
         return minInteraction(this);
     }
@@ -60,31 +71,31 @@ public class PType {
         return symbol;
     }
 
-    public static double interaction(PType t1, PType t2) {
-        return ENERGY_MAP.get(t1, t2);
+    public static double interaction(Residue r1, Residue r2) {
+        return ENERGY_MAP.get(r1, r2);
     }
 
-    public static double minInteraction(PType t) {
-        return ENERGY_MAP.getMin(t);
+    public static double minInteraction(Residue residue) {
+        return ENERGY_MAP.getMin(residue);
     }
 
     private static class EnergyMap {
-        private final Map<PType, Map<PType, Double>> map = new HashMap<>();
+        private final Map<Residue, Map<Residue, Double>> map = new HashMap<>();
         
-        public void put(PType t1, PType t2, double d) {
+        public void put(Residue t1, Residue t2, double d) {
             if (!map.containsKey(t1)) {
-                map.put(t1, new HashMap<PType, Double>());
+                map.put(t1, new HashMap<Residue, Double>());
             }
             map.get(t1).put(t2, d);
             if (!map.containsKey(t2)) {
-                map.put(t2, new HashMap<PType, Double>());
+                map.put(t2, new HashMap<Residue, Double>());
             }
             map.get(t2).put(t1, d);
         }
         
-        public double get(PType t1, PType t2) {
+        public double get(Residue t1, Residue t2) {
             if (map.containsKey(t1)) {
-                Map<PType, Double> sub = map.get(t1);
+                Map<Residue, Double> sub = map.get(t1);
                 if (sub.containsKey(t2)) {
                     return sub.get(t2);
                 }
@@ -92,10 +103,10 @@ public class PType {
             return 0;
         }
 
-        public double getMin(PType t) {
+        public double getMin(Residue t) {
             double min = 0;
             if (map.containsKey(t)) {
-                Map<PType, Double> sub = map.get(t);
+                Map<Residue, Double> sub = map.get(t);
                 min = get(t, t);
                 for (double d : sub.values()) {
                     if (d < min) {

@@ -18,9 +18,9 @@ public class Modeler {
         Polypeptide polypeptide = new Polypeptide();
         for (int i=0; i<25; i++) {
             if (Math.random() < 0.4) {
-                polypeptide.add(PType.H);
+                polypeptide.add(Residue.H);
             } else {
-                polypeptide.add(PType.P);
+                polypeptide.add(Residue.P);
             }
         }
         System.out.println(polypeptide);
@@ -34,7 +34,7 @@ public class Modeler {
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Lattice energy: " + lattice.getEnergy());
-        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.getMaxPerim());
+        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
     }
 
     /**
@@ -73,7 +73,7 @@ public class Modeler {
         }
 
         // fill the queue
-        PriorityQueue<PState> pq = new PriorityQueue<>();
+        PriorityQueue<Folding> pq = new PriorityQueue<>();
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -83,16 +83,16 @@ public class Modeler {
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
             }
-            pq.add(new PState(bend, i - 1, 1, i, lowerBound));
+            pq.add(new Folding(bend, i - 1, 1, i, lowerBound));
             line.put(i, 0, next);
         }
-        pq.add(new PState(line, size - 1, 0, size - 1, lowerBound));
+        pq.add(new Folding(line, size - 1, 0, size - 1, lowerBound));
 
         // begin the iteration
         Lattice solution = null;
         int count = 0;
         while (solution == null) {
-            PState state = pq.poll();
+            Folding state = pq.poll();
             int index = state.index + 1;
             if (index < size) {
                 Peptide p = polypeptide.get(index);
@@ -106,7 +106,7 @@ public class Modeler {
                         // though limiting the protein to the smallest possible rectangle is
                         // overly limiting, empirically it seems that limiting it to a rectangle
                         // of perimeter 4 larger does not seem to restrict the solution at all
-                        if (l.getMaxPerim() <= getPerimBound(size)) {
+                        if (l.boundingPerimeter() <= getPerimBound(size)) {
                             double lb;
                             if (index < size - 1) {
                                 lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
@@ -122,7 +122,7 @@ public class Modeler {
                             } else {
                                 lb = l.getEnergy();
                             }
-                            pq.add(new PState(l, next, index, lb));
+                            pq.add(new Folding(l, next, index, lb));
                         }
                     }
                 }
@@ -155,7 +155,7 @@ public class Modeler {
         }
 
         // fill the queue
-        FixedHeap<PState> heap = new FixedHeap<>(MAX_HEAP_SIZE - 1);
+        FixedHeap<Folding> heap = new FixedHeap<>(MAX_HEAP_SIZE - 1);
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -165,13 +165,13 @@ public class Modeler {
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
             }
-            heap.add(new PState(bend, i - 1, 1, i, lowerBound));
+            heap.add(new Folding(bend, i - 1, 1, i, lowerBound));
             line.put(i, 0, next);
         }
-        heap.add(new PState(line, size - 1, 0, size - 1, lowerBound));
+        heap.add(new Folding(line, size - 1, 0, size - 1, lowerBound));
 
         // begin the iteration
-        PState solution = null;
+        Folding solution = null;
         int count = 0;
         while (solution == null) {
             solution = iterate(polypeptide, heap);
@@ -209,7 +209,7 @@ public class Modeler {
         }
 
         // fill the queue initially.  this removes symmetrical solutions
-        PriorityBlockingQueue<PState> initialHeap = new PriorityBlockingQueue<>();
+        PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -219,15 +219,15 @@ public class Modeler {
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
             }
-            initialHeap.add(new PState(bend, i - 1, 1, i, lowerBound));
+            initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
             line.put(i, 0, next);
         }
-        initialHeap.add(new PState(line, size - 1, 0, size - 1, lowerBound));
+        initialHeap.add(new Folding(line, size - 1, 0, size - 1, lowerBound));
 
         // iterate a few times to make the initial heap bigger
         int count = 0;
         while (count < seedCount) {
-            PState solution = iterate(polypeptide, initialHeap);
+            Folding solution = iterate(polypeptide, initialHeap);
             if (solution != null) {
                 return solution.lattice;
             }
@@ -238,22 +238,30 @@ public class Modeler {
         return process(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
     }
 
-    public static PState iterate(Polypeptide polypeptide, Queue<PState> queue) {
+    /**
+     * The core of the algorithm. This method pops one Folding from the queue.
+     * If that Folding is a solution state, it returns it, otherwise, it produces
+     * up to four new Foldings and adds them to the queue.
+     * @param polypeptide
+     * @param queue
+     * @return
+     */
+    public static Folding iterate(Polypeptide polypeptide, Queue<Folding> queue) {
         int size = polypeptide.size();
-        PState state = queue.poll();
-        int nextIndex = state.index + 1;
+        Folding folding = queue.poll();
+        int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            double bound = state.energyBound - 2 * p.minInteraction();
+            double bound = folding.energyBound - 2 * p.minInteraction();
             for (Point.Direction d : Point.Direction.values()) {
-                Point next = state.lastPoint.getAdjacent(d);
-                if (!state.lattice.containsPoint(next)) {
-                    Lattice l = new Lattice(state.lattice);
+                Point next = folding.lastPoint.getAdjacent(d);
+                if (!folding.lattice.containsPoint(next)) {
+                    Lattice l = new Lattice(folding.lattice);
                     l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (l.getMaxPerim() <= getPerimBound(size)) {
+                    if (l.boundingPerimeter() <= getPerimBound(size)) {
                         double lb;
                         if (nextIndex < size - 1) {
                             lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(null);
@@ -269,13 +277,13 @@ public class Modeler {
                         } else {
                             lb = l.getEnergy();
                         }
-                        queue.add(new PState(l, next, nextIndex, lb));
+                        queue.add(new Folding(l, next, nextIndex, lb));
                     }
                 }
             }
             return null;
         } else {
-            return state;
+            return folding;
         }
     }
 
@@ -284,14 +292,14 @@ public class Modeler {
      * @param processors
      * @return
      */
-    public static Lattice process(Polypeptide polypeptide, PriorityBlockingQueue<PState> initialHeap,
+    public static Lattice process(Polypeptide polypeptide, PriorityBlockingQueue<Folding> initialHeap,
                            int processors, int processHeapSize) {
         System.out.println("Processors: " + processors);
-        PThread[] threads = new PThread[processors];
-        PriorityBlockingQueue<PState> solutions = new PriorityBlockingQueue<>();
+        PeptideThread[] threads = new PeptideThread[processors];
+        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>();
 
         for (int i=0; i<processors; i++) {
-            threads[i] = new PThread(polypeptide, initialHeap, solutions, processHeapSize);
+            threads[i] = new PeptideThread(polypeptide, initialHeap, solutions, processHeapSize);
             threads[i].start();
         }
         for (int i=0; i<processors; i++) {
