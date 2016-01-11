@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,8 +38,9 @@ public class Residue {
 
         // hydrophobic: +-1.16 (?)
         // (assuming 3 kJ/mol)
-        ENERGY_MAP.put(H,   H,   -1.16);
+//        ENERGY_MAP.put(H,   H,   -1.16);
         ENERGY_MAP.put(H,   H2O,  1.16);
+        ENERGY_MAP.put(H,   P,    1.16);
 
         // TODO: add more interactions with H2O?
     }
@@ -82,39 +84,41 @@ public class Residue {
     private static class EnergyMap {
         private final Map<Residue, Map<Residue, Double>> map = new HashMap<>();
         
-        public void put(Residue t1, Residue t2, double d) {
-            if (!map.containsKey(t1)) {
-                map.put(t1, new HashMap<Residue, Double>());
+        public void put(Residue r1, Residue r2, double d) {
+            if (!map.containsKey(r1)) {
+                map.put(r1, new HashMap<Residue, Double>());
             }
-            map.get(t1).put(t2, d);
-            if (!map.containsKey(t2)) {
-                map.put(t2, new HashMap<Residue, Double>());
+            map.get(r1).put(r2, d);
+            if (r1 != r2) {
+                if (!map.containsKey(r2)) {
+                    map.put(r2, new HashMap<Residue, Double>());
+                }
+                map.get(r2).put(r1, d);
             }
-            map.get(t2).put(t1, d);
         }
         
-        public double get(Residue t1, Residue t2) {
-            if (map.containsKey(t1)) {
-                Map<Residue, Double> sub = map.get(t1);
-                if (sub.containsKey(t2)) {
-                    return sub.get(t2);
+        public double get(Residue r1, Residue r2) {
+            if (map.containsKey(r1)) {
+                Map<Residue, Double> sub = map.get(r1);
+                if (sub.containsKey(r2)) {
+                    return sub.get(r2);
                 }
             }
             return 0;
         }
 
-        public double getMin(Residue t) {
-            double min = 0;
-            if (map.containsKey(t)) {
-                Map<Residue, Double> sub = map.get(t);
-                min = get(t, t);
-                for (double d : sub.values()) {
-                    if (d < min) {
-                        min = d;
-                    }
+        public double getMin(Residue r) {
+            if (map.containsKey(r)) {
+                Map<Residue, Double> sub = map.get(r);
+                double min = Collections.min(sub.values());
+                if (sub.size() < 6) {
+                    return Math.min(min, 0);
+                } else {
+                    return min;
                 }
+            } else {
+                return 0;
             }
-            return min;
         }
     }
 }
