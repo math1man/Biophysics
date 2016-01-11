@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics;
+package com.ariweiland.biophysics.peptide;
 
 import java.util.*;
 

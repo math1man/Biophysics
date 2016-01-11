@@ -1,4 +1,8 @@
-package com.ariweiland.biophysics;
+package com.ariweiland.biophysics.lattice;
+
+import com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.*;
 
@@ -11,12 +15,12 @@ import java.util.*;
 public class Lattice {
 
     private final Map<Point, Peptide> lattice;
-    private int plusXBound = 0;
-    private int minusXBound = 0;
-    private int plusYBound = 0;
-    private int minusYBound = 0;
-    private int perimeter = 0;
-    private double energy = 0;
+    protected int plusXBound = 0;
+    protected int minusXBound = 0;
+    protected int plusYBound = 0;
+    protected int minusYBound = 0;
+    protected int perimeter = 0;
+    protected double energy = 0;
 
     public Lattice() {
         this(new HashMap<Point, Peptide>());
@@ -108,8 +112,8 @@ public class Lattice {
      * @param peptide
      * @return
      */
-    public Peptide put(int x, int y, Peptide peptide) {
-        return put(new Point(x, y), peptide);
+    public void put(int x, int y, Peptide peptide) {
+        put(new Point(x, y), peptide);
     }
 
     /**
@@ -119,7 +123,10 @@ public class Lattice {
      * @param peptide
      * @return
      */
-    public Peptide put(Point point, Peptide peptide) {
+    public void put(Point point, Peptide peptide) {
+        if (lattice.containsKey(point)) {
+            throw new IllegalArgumentException("That point is already occupied");
+        }
         if (isEmpty()) {
             plusXBound = point.x;
             minusXBound = point.x;
@@ -144,13 +151,13 @@ public class Lattice {
                 if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
                     energy += peptide.interaction(adj);
                 }
-                energy -= adj.interaction(null);
+                energy -= adj.interaction(Residue.H2O);
             } else {
                 perimeter += 1;
-                energy += peptide.interaction(null);
+                energy += peptide.interaction(Residue.H2O);
             }
         }
-        return lattice.put(point, peptide);
+        lattice.put(point, peptide);
     }
 
     /**
@@ -215,31 +222,31 @@ public class Lattice {
      */
     public List<String> visualize() {
         List<String> lines = new ArrayList<>();
-        for (int i=minusYBound; i<=plusYBound; i++) {
-            String latticeString = "";
-            String connectionsString = "";
+        for (int i=plusYBound; i>=minusYBound; i--) {
+            StringBuilder latticeString = new StringBuilder();
+            StringBuilder connectionsString = new StringBuilder();
             for (int j=minusXBound; j<=plusXBound; j++) {
                 Peptide p = get(j, i);
                 if (p != null) {
-                    latticeString += p.type;
+                    latticeString.append(p.type);
                     int index = p.index;
                     if (containsPoint(j + 1, i) && (get(j + 1, i).index == index + 1 || get(j + 1, i).index == index - 1)) {
-                        latticeString += "-";
+                        latticeString.append("-");
                     } else {
-                        latticeString += " ";
+                        latticeString.append(" ");
                     }
-                    if (containsPoint(j, i + 1) && (get(j, i + 1).index == index + 1 || get(j, i + 1).index == index - 1)) {
-                        connectionsString += " |  ";
+                    if (containsPoint(j, i - 1) && (get(j, i - 1).index == index + 1 || get(j, i - 1).index == index - 1)) {
+                        connectionsString.append(" |  ");
                     } else {
-                        connectionsString += "    ";
+                        connectionsString.append("    ");
                     }
                 } else {
-                    latticeString += "    ";
-                    connectionsString += "    ";
+                    latticeString.append("    ");
+                    connectionsString.append("    ");
                 }
             }
-            lines.add(latticeString);
-            lines.add(connectionsString);
+            lines.add(latticeString.toString());
+            lines.add(connectionsString.toString());
             System.out.println(latticeString);
             System.out.println(connectionsString);
         }

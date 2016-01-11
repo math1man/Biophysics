@@ -1,4 +1,8 @@
-package com.ariweiland.biophysics;
+package com.ariweiland.biophysics.modeler;
+
+import com.ariweiland.biophysics.FixedHeap;
+import com.ariweiland.biophysics.lattice.Folding;
+import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -9,15 +13,17 @@ import java.util.concurrent.PriorityBlockingQueue;
  * the initialHeap to try.
  * @author Ari Weiland
  */
-class PeptideThread extends Thread {
+public class PeptideThread extends Thread {
 
+    private final Modeler modeler;
     private final Polypeptide polypeptide;
     private final PriorityBlockingQueue<Folding> initialHeap;
     private final PriorityBlockingQueue<Folding> solutions;
     private final FixedHeap<Folding> heap;
 
-    public PeptideThread(Polypeptide polypeptide, PriorityBlockingQueue<Folding> initialHeap,
+    public PeptideThread(Modeler modeler, Polypeptide polypeptide, PriorityBlockingQueue<Folding> initialHeap,
                          PriorityBlockingQueue<Folding> solutions, int heapSize) {
+        this.modeler = modeler;
         this.polypeptide = polypeptide;
         this.initialHeap = initialHeap;
         this.solutions = solutions;
@@ -31,7 +37,7 @@ class PeptideThread extends Thread {
             heap.add(initialHeap.poll());
         }
         while (!heap.isEmpty()) {
-            Folding state = Modeler.iterate(polypeptide, heap);
+            Folding state = modeler.iterate(polypeptide, heap);
             if (state != null) { // found a solution
                 // don't bother with the solution if it isn't better than the current best
                 // this will help conserve memory for larger polypeptides

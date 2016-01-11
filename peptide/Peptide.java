@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics;
+package com.ariweiland.biophysics.peptide;
 
 /**
  * This class wraps a residue with an index, which is useful for a variety of things.
@@ -16,7 +16,11 @@ public class Peptide {
     }
 
     public double interaction(Peptide p) {
-        return type.interaction(p == null ? Residue.H2O : p.type);
+        return interaction(p == null ? Residue.H2O : p.type);
+    }
+
+    public double interaction(Residue r) {
+        return type.interaction(r);
     }
 
     public double minInteraction() {
