@@ -24,12 +24,12 @@ public class Point {
             case EAST:
                 return new Point(x + 1, y);
             case NORTH:
-                return new Point(x, y + 1);
+                return new Point(x, y - 1);
             case WEST:
                 return new Point(x - 1, y);
             case SOUTH:
             default:
-                return new Point(x, y - 1);
+                return new Point(x, y + 1);
         }
     }
 

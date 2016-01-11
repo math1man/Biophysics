@@ -64,7 +64,7 @@ public abstract class Modeler {
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice lattice = new ParallelModeler(1000).fold(polypeptide);
+        Lattice lattice = new SurfaceModeler(1000, Residue.H).fold(polypeptide);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
