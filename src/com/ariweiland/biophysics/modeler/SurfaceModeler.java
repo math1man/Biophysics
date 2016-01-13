@@ -40,15 +40,6 @@ public class SurfaceModeler extends Modeler {
         for (int i=1; i<maxY; i++) {
             for (int j=1; j<maxY; j++) {
                 SurfaceLattice lattice = new SurfaceLattice(surface);
-                /*
-                The initial lower bound is the min energy plus the leading end interaction
-                of the first residue with water, plus the size times the water-surface
-                interaction if it is favorable. The idea behind the last part is that if the
-                interaction is favorable, we initially assume we will maximize it, and later
-                remove it each time we block one. On the other hand, if the interaction is
-                unfavorable, we assume we  minimize it, and later add it each time we DO NOT
-                block one.
-                */
                 double lowerBound = polypeptide.getMinEnergy()
                         + getFavorableWaterInteraction(polypeptide.get(0))
                         - size * getAbsWaterSurfaceInteraction();
