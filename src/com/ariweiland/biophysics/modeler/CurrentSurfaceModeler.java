@@ -13,11 +13,11 @@ import java.util.concurrent.PriorityBlockingQueue;
 /**
  * @author Ari Weiland
  */
-public class SurfaceModeler extends ParallelModeler {
+public class CurrentSurfaceModeler extends ParallelModeler {
 
     private final Residue surface;
 
-    public SurfaceModeler(Residue surface) {
+    public CurrentSurfaceModeler(Residue surface) {
         this.surface = surface;
     }
 

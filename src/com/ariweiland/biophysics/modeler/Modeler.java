@@ -63,7 +63,7 @@ public abstract class Modeler {
     }
 
     public static void main(String[] args) {
-        Modeler modeler = new SurfaceModeler(Residue.P);
+        Modeler modeler = new CurrentSurfaceModeler(Residue.P);
 //        Polypeptide polypeptide = Polypeptide.GLUCAGON;
 //        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
