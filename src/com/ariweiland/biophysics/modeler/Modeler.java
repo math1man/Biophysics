@@ -107,7 +107,7 @@ public abstract class Modeler {
     }
 
     public static void main(String[] args) {
-        Modeler modeler = new ParallelModeler(10000);
+        Modeler modeler = new SurfaceModeler(10000, Residue.POS);
 //        Polypeptide polypeptide = new Polypeptide("+PP PHPP-HP+HH-P++HP-HHPHHHPP");
 //        Polypeptide polypeptide = new Polypeptide("PHPHPPHPHPPP");
         Polypeptide polypeptide = new Polypeptide();
