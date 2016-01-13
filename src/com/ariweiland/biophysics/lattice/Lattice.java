@@ -19,8 +19,8 @@ public class Lattice {
     protected int minusXBound = 0;
     protected int plusYBound = 0;
     protected int minusYBound = 0;
-    protected int perimeter = 0;
-    protected double energy = 0;
+    private int perimeter = 0;
+    private double energy = 0;
 
     public Lattice() {
         this(new HashMap<Point, Peptide>());
@@ -150,6 +150,7 @@ public class Lattice {
                 if (adj.index >= 0) { // this is for use with surface lattice, so that it properly handles surface-perimeter
                     perimeter -= 1;
                 }
+                // if they are not adjoining peptides
                 if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
                     energy += peptide.interaction(adj);
                 }
