@@ -32,17 +32,28 @@ public class SurfaceModeler extends Modeler {
     }
 
     public Lattice fold(Polypeptide polypeptide) {
-        // fill the queue initially.  this avoids symmetrical solutions
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         int size = polypeptide.size();
+        // use this so that we don't bother with the peptide floating far away from the surface
         int maxY = getMaxY(size);
+        // fill the queue initially.  this avoids symmetrical solutions
         for (int i=1; i<maxY; i++) {
             for (int j=1; j<maxY; j++) {
                 SurfaceLattice lattice = new SurfaceLattice(surface);
-                int k;
+                /*
+                The initial lower bound is the min energy plus the leading end interaction
+                of the first residue with water, plus the size times the water-surface
+                interaction if it is favorable. The idea behind the last part is that if the
+                interaction is favorable, we initially assume we will maximize it, and later
+                remove it each time we block one. On the other hand, if the interaction is
+                unfavorable, we assume we  minimize it, and later add it each time we DO NOT
+                block one.
+                */
                 double lowerBound = polypeptide.getMinEnergy()
                         + getFavorableWaterInteraction(polypeptide.get(0))
                         - size * getAbsWaterSurfaceInteraction();
+                int k;
+                // add some number of residues between 0 and all of them in a vertical line, either rising or falling
                 for (k=0; k<=Math.abs(i-j) && k<size; k++) {
                     Peptide next = polypeptide.get(k);
                     int y;
@@ -52,31 +63,22 @@ public class SurfaceModeler extends Modeler {
                         y = i + k;
                     }
                     lattice.put(0, y, next);
-                    lowerBound += getFavorableWaterInteraction(next) - 2 * next.minInteraction() + getAbsWaterSurfaceInteraction();
-                    if (y == 1) {
-                        lowerBound += next.interaction(surface);
-                    } else {
-                        lowerBound += getFavorableWaterInteraction(next);
-                    }
+                    lowerBound += getBoundAdjust(y, next);
                 }
-                Point last;
-                if (k < size) { // there is at least one residue left
+                int lastX = 0;
+                // if there is at least one residue left, add it to the right of the last residue
+                if (k < size) {
                     Peptide next = polypeptide.get(k);
-                    last = new Point(1, j);
-                    lattice.put(last, next);
-                    lowerBound += getFavorableWaterInteraction(next) - 2 * next.minInteraction() + getAbsWaterSurfaceInteraction();
-                    if (j == 1) {
-                        lowerBound += next.interaction(surface);
-                    } else {
-                        lowerBound += getFavorableWaterInteraction(next);
-                    }
-                } else {
-                    last = new Point(0, j);
+                    lastX = 1;
+                    lattice.put(lastX, j, next);
+                    lowerBound += getBoundAdjust(j, next);
                 }
-                if (k > size - 2) { // the last residue added was the last residue
+                // if all residues have been placed, replace the bound with the actual lattice energy
+                if (k >= size - 1) {
                     lowerBound = lattice.getEnergy();
                 }
-                initialHeap.add(new Folding(lattice, last, k, lowerBound));
+                // add the lattice to the heap as a Folding
+                initialHeap.add(new Folding(lattice, lastX, j, k, lowerBound));
             }
         }
 
@@ -94,6 +96,33 @@ public class SurfaceModeler extends Modeler {
         return parallelize(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
     }
 
+    /**
+     * This is a helper method that calculates the modification to the lower energy bound
+     * in the initial seeding stage of filling the heap. It therefore assumes that no
+     * peptide is adjacent to any other peptide in the polypeptide, though they may be
+     * adjacent to the surface.
+     *
+     * First, it adds at least one of the peptide's favorable water interaction, and
+     * subtracts the peptide's min interactions. Then, if it is adjacent to the surface,
+     * it adds the interaction with the surface and subtracts any favorable water-surface
+     * interaction. Otherwise, it adds another of the peptide's favorable water interactions,
+     * and adds any unfavorable water-surface interaction because this peptide cannot block
+     * one of those.
+     *
+     * @param y
+     * @param p
+     * @return
+     */
+    private double getBoundAdjust(int y, Peptide p) {
+        double boundAdjust = getFavorableWaterInteraction(p) - 2 * p.minInteraction() + getAbsWaterSurfaceInteraction();
+        if (y == 1) {
+            boundAdjust += p.interaction(surface);
+        } else {
+            boundAdjust += getFavorableWaterInteraction(p);
+        }
+        return boundAdjust;
+    }
+
     private double getAbsWaterSurfaceInteraction() {
         return Math.abs(surface.interaction(Residue.H2O));
     }
@@ -105,31 +134,30 @@ public class SurfaceModeler extends Modeler {
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            double bound = folding.energyBound - 2 * p.minInteraction();
+            // try to add the peptide in every direction
             for (Point.Direction d : Point.Direction.values()) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next) && next.y < getMaxY(size)) {
                     SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
                     l.put(next, p);
-                    // though limiting the protein to the smallest possible rectangle is
-                    // overly limiting, empirically it seems that limiting it to a rectangle
-                    // of perimeter 4 larger does not seem to restrict the solution at all
-                    double nextBound = bound - getFavorableWaterInteraction(p);
+                    // set the bound from the previous bound, minus the min interactions for this peptide,
+                    // minus one favorable water interaction which
+                    double bound = folding.energyBound - 2 * p.minInteraction() - getFavorableWaterInteraction(p);
                     if (nextIndex < size - 1) {
                         for (Point.Direction d1 : Point.Direction.values()) {
                             if (d1 != d.getReverse()) {
                                 if (l.containsPoint(next.getAdjacent(d1))) {
                                     Peptide adjacent = l.get(next.getAdjacent(d1));
-                                    nextBound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
+                                    bound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
                                 } else {
-                                    nextBound += getFavorableWaterInteraction(p);
+                                    bound += getFavorableWaterInteraction(p);
                                 }
                             }
                         }
                     } else {
-                        nextBound = l.getEnergy();
+                        bound = l.getEnergy();
                     }
-                    queue.add(new Folding(l, next, nextIndex, nextBound));
+                    queue.add(new Folding(l, next, nextIndex, bound));
                 }
             }
             return null;

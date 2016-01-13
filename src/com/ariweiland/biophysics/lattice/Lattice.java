@@ -230,7 +230,7 @@ public class Lattice {
             for (int j=minusXBound; j<=plusXBound; j++) {
                 Peptide p = get(j, i);
                 if (p != null) {
-                    latticeString.append(p.type);
+                    latticeString.append(p.residue);
                     int index = p.index;
                     if (containsPoint(j + 1, i) && (get(j + 1, i).index == index + 1 || get(j + 1, i).index == index - 1)) {
                         latticeString.append("-");

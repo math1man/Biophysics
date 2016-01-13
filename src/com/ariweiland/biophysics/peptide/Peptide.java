@@ -8,27 +8,27 @@ package com.ariweiland.biophysics.peptide;
 public class Peptide {
 
     public final int index;
-    public final Residue type;
+    public final Residue residue;
 
-    public Peptide(int index, Residue type) {
+    public Peptide(int index, Residue residue) {
         this.index = index;
-        this.type = type;
+        this.residue = residue;
     }
 
     public double interaction(Peptide p) {
-        return interaction(p == null ? Residue.H2O : p.type);
+        return interaction(p == null ? Residue.H2O : p.residue);
     }
 
     public double interaction(Residue r) {
-        return type.interaction(r);
+        return residue.interaction(r);
     }
 
     public double minInteraction() {
-        return type.minInteraction();
+        return residue.minInteraction();
     }
 
     @Override
     public String toString() {
-        return index + ": " + type;
+        return index + ": " + residue;
     }
 }
