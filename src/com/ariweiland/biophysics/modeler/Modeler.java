@@ -17,24 +17,6 @@ public abstract class Modeler {
     public static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
 
     /**
-     * Seed count is used for parallelization. It should be kept small (~1000) but may need
-     * to be increased so that the heaps don't fill up. The default constructor sets it to 0.
-     */
-    private final int seedCount;
-
-    protected Modeler() {
-        this(0);
-    }
-
-    protected Modeler(int seedCount) {
-        this.seedCount = seedCount;
-    }
-
-    public int getSeedCount() {
-        return seedCount;
-    }
-
-    /**
      * This method takes in a polypeptide and returns a folded lattice.
      * @return
      */
@@ -77,15 +59,31 @@ public abstract class Modeler {
     }
 
     /**
+     * Dynamically calculates an ideal seed count for a given polypeptide.
+     *
+     * It uses the formula 10^(polypeptide.size() + 2).
+     *
+     * This results in a seed count of 1000 for size 10, 10000 for size 20,
+     * 100000 for size 30, etc. with intermediate sizes being in between.
+     * @param polypeptide
+     * @return
+     */
+    public static int getSeedCount(Polypeptide polypeptide) {
+        double exponent = polypeptide.size() / 10.0 + 2.0;
+        return (int) Math.pow(10.0, exponent);
+    }
+
+    /**
      * Returns the perimeter of the smallest
      * rectangle with an area of at least n.
      * For m^2 < n <= (m+1)^2,
      *  - returns 4m + 6 if n <= m(m+1)
      *  - returns 4m + 8 otherwise
-     * @param n
+     * @param polypeptide
      * @return
      */
-    public static int getPerimBound(int n) {
+    public static int getPerimeterBound(Polypeptide polypeptide) {
+        int n = polypeptide.size();
         int m = (int) Math.sqrt(n-1);
         int maxPerim = 4 * m + 2;
         if (n > m * (m+1)) {
@@ -93,6 +91,16 @@ public abstract class Modeler {
         }
         // add 4 because the ideal perimeter bound is overly limiting
         return maxPerim + 4;
+    }
+
+    /**
+     * This method calculates the maximum y-value a polypeptide should ever reach in surface modeling.
+     * It is related to the perimeter bound.
+     * @param polypeptide
+     * @return
+     */
+    public static int getMaxY(Polypeptide polypeptide) {
+        return getPerimeterBound(polypeptide) / 4 + 2;
     }
 
     /**
@@ -107,9 +115,9 @@ public abstract class Modeler {
     }
 
     public static void main(String[] args) {
-        Modeler modeler = new SurfaceModeler(10000, Residue.POS);
-//        Polypeptide polypeptide = new Polypeptide("+PP PHPP-HP+HH-P++HP-HHPHHHPP");
-//        Polypeptide polypeptide = new Polypeptide("PHPHPPHPHPPP");
+        Modeler modeler = new SurfaceModeler(Residue.P);
+//        Polypeptide polypeptide = Polypeptide.GLUCAGON;
+//        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
         for (int i=0; i<20; i++) {
             if (Math.random() < 0.4) {
@@ -120,7 +128,7 @@ public abstract class Modeler {
         }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
-        System.out.println("Perimeter Bound: " + getPerimBound(polypeptide.size()));
+        System.out.println("Perimeter Bound: " + getPerimeterBound(polypeptide));
         System.out.println();
 
         long start = System.currentTimeMillis();

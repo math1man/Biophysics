@@ -14,21 +14,6 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class ParallelModeler extends Modeler {
 
-    /**
-     * Seed count should be kept small (~1000) but may need
-     * to be increased so that the heaps don't fill up.
-     * @param seedCount
-     */
-    public ParallelModeler(int seedCount) {
-        super(seedCount);
-    }
-
-    /**
-     * The fastest version of the algorithm yet. Parallelization works!
-     * Useful for all sizes of Polypeptides, assuming an appropriate seed
-     * count is used.
-     * @return
-     */
     @Override
     public Lattice fold(Polypeptide polypeptide) {
         // initialize the lattices
@@ -67,7 +52,7 @@ public class ParallelModeler extends Modeler {
 
         // iterate a few times to make the initial heap bigger
         int count = 0;
-        while (count < getSeedCount()) {
+        while (count < getSeedCount(polypeptide)) {
             Folding solution = iterate(polypeptide, initialHeap);
             if (solution != null) {
                 return solution.lattice;
@@ -95,7 +80,7 @@ public class ParallelModeler extends Modeler {
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (l.boundingPerimeter() <= getPerimBound(size)) {
+                    if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
                         // subtract a water interaction where the next residue will end up
                         // note that if there is nowhere for the next residue, the foldings will be dropped on the next iteration
                         double nextBound = bound - getFavorableWaterInteraction(p);

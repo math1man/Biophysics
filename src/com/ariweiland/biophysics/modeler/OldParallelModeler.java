@@ -17,10 +17,6 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class OldParallelModeler extends Modeler {
 
-    public OldParallelModeler(int seedCount) {
-        super(seedCount);
-    }
-
     /**
      * The fastest version of the algorithm yet. Parallelization works!
      * Useful for all sizes of Polypeptides, assuming an appropriate seed
@@ -61,7 +57,7 @@ public class OldParallelModeler extends Modeler {
 
         // iterate a few times to make the initial heap bigger
         int count = 0;
-        while (count < getSeedCount()) {
+        while (count < getSeedCount(polypeptide)) {
             Folding solution = iterate(polypeptide, initialHeap);
             if (solution != null) {
                 return solution.lattice;
@@ -89,7 +85,7 @@ public class OldParallelModeler extends Modeler {
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (l.boundingPerimeter() <= getPerimBound(size)) {
+                    if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
                         double nextBound;
                         if (nextIndex < size - 1) {
                             nextBound = bound;

@@ -77,7 +77,7 @@ public class OldModeler1 extends Modeler {
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (l.boundingPerimeter() <= getPerimBound(size)) {
+                    if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
                         double lb;
                         if (nextIndex < size - 1) {
                             lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);

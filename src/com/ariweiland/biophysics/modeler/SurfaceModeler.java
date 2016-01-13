@@ -18,8 +18,7 @@ public class SurfaceModeler extends Modeler {
 
     private final Residue surface;
 
-    public SurfaceModeler(int seedCount, Residue surface) {
-        super(seedCount);
+    public SurfaceModeler(Residue surface) {
         this.surface = surface;
     }
 
@@ -63,11 +62,12 @@ public class SurfaceModeler extends Modeler {
         return boundAdjust;
     }
 
+    @Override
     public Lattice fold(Polypeptide polypeptide) {
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         int size = polypeptide.size();
         // use this so that we don't bother with the peptide floating far away from the surface
-        int maxY = getMaxY(size);
+        int maxY = getMaxY(polypeptide);
         // fill the queue initially.  this avoids symmetrical solutions
         for (int i=1; i<maxY; i++) {
             for (int j=1; j<maxY; j++) {
@@ -107,7 +107,8 @@ public class SurfaceModeler extends Modeler {
 
         // iterate a few times to make the initial heap bigger
         int count = 0;
-        while (count < getSeedCount()) {
+        // for surface modeling, the seed count should be about 10 times larger
+        while (count < getSeedCount(polypeptide) * 10) {
             Folding solution = iterate(polypeptide, initialHeap);
             if (solution != null) {
                 return solution.lattice;
@@ -129,7 +130,7 @@ public class SurfaceModeler extends Modeler {
             // try to add the peptide in every direction
             for (Point.Direction d : Point.Direction.values()) {
                 Point next = folding.lastPoint.getAdjacent(d);
-                if (!folding.lattice.containsPoint(next) && next.y < getMaxY(size)) {
+                if (!folding.lattice.containsPoint(next) && next.y < getMaxY(polypeptide)) {
                     SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
                     l.put(next, p);
                     // set the bound from the previous bound, minus the min interactions for this peptide,
@@ -160,10 +161,5 @@ public class SurfaceModeler extends Modeler {
             return folding;
         }
     }
-
-    public static int getMaxY(int n) {
-        return getPerimBound(n) / 4 + 2;
-    }
-
 
 }
