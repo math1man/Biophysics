@@ -69,15 +69,15 @@ public class SurfaceModeler extends Modeler {
         // use this so that we don't bother with the peptide floating far away from the surface
         int maxY = getMaxY(polypeptide);
         // fill the queue initially.  this avoids symmetrical solutions
-        for (int i=1; i<maxY; i++) {
-            for (int j=1; j<maxY; j++) {
+        for (int i = 1; i < maxY; i++) {
+            for (int j = 1; j < maxY; j++) {
                 SurfaceLattice lattice = new SurfaceLattice(surface);
                 double lowerBound = polypeptide.getMinEnergy()
                         + getFavorableWaterInteraction(polypeptide.get(0))
                         + size * getAdjustedSurfaceMinInteraction();
                 int k;
                 // add some number of residues between 0 and all of them in a vertical line, either rising or falling
-                for (k=0; k<=Math.abs(i-j) && k<size; k++) {
+                for (k = 0; k <= Math.abs(i - j) && k < size; k++) {
                     Peptide next = polypeptide.get(k);
                     int y;
                     if (i > j) {
@@ -161,5 +161,4 @@ public class SurfaceModeler extends Modeler {
             return folding;
         }
     }
-
 }

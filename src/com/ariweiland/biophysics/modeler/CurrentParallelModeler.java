@@ -12,7 +12,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 /**
  * @author Ari Weiland
  */
-public class ParallelModeler extends Modeler {
+public class CurrentParallelModeler extends Modeler {
 
     @Override
     public Lattice fold(Polypeptide polypeptide) {

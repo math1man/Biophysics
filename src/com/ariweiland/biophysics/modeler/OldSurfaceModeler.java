@@ -26,6 +26,41 @@ public class OldSurfaceModeler extends Modeler {
         return surface;
     }
 
+    /**
+     * This helper method returns the absolute value of the water-surface interaction
+     * @return
+     */
+    private double getAbsWaterSurfaceInteraction() {
+        return Math.abs(surface.interaction(Residue.H2O));
+    }
+
+    /**
+     * This is a helper method that calculates the modification to the lower energy bound
+     * in the initial seeding stage of filling the heap. It therefore assumes that no
+     * peptide is adjacent to any other peptide in the polypeptide, though they may be
+     * adjacent to the surface.
+     *
+     * First, it adds at least one of the peptide's favorable water interaction, and
+     * subtracts the peptide's min interactions. Then, if it is adjacent to the surface,
+     * it adds the interaction with the surface and subtracts any favorable water-surface
+     * interaction. Otherwise, it adds another of the peptide's favorable water interactions,
+     * and adds any unfavorable water-surface interaction because this peptide cannot block
+     * one of those.
+     *
+     * @param y
+     * @param p
+     * @return
+     */
+    private double getBoundAdjust(int y, Peptide p) {
+        double boundAdjust = getFavorableWaterInteraction(p) - 2 * p.minInteraction() + getAbsWaterSurfaceInteraction();
+        if (y == 1) {
+            boundAdjust += p.interaction(surface);
+        } else {
+            boundAdjust += getFavorableWaterInteraction(p);
+        }
+        return boundAdjust;
+    }
+
     @Override
     public Lattice fold(Polypeptide polypeptide) {
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
@@ -82,37 +117,6 @@ public class OldSurfaceModeler extends Modeler {
 
         int processors = Runtime.getRuntime().availableProcessors();
         return parallelize(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
-    }
-
-    /**
-     * This is a helper method that calculates the modification to the lower energy bound
-     * in the initial seeding stage of filling the heap. It therefore assumes that no
-     * peptide is adjacent to any other peptide in the polypeptide, though they may be
-     * adjacent to the surface.
-     *
-     * First, it adds at least one of the peptide's favorable water interaction, and
-     * subtracts the peptide's min interactions. Then, if it is adjacent to the surface,
-     * it adds the interaction with the surface and subtracts any favorable water-surface
-     * interaction. Otherwise, it adds another of the peptide's favorable water interactions,
-     * and adds any unfavorable water-surface interaction because this peptide cannot block
-     * one of those.
-     *
-     * @param y
-     * @param p
-     * @return
-     */
-    private double getBoundAdjust(int y, Peptide p) {
-        double boundAdjust = getFavorableWaterInteraction(p) - 2 * p.minInteraction() + getAbsWaterSurfaceInteraction();
-        if (y == 1) {
-            boundAdjust += p.interaction(surface);
-        } else {
-            boundAdjust += getFavorableWaterInteraction(p);
-        }
-        return boundAdjust;
-    }
-
-    private double getAbsWaterSurfaceInteraction() {
-        return Math.abs(surface.interaction(Residue.H2O));
     }
 
     @Override
