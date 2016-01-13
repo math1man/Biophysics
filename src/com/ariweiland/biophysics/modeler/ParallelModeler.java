@@ -11,7 +11,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public abstract class ParallelModeler extends Modeler {
 
-    public abstract PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide);
+    protected abstract PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide);
 
     /**
      * Dynamically calculates an ideal seed count for a given polypeptide.
@@ -23,7 +23,7 @@ public abstract class ParallelModeler extends Modeler {
      * @param polypeptide
      * @return
      */
-    public int getSeedCount(Polypeptide polypeptide) {
+    protected int getSeedCount(Polypeptide polypeptide) {
         double exponent = polypeptide.size() / 10.0 + 1.0;
         return (int) Math.pow(10.0, exponent);
     }

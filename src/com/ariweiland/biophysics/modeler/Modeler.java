@@ -40,7 +40,7 @@ public abstract class Modeler {
      * @param polypeptide
      * @return
      */
-    public static int getPerimeterBound(Polypeptide polypeptide) {
+    protected static int getPerimeterBound(Polypeptide polypeptide) {
         int n = polypeptide.size();
         int m = (int) Math.sqrt(n-1);
         int maxPerim = 4 * m + 2;
@@ -58,7 +58,7 @@ public abstract class Modeler {
      * @param p
      * @return
      */
-    public static double getFavorableWaterInteraction(Peptide p) {
+    protected static double getFavorableWaterInteraction(Peptide p) {
         return Math.min(p.interaction(Residue.H2O), 0);
     }
 

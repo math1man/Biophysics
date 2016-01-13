@@ -8,21 +8,15 @@ import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * @author Ari Weiland
  */
-public class CurrentSurfaceModeler extends ParallelModeler {
+public class CurrentSurfaceModeler extends SurfaceModeler {
 
-    private final Residue surface;
 
-    public CurrentSurfaceModeler(Residue surface) {
-        this.surface = surface;
-    }
-
-    public Residue getSurface() {
-        return surface;
+    protected CurrentSurfaceModeler(Residue surface) {
+        super(surface);
     }
 
     /**
@@ -31,7 +25,13 @@ public class CurrentSurfaceModeler extends ParallelModeler {
      * @return
      */
     private double getAdjustedSurfaceMinInteraction() {
-        return surface.minInteraction() - surface.interaction(Residue.H2O);
+        return getSurface().minInteraction() - getSurface().interaction(Residue.H2O);
+    }
+
+    protected double getInitialEnergyBound(Polypeptide polypeptide) {
+        return polypeptide.getMinEnergy()
+                + getFavorableWaterInteraction(polypeptide.get(0))
+                + polypeptide.size() * getAdjustedSurfaceMinInteraction();
     }
 
     /**
@@ -51,64 +51,15 @@ public class CurrentSurfaceModeler extends ParallelModeler {
      * @param p
      * @return
      */
-    private double getBoundAdjust(int y, Peptide p) {
+    @Override
+    protected double getBoundAdjust(int y, Peptide p) {
         double boundAdjust = getFavorableWaterInteraction(p) - 2 * p.minInteraction();
         if (y == 1) {
-            boundAdjust += p.interaction(surface) - getAdjustedSurfaceMinInteraction();
+            boundAdjust += p.interaction(getSurface()) - getAdjustedSurfaceMinInteraction();
         } else {
             boundAdjust += getFavorableWaterInteraction(p);
         }
         return boundAdjust;
-    }
-
-    @Override
-    public int getSeedCount(Polypeptide polypeptide) {
-        return super.getSeedCount(polypeptide) * 10;
-    }
-
-    @Override
-    public PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
-        PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
-        int size = polypeptide.size();
-        // use this so that we don't bother with the peptide floating far away from the surface
-        int maxY = getMaxY(polypeptide);
-        // fill the queue initially.  this avoids symmetrical solutions
-        for (int i = 1; i < maxY; i++) {
-            for (int j = 1; j < maxY; j++) {
-                SurfaceLattice lattice = new SurfaceLattice(surface);
-                double lowerBound = polypeptide.getMinEnergy()
-                        + getFavorableWaterInteraction(polypeptide.get(0))
-                        + size * getAdjustedSurfaceMinInteraction();
-                int k;
-                // add some number of residues between 0 and all of them in a vertical line, either rising or falling
-                for (k = 0; k <= Math.abs(i - j) && k < size; k++) {
-                    Peptide next = polypeptide.get(k);
-                    int y;
-                    if (i > j) {
-                        y = i - k;
-                    } else {
-                        y = i + k;
-                    }
-                    lattice.put(0, y, next);
-                    lowerBound += getBoundAdjust(y, next);
-                }
-                int lastX = 0;
-                // if there is at least one residue left, add it to the right of the last residue
-                if (k < size) {
-                    Peptide next = polypeptide.get(k);
-                    lastX = 1;
-                    lattice.put(lastX, j, next);
-                    lowerBound += getBoundAdjust(j, next);
-                }
-                // if all residues have been placed, replace the bound with the actual lattice energy
-                if (k >= size - 1) {
-                    lowerBound = lattice.getEnergy();
-                }
-                // add the lattice to the heap as a Folding
-                initialHeap.add(new Folding(lattice, lastX, j, k, lowerBound));
-            }
-        }
-        return initialHeap;
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class CurrentParallelModeler extends ParallelModeler {
 
     @Override
-    public PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
+    protected PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         int size = polypeptide.size();
         // initialize the lattices
