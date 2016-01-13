@@ -29,18 +29,18 @@ public class Residue {
         // ion-dipole: ~0.62
         ENERGY_MAP.put(POS, P,   -0.62);
         ENERGY_MAP.put(NEG, P,   -0.62);
-//        ENERGY_MAP.put(POS, H2O, -0.62);
-//        ENERGY_MAP.put(NEG, H2O, -0.62);
+        ENERGY_MAP.put(POS, H2O, -0.62);
+        ENERGY_MAP.put(NEG, H2O, -0.62);
 
         // dipole-dipole: ~0.11
         ENERGY_MAP.put(P,   P,   -0.11);
-//        ENERGY_MAP.put(P,   H2O, -0.11);
+        ENERGY_MAP.put(P,   H2O, -0.11);
 
         // hydrophobic: +-1.16 (?)
         // (assuming 3 kJ/mol)
 //        ENERGY_MAP.put(H,   H,   -1.16);
         ENERGY_MAP.put(H,   H2O,  1.16);
-        ENERGY_MAP.put(H,   P,    1.16);
+//        ENERGY_MAP.put(H,   P,    1.16);
 
         // TODO: add more interactions with H2O?
     }

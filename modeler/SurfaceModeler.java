@@ -14,7 +14,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 /**
  * @author Ari Weiland
  */
-public class SurfaceModeler extends ParallelModeler {
+public class SurfaceModeler extends Modeler {
 
     private final Residue surface;
 
@@ -28,7 +28,7 @@ public class SurfaceModeler extends ParallelModeler {
     }
 
     public static int getMaxY(int n) {
-        return getPerimBound(n) / 2 + 1;
+        return getPerimBound(n) / 4 + 2;
     }
 
     public Lattice fold(Polypeptide polypeptide) {
@@ -40,20 +40,42 @@ public class SurfaceModeler extends ParallelModeler {
             for (int j=1; j<maxY; j++) {
                 SurfaceLattice lattice = new SurfaceLattice(surface);
                 int k;
-                double lowerBound = polypeptide.getMinEnergy();
-                for (k=0; k<=Math.abs(i-j); k++) {
+                double lowerBound = polypeptide.getMinEnergy()
+                        + getFavorableWaterInteraction(polypeptide.get(0))
+                        - size * getAbsWaterSurfaceInteraction();
+                for (k=0; k<=Math.abs(i-j) && k<size; k++) {
                     Peptide next = polypeptide.get(k);
+                    int y;
                     if (i > j) {
-                        lattice.put(0, i - k, next);
+                        y = i - k;
                     } else {
-                        lattice.put(0, i + k, next);
+                        y = i + k;
                     }
-                    lowerBound -= 2 * next.minInteraction();
+                    lattice.put(0, y, next);
+                    lowerBound += getFavorableWaterInteraction(next) - 2 * next.minInteraction() + getAbsWaterSurfaceInteraction();
+                    if (y == 1) {
+                        lowerBound += next.interaction(surface);
+                    } else {
+                        lowerBound += getFavorableWaterInteraction(next);
+                    }
                 }
-                Peptide next = polypeptide.get(k);
-                Point last = new Point(1, j);
-                lattice.put(last, next);
-                lowerBound -= 2 * next.minInteraction();
+                Point last;
+                if (k < size) { // there is at least one residue left
+                    Peptide next = polypeptide.get(k);
+                    last = new Point(1, j);
+                    lattice.put(last, next);
+                    lowerBound += getFavorableWaterInteraction(next) - 2 * next.minInteraction() + getAbsWaterSurfaceInteraction();
+                    if (j == 1) {
+                        lowerBound += next.interaction(surface);
+                    } else {
+                        lowerBound += getFavorableWaterInteraction(next);
+                    }
+                } else {
+                    last = new Point(0, j);
+                }
+                if (k > size - 2) { // the last residue added was the last residue
+                    lowerBound = lattice.getEnergy();
+                }
                 initialHeap.add(new Folding(lattice, last, k, lowerBound));
             }
         }
@@ -72,7 +94,11 @@ public class SurfaceModeler extends ParallelModeler {
         return parallelize(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
     }
 
-    // TODO: this should be good to go!
+    private double getAbsWaterSurfaceInteraction() {
+        return Math.abs(surface.interaction(Residue.H2O));
+    }
+
+    @Override
     public Folding iterate(Polypeptide polypeptide, Queue<Folding> queue) {
         int size = polypeptide.size();
         Folding folding = queue.poll();
@@ -82,28 +108,28 @@ public class SurfaceModeler extends ParallelModeler {
             double bound = folding.energyBound - 2 * p.minInteraction();
             for (Point.Direction d : Point.Direction.values()) {
                 Point next = folding.lastPoint.getAdjacent(d);
-                if (!folding.lattice.containsPoint(next) && next.y > 0 && next.y < getMaxY(size)) {
-                    Lattice l = new Lattice(folding.lattice);
+                if (!folding.lattice.containsPoint(next) && next.y < getMaxY(size)) {
+                    SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
                     l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    double lb;
+                    double nextBound = bound - getFavorableWaterInteraction(p);
                     if (nextIndex < size - 1) {
-                        lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);
-                        if (l.containsPoint(next.getAdjacent(d))) {
-                            lb += p.interaction(l.get(next.getAdjacent(d)));
-                        }
-                        if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
-                            lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
-                        }
-                        if (l.containsPoint(next.getAdjacent(d.getRight()))) {
-                            lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
+                        for (Point.Direction d1 : Point.Direction.values()) {
+                            if (d1 != d.getReverse()) {
+                                if (l.containsPoint(next.getAdjacent(d1))) {
+                                    Peptide adjacent = l.get(next.getAdjacent(d1));
+                                    nextBound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
+                                } else {
+                                    nextBound += getFavorableWaterInteraction(p);
+                                }
+                            }
                         }
                     } else {
-                        lb = l.getEnergy();
+                        nextBound = l.getEnergy();
                     }
-                    queue.add(new Folding(l, next, nextIndex, lb));
+                    queue.add(new Folding(l, next, nextIndex, nextBound));
                 }
             }
             return null;

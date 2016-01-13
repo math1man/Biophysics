@@ -10,16 +10,14 @@ import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
+ * Possibly add to the Heuristic some function of the perimeter?
+ * Confirmations with lower perimeter are better.
+ *
  * @author Ari Weiland
  */
-public class ParallelModeler extends Modeler {
+public class OldParallelModeler extends Modeler {
 
-    /**
-     * Seed count should be kept small (~1000) but may need
-     * to be increased so that the heaps don't fill up.
-     * @param seedCount
-     */
-    public ParallelModeler(int seedCount) {
+    public OldParallelModeler(int seedCount) {
         super(seedCount);
     }
 
@@ -47,23 +45,19 @@ public class ParallelModeler extends Modeler {
 
         // fill the queue initially.  this removes symmetrical solutions
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
-        double lowerBound = polypeptide.getMinEnergy()
-                - 2 * first.minInteraction()
-                + 3 * getFavorableWaterInteraction(first)
-                - 2 * second.minInteraction()
-                + 2 * getFavorableWaterInteraction(second);
+        double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
+            lowerBound -= 2 * next.minInteraction();
             Lattice bend = new Lattice(line);
             bend.put(i-1, 1, next);
-            line.put(i, 0, next);
-            lowerBound += 2 * getFavorableWaterInteraction(next) - 2 * next.minInteraction();
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
-                initialHeap.add(new Folding(line, i, 0, i, lowerBound));
             }
             initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
+            line.put(i, 0, next);
         }
+        initialHeap.add(new Folding(line, size - 1, 0, size - 1, lowerBound));
 
         // iterate a few times to make the initial heap bigger
         int count = 0;
@@ -96,19 +90,17 @@ public class ParallelModeler extends Modeler {
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
                     if (l.boundingPerimeter() <= getPerimBound(size)) {
-                        // subtract a water interaction where the next residue will end up
-                        // note that if there is nowhere for the next residue, the foldings will be dropped on the next iteration
-                        double nextBound = bound - getFavorableWaterInteraction(p);
+                        double nextBound;
                         if (nextIndex < size - 1) {
-                            for (Point.Direction d1 : Point.Direction.values()) {
-                                if (d1 != d.getReverse()) {
-                                    if (l.containsPoint(next.getAdjacent(d1))) {
-                                        Peptide adjacent = l.get(next.getAdjacent(d1));
-                                        nextBound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
-                                    } else {
-                                        nextBound += getFavorableWaterInteraction(p);
-                                    }
-                                }
+                            nextBound = bound;
+                            if (l.containsPoint(next.getAdjacent(d))) {
+                                nextBound += p.interaction(l.get(next.getAdjacent(d)));
+                            }
+                            if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
+                                nextBound += p.interaction(l.get(next.getAdjacent(d.getLeft())));
+                            }
+                            if (l.containsPoint(next.getAdjacent(d.getRight()))) {
+                                nextBound += p.interaction(l.get(next.getAdjacent(d.getRight())));
                             }
                         } else {
                             nextBound = l.getEnergy();

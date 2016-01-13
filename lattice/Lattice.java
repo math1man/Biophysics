@@ -124,7 +124,7 @@ public class Lattice {
      * @return
      */
     public void put(Point point, Peptide peptide) {
-        if (lattice.containsKey(point)) {
+        if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");
         }
         if (isEmpty()) {
@@ -147,7 +147,9 @@ public class Lattice {
         for (Point.Direction d : Point.Direction.values()) {
             Peptide adj = get(point.getAdjacent(d));
             if (adj != null) {
-                perimeter -= 1;
+                if (adj.index >= 0) { // this is for use with surface lattice, so that it properly handles surface-perimeter
+                    perimeter -= 1;
+                }
                 if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
                     energy += peptide.interaction(adj);
                 }

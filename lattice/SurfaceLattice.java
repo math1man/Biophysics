@@ -7,6 +7,9 @@ import com.ariweiland.biophysics.peptide.Residue;
 import java.util.List;
 
 /**
+ * A surface lattice represents a specific type of lattices with a surface
+ * at y == 0 composed of a specified residue. Points at y < 0 are invalid
+ * points, and will cause exceptions to be thrown.
  * @author Ari Weiland
  */
 public class SurfaceLattice extends Lattice {
@@ -26,14 +29,30 @@ public class SurfaceLattice extends Lattice {
     }
 
     @Override
+    public boolean containsPoint(Point point) {
+        if (point.y < 0) {
+            throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
+        }
+        return point.y == 0 || super.containsPoint(point);
+    }
+
+    @Override
+    public Peptide get(Point point) {
+        if (point.y < 0) {
+            throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
+        } else if (point.y == 0) {
+            return new Peptide(-2, surface);
+        } else {
+            return super.get(point);
+        }
+    }
+
+    @Override
     public void put(Point point, Peptide peptide) {
         if (point.y < 1) {
             throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
         }
         super.put(point, peptide);
-        if (point.y == 1) {
-            energy += peptide.interaction(surface) - surface.interaction(Residue.H2O);
-        }
     }
 
     @Override
