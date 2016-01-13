@@ -11,7 +11,7 @@ import java.util.Map;
 public class Residue {
 
     public static final Residue POS = new Residue("(+)");
-    public static final Residue NEG = new Residue("(-)");
+    public static final Residue NEG = new Residue("(m)");
     public static final Residue P = new Residue("(P)");
     public static final Residue H = new Residue("(H)");
     public static final Residue NEUT = new Residue("( )");

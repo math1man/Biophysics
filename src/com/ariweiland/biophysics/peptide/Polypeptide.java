@@ -8,7 +8,7 @@ import java.util.*;
  */
 public class Polypeptide {
 
-    public static final Polypeptide GLUCAGON = new Polypeptide("+PP PHPP-HP+HH-P++HP-HHPHHHPP");
+    public static final Polypeptide GLUCAGON = new Polypeptide("+PP PHPPmHP+HHmP++HPmHHPHHHPP");
     
     private final List<Residue> polypeptide;
     private final Map<Residue, Integer> typeCount = new HashMap<>();
@@ -29,7 +29,7 @@ public class Polypeptide {
                 case '+':
                     add(Residue.POS);
                     break;
-                case '-':
+                case 'm':
                     add(Residue.NEG);
                     break;
                 case 'P':
