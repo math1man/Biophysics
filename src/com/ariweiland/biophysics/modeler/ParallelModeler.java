@@ -11,8 +11,6 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public abstract class ParallelModeler extends Modeler {
 
-    protected abstract PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide);
-
     /**
      * Dynamically calculates an ideal seed count for a given polypeptide.
      *
@@ -27,6 +25,15 @@ public abstract class ParallelModeler extends Modeler {
         double exponent = polypeptide.size() / 10.0 + 1.0;
         return (int) Math.pow(10.0, exponent);
     }
+
+    /**
+     * This helper method should initialize the heap in such a way that it contains all
+     * symmetrically unique initial foldings. From these foldings, any other derived
+     * folding should be completely unique.
+     * @param polypeptide
+     * @return
+     */
+    protected abstract PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide);
 
     @Override
     public Lattice fold(Polypeptide polypeptide) {
@@ -60,15 +67,5 @@ public abstract class ParallelModeler extends Modeler {
             }
         }
         return solutions.poll().lattice;
-    }
-
-    /**
-     * This method calculates the maximum y-value a polypeptide should ever reach in surface modeling.
-     * It is related to the perimeter bound.
-     * @param polypeptide
-     * @return
-     */
-    public static int getMaxY(Polypeptide polypeptide) {
-        return getPerimeterBound(polypeptide) / 4 + 2;
     }
 }

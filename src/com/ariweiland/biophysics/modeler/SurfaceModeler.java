@@ -23,8 +23,23 @@ public abstract class SurfaceModeler extends ParallelModeler {
         return surface;
     }
 
+    /**
+     * This helper method determines the initial minimum energy of a polypeptide that
+     * is about to begin the folding process.
+     * @param polypeptide
+     * @return
+     */
     protected abstract double getInitialEnergyBound(Polypeptide polypeptide);
 
+    /**
+     * This helper method calculates the modification to the lower energy bound in the
+     * initial seeding stage of filling the heap. It therefore assumes that no peptide
+     * is adjacent to any other peptide in the polypeptide, though they may be adjacent
+     * to the surface.
+     * @param y
+     * @param p
+     * @return
+     */
     protected abstract double getBoundAdjust(int y, Peptide p);
 
     @Override
@@ -73,5 +88,15 @@ public abstract class SurfaceModeler extends ParallelModeler {
             }
         }
         return initialHeap;
+    }
+
+    /**
+     * This method calculates the maximum y-value a polypeptide should ever reach in surface modeling.
+     * It is related to the perimeter bound.
+     * @param polypeptide
+     * @return
+     */
+    protected int getMaxY(Polypeptide polypeptide) {
+        return getPerimeterBound(polypeptide) / 4 + 2;
     }
 }

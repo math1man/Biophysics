@@ -40,7 +40,7 @@ public abstract class Modeler {
      * @param polypeptide
      * @return
      */
-    protected static int getPerimeterBound(Polypeptide polypeptide) {
+    protected int getPerimeterBound(Polypeptide polypeptide) {
         int n = polypeptide.size();
         int m = (int) Math.sqrt(n-1);
         int maxPerim = 4 * m + 2;
@@ -58,7 +58,7 @@ public abstract class Modeler {
      * @param p
      * @return
      */
-    protected static double getFavorableWaterInteraction(Peptide p) {
+    protected double getFavorableWaterInteraction(Peptide p) {
         return Math.min(p.interaction(Residue.H2O), 0);
     }
 
@@ -76,7 +76,7 @@ public abstract class Modeler {
         }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
-        System.out.println("Perimeter Bound: " + getPerimeterBound(polypeptide));
+        System.out.println("Perimeter Bound: " + modeler.getPerimeterBound(polypeptide));
         System.out.println();
 
         long start = System.currentTimeMillis();
