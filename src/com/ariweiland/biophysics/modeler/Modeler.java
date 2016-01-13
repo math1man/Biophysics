@@ -7,7 +7,6 @@ import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * @author Ari Weiland
@@ -33,47 +32,6 @@ public abstract class Modeler {
     public abstract Folding iterate(Polypeptide polypeptide, Queue<Folding> queue);
 
     /**
-     * Primary method that generates a folded protein from the
-     * @param processors
-     * @return
-     */
-    public Lattice parallelize(Polypeptide polypeptide, PriorityBlockingQueue<Folding> initialHeap,
-                               int processors, int processHeapSize) {
-        System.out.println("Processors: " + processors);
-        System.out.println("Initial Heap Size: " + initialHeap.size());
-        PeptideThread[] threads = new PeptideThread[processors];
-        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>();
-
-        for (int i=0; i<processors; i++) {
-            threads[i] = new PeptideThread(this, polypeptide, initialHeap, solutions, processHeapSize);
-            threads[i].start();
-        }
-        for (int i=0; i<processors; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return solutions.poll().lattice;
-    }
-
-    /**
-     * Dynamically calculates an ideal seed count for a given polypeptide.
-     *
-     * It uses the formula 10^(polypeptide.size() + 2).
-     *
-     * This results in a seed count of 1000 for size 10, 10000 for size 20,
-     * 100000 for size 30, etc. with intermediate sizes being in between.
-     * @param polypeptide
-     * @return
-     */
-    public static int getSeedCount(Polypeptide polypeptide) {
-        double exponent = polypeptide.size() / 10.0 + 2.0;
-        return (int) Math.pow(10.0, exponent);
-    }
-
-    /**
      * Returns the perimeter of the smallest
      * rectangle with an area of at least n.
      * For m^2 < n <= (m+1)^2,
@@ -91,16 +49,6 @@ public abstract class Modeler {
         }
         // add 4 because the ideal perimeter bound is overly limiting
         return maxPerim + 4;
-    }
-
-    /**
-     * This method calculates the maximum y-value a polypeptide should ever reach in surface modeling.
-     * It is related to the perimeter bound.
-     * @param polypeptide
-     * @return
-     */
-    public static int getMaxY(Polypeptide polypeptide) {
-        return getPerimeterBound(polypeptide) / 4 + 2;
     }
 
     /**

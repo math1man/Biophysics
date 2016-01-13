@@ -1,12 +1,11 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.lattice.SurfaceLattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
-import com.ariweiland.biophysics.Point;
 
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -14,7 +13,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 /**
  * @author Ari Weiland
  */
-public class OldSurfaceModeler extends Modeler {
+public class OldSurfaceModeler extends ParallelModeler {
 
     private final Residue surface;
 
@@ -62,7 +61,12 @@ public class OldSurfaceModeler extends Modeler {
     }
 
     @Override
-    public Lattice fold(Polypeptide polypeptide) {
+    public int getSeedCount(Polypeptide polypeptide) {
+        return super.getSeedCount(polypeptide) * 10;
+    }
+
+    @Override
+    public PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         int size = polypeptide.size();
         // use this so that we don't bother with the peptide floating far away from the surface
@@ -103,20 +107,7 @@ public class OldSurfaceModeler extends Modeler {
                 initialHeap.add(new Folding(lattice, lastX, j, k, lowerBound));
             }
         }
-
-        // iterate a few times to make the initial heap bigger
-        int count = 0;
-        // for surface modeling, the seed count should be about 10 times larger
-        while (count < getSeedCount(polypeptide) * 10) {
-            Folding solution = iterate(polypeptide, initialHeap);
-            if (solution != null) {
-                return solution.lattice;
-            }
-            count++;
-        }
-
-        int processors = Runtime.getRuntime().availableProcessors();
-        return parallelize(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
+        return initialHeap;
     }
 
     @Override

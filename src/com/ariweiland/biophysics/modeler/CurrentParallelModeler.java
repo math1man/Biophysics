@@ -12,56 +12,42 @@ import java.util.concurrent.PriorityBlockingQueue;
 /**
  * @author Ari Weiland
  */
-public class CurrentParallelModeler extends Modeler {
+public class CurrentParallelModeler extends ParallelModeler {
 
     @Override
-    public Lattice fold(Polypeptide polypeptide) {
-        // initialize the lattices
+    public PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
+        PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         int size = polypeptide.size();
+        // initialize the lattices
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice();
         line.put(0, 0, first);
-        if (size == 1) {
-            return line;
-        }
-        Peptide second = polypeptide.get(1);
-        line.put(1, 0, second);
-        if (size == 2) {
-            return line;
-        }
 
-        // fill the queue initially.  this removes symmetrical solutions
-        PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
-        double lowerBound = polypeptide.getMinEnergy()
-                - 2 * first.minInteraction()
-                + 3 * getFavorableWaterInteraction(first)
-                - 2 * second.minInteraction()
-                + 2 * getFavorableWaterInteraction(second);
-        for (int i=2; i<size; i++) {
-            Peptide next = polypeptide.get(i);
-            Lattice bend = new Lattice(line);
-            bend.put(i-1, 1, next);
-            line.put(i, 0, next);
-            lowerBound += 2 * getFavorableWaterInteraction(next) - 2 * next.minInteraction();
-            if (i == size-1) {
-                lowerBound = bend.getEnergy();
-                initialHeap.add(new Folding(line, i, 0, i, lowerBound));
+        if (size > 1) {
+            Peptide second = polypeptide.get(1);
+            line.put(1, 0, second);
+
+            // fill the queue initially.  this removes symmetrical solutions
+            // if size == 2, the for loop will be ignored and none of this will matter
+            double lowerBound = polypeptide.getMinEnergy()
+                    - 2 * first.minInteraction()
+                    + 3 * getFavorableWaterInteraction(first)
+                    - 2 * second.minInteraction()
+                    + 2 * getFavorableWaterInteraction(second);
+            for (int i=2; i<size; i++) {
+                Peptide next = polypeptide.get(i);
+                Lattice bend = new Lattice(line);
+                bend.put(i - 1, 1, next);
+                line.put(i, 0, next);
+                lowerBound += 2 * getFavorableWaterInteraction(next) - 2 * next.minInteraction();
+                if (i == size - 1) {
+                    lowerBound = bend.getEnergy();
+                }
+                initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
             }
-            initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
         }
-
-        // iterate a few times to make the initial heap bigger
-        int count = 0;
-        while (count < getSeedCount(polypeptide)) {
-            Folding solution = iterate(polypeptide, initialHeap);
-            if (solution != null) {
-                return solution.lattice;
-            }
-            count++;
-        }
-
-        int processors = Runtime.getRuntime().availableProcessors();
-        return parallelize(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
+        initialHeap.add(new Folding(line, size - 1, 0, size - 1, line.getEnergy()));
+        return initialHeap;
     }
 
     @Override
