@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.src.com.ariweiland.biophysics;
+package com.ariweiland.biophysics;
 
 import java.util.*;
 

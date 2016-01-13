@@ -1,10 +1,10 @@
-package com.ariweiland.biophysics.src.com.ariweiland.biophysics.modeler;
+package com.ariweiland.biophysics.modeler;
 
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.Lattice;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Peptide;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Polypeptide;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Residue;
+import com.ariweiland.biophysics.lattice.Folding;
+import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.peptide.Polypeptide;
+import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -107,7 +107,7 @@ public abstract class Modeler {
     }
 
     public static void main(String[] args) {
-        Modeler modeler = new SurfaceModeler(10000, Residue.POS);
+        Modeler modeler = new ParallelModeler(10000);
 //        Polypeptide polypeptide = new Polypeptide("+PP PHPP-HP+HH-P++HP-HHPHHHPP");
 //        Polypeptide polypeptide = new Polypeptide("PHPHPPHPHPPP");
         Polypeptide polypeptide = new Polypeptide();

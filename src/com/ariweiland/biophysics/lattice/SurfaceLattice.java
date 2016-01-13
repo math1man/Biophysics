@@ -1,8 +1,8 @@
-package com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice;
+package com.ariweiland.biophysics.lattice;
 
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Peptide;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.Point;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Residue;
+import com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.List;
 

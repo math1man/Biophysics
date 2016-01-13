@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.src.com.ariweiland.biophysics;
+package com.ariweiland.biophysics;
 
 /**
  * Simple wrapper class for a coordinate in a lattice.

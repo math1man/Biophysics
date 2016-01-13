@@ -1,8 +1,8 @@
-package com.ariweiland.biophysics.src.com.ariweiland.biophysics.modeler;
+package com.ariweiland.biophysics.modeler;
 
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.FixedHeap;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Polypeptide;
+import com.ariweiland.biophysics.FixedHeap;
+import com.ariweiland.biophysics.lattice.Folding;
+import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.concurrent.PriorityBlockingQueue;
 

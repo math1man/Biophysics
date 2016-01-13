@@ -1,12 +1,12 @@
-package com.ariweiland.biophysics.src.com.ariweiland.biophysics.modeler;
+package com.ariweiland.biophysics.modeler;
 
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.Lattice;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.SurfaceLattice;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Peptide;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Polypeptide;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Residue;
-import com.ariweiland.biophysics.src.com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.lattice.Folding;
+import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.SurfaceLattice;
+import com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.peptide.Polypeptide;
+import com.ariweiland.biophysics.peptide.Residue;
+import com.ariweiland.biophysics.Point;
 
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
