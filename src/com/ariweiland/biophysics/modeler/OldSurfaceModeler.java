@@ -14,11 +14,11 @@ import java.util.concurrent.PriorityBlockingQueue;
 /**
  * @author Ari Weiland
  */
-public class SurfaceModeler extends Modeler {
+public class OldSurfaceModeler extends Modeler {
 
     private final Residue surface;
 
-    public SurfaceModeler(int seedCount, Residue surface) {
+    public OldSurfaceModeler(int seedCount, Residue surface) {
         super(seedCount);
         this.surface = surface;
     }
