@@ -1,0 +1,90 @@
+After adding in Coulombic, ion-dipole, and dipole-dipole interactions,
+I studied their effects, primarily the strongest ion-ion interaction.
+Based on my calculations, the ion-ion interaction has approximately
+the same energy as the hydrophobic effect. I hypothesized that given
+enough ion-ion interactions, they would overcome the hydrophobic
+effect.
+
+Interaction energies (in eV/kT at T=310K)
+Hydrophobic:
+    H-H:    -1.16
+    H-H2O:   1.16
+Coulombic:
+    +-+:     1.24
+    +--:    -1.24
+    ---:     1.24
+Ion-Dipole:
+    +-P:    -0.62
+    --P:    -0.62
+Dipole-Dipole:
+    P-P:    -0.11
+
+I first tested this hypothesis for the 24 amino acid long peptide
+PPPPHHHHPPPPPPPPHHHHPPPP. This peptide folds into a neat little box
+with all the hydrophobic residue on the inside under normal conditions:
+
+(P)-(P)-(P) (P)-(P)-(P)
+ |                   |
+(P)-(H)-(H) (H)-(H)-(P)
+         |   |
+(P)-(H)-(H) (H)-(H)-(P)
+ |                   |
+(P)-(P)-(P)-(P)-(P)-(P)
+
+Lattice energy: -4.97
+
+To test the effects of the Coulombic interaction, I replaced all the
+polar residues with alternating positive and negatively charged
+residues: +-+-HHHH+-+-+-+-HHHH+-+-.  This yielded a very different
+folding:
+
+(+)-(-)-(+)-(-)-(H)-(H)
+                     |
+(-)-(+)-(-)-(+)-(H)-(H)
+ |
+(+)-(-)-(+)-(-)-(H)-(H)
+                     |
+(-)-(+)-(-)-(+)-(H)-(H)
+
+Lattice energy: -9.0
+
+Note that while it does still have some hydrophobic interactions, it
+has allowed a large amount of unfavorable interactions between water
+and the hydrophobic residue, because it can get so much out of the
+Coulombic interactions.
+
+Next I tried artificially lowering the energy of the Coulombic
+interaction, because at some point the hydrophobic effect must again
+become dominant. Cutting the Coulombic interaction energy in half
+(reduced to +-0.62) yielded exactly that effect:
+
+(-)-(+)-(-) (+)-(-)-(+)
+ |                   |
+(+)-(H)-(H) (H)-(H)-(-)
+         |   |
+(-)-(H)-(H) (H)-(H)-(+)
+ |                   |
+(+)-(-)-(+)-(-)-(+)-(-)
+
+Lattice energy: -6.5
+
+Interestingly, the point at which the two structures have equal energy
+appears to be when the Coulombic interaction energy is exactly equal
+to the hydrophobic effect. At this point, the algorithm even generates
+a unique confirmation, with partially exposed hydrophobic residue:
+
+(-) (+)-(-) (+)-(-)
+ |       |   |   |
+(+) (-)-(+) (-) (+)
+ |   |       |   |
+(-) (H)-(H) (+) (-)
+ |       |   |   |
+(+)-(H) (H)-(H) (+)
+     |           |
+    (H)-(H)-(H)-(-)
+
+Lattice energy: -8.12
+
+Despite the fact that the algorithm happens to generate this structure,
+at equal interaction energies, all 3 of the above confirmations have
+identical lattice energies.

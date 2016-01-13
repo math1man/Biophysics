@@ -1,0 +1,32 @@
+Surface test:
+
+(P)-(P)-(P)-(H)-(H)-(H)-(P)-(P)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(P)-(P)-(P)-(P)-(H)
+Node count: 20
+Perimeter Bound: 22
+
+        (P)-(P)-(P)-(P)
+         |           |
+        (P) (H)-(H)-(P)
+         |   |
+    (P)-(H) (H)-(P)
+     |           |
+(P)-(H) (H) (P)-(P)
+ |       |
+(P)-(P)-(P)
+
+Elapsed time: 4.914 s
+Lattice energy: -2.42
+Perimeter: 22/22
+
+                                                        (P)-(P)-(P)
+                                                         |       |
+(P)-(P)-(P)-(H)-(H)-(H)-(P)-(P)-(P)-(P)-(P)-(P)-(H)-(P)-(H) (H)-(P)
+
+(H) (H) (H) (H) (H) (H) (H) (H) (H) (H) (H) (H) (H) (H) (H) (H) (H)
+-+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+--
+Elapsed time: 258.273 s
+Lattice energy: -16.95
+Perimeter: 21/38
+136M states visited
+
+

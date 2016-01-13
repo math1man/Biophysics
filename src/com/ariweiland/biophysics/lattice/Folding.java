@@ -1,6 +1,6 @@
-package com.ariweiland.biophysics.lattice;
+package com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice;
 
-import com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.Point;
 
 /**
  * This class is a simple wrapper class for a partial folding of a polypeptide.

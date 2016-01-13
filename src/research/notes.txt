@@ -1,0 +1,117 @@
+Initially I implemented a sequential Branch-and-Bound algorithm using a heuristic
+based on minimization of energy. The algorithm is extremely efficient when there are
+no positive interactions with water, because these interactions cannot be accounted
+for until all peptides have been placed, at which point it raises the lower bound
+energy of the solution state significantly.  I suspect that having negative
+interactions with water may be even more problematic, leading to water "pockets"
+within the lattice.
+
+After completing the sequential algorithm, I attempted to write a parallel
+version of the algorithm.  The parallel version is functional, but there is no speed
+increase where I would have ideally expected an increase directly proportional to
+the number of processors used.  Multiple stages of debugging and outside consulting
+have not resolved this.
+
+Still searching for more speed, I started looking at Dill's com.ariweiland.biophysics.src.research.  He uses
+the perimeter of the state as part of his heuristic, not allowing any perimeter
+larger than the smallest possible.  At first I attempted to prefer states with lower
+perimeter if the energy bound was equal.  This had no impact, and the added code
+only slowed down the algorithm slightly.  Instead, I tried putting an upper bound on
+the perimeter, as Dill had.  His bound turned out to be too restrictive due to the
+interactions with the water, so I experimented with expanding the perimeter bound.
+I found that increasing the bound by 2-4 is enough for the sizes of polypeptides the
+algorithm can handle, though I hypothesize that 4 will always be enough.  4 allows
+for an additional row and column in the lattice, which gets larger and larger as the
+size of the polypeptide increases.  Adding this perimeter condition to the heuristic
+increases the speed of the algorithm significantly, and allows me to analyze all
+chains up to size 20, and most chains up to size 25.  As long as the perimeter bound
+is 22 or less, I can reach a solution in a reasonable amount of time.
+
+After talking with Professor Shoop, I have resolved the issues with the parallel
+version of the algorithm.  It now functions very efficiently, and has resolved my
+other issues with memory.  The algorithm initially seeds the queue with a varying
+number of states (related to the problem size), and then each thread finds the best
+solution from that state.  Once it finds the solution, it tosses all the other
+states, rather than holding them in RAM.  Thus, I can now handle up to 30-long
+polypeptides (perimeter bound of 26), though with 30 the states start to get so
+numerous that even the sub-states can fill up the queue and lead to RAM issues.  I
+am hesitant to try anything larger because 30 is already difficult, and going up to
+31 would increase the perimeter bound, which I don't think I can handle.
+
+With the parallelized version of the algorithm, everything runs significantly faster.
+Peptides with a perimeter bound of 26 (26-30 long) run in under an hour, and shorter
+perimeter bounds run exponentially faster.  I suspect that
+
+
+n   P   Pmin    Fudge factor
+12  14  16      2
+13  16  (16)    0
+14  16  18      2
+15  16  18      2
+16  16  20      4
+17  18  20      2
+18  18  22      4
+19  18  22      4
+20  18  22      4
+21  20  (22)    2
+22  20  (22)    2
+23  20  (22)    2
+24  20  24      4
+25  20  24      4
+
+States in parentheses are speculated
+I cannot prove that a value of n does not require a higher fudge factor, but all
+values not in parentheses have been proven to require at least that much fudge.
+Regardless, in the majority of cases, a fudge factor of 4 is more than enough.
+
+A folded 30-long polypeptide:
+(P)-(P)-(H)-(P)-(P)-(P)-(H)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)-(P)-(P)-(P)-(H)-(P)-(P)-(H)-(P)-(P)-(P)-(P)-(P)-(H)-(P)
+PPHPPPHHHPPHHPHPPPPHPPHPPPPPHP
+Node count: 30
+Perimeter Bound: 26
+1.788 billion states visited
+
+        (P)-(P)
+             |
+    (P)-(P)-(H) (P)
+     |           |
+    (P)-(H)-(H) (H)-(P)
+             |       |
+(P)-(H)-(P) (H)-(P) (P)
+ |       |       |   |
+(P)-(P) (H)-(H)-(P) (P)
+     |               |
+    (P)-(H) (H)-(P)-(P)
+         |   |
+        (P)-(P)
+
+Elapsed time: 53.1 minutes
+Lattice energy: -7.4
+Perimeter: 26/26
+
+More interactions!
+
+A folded 29-long polypeptide: Glucagon
+(+)-(P)-(P)-( )-(P)-(H)-(P)-(P)-(-)-(H)-(P)-(+)-(H)-(H)-(-)-(P)-(+)-(+)-(H)-(P)-(-)-(H)-(H)-(P)-(H)-(H)-(H)-(P)-(P)
++PP PHPP-HP+HH-P++HP-HHPHHHPP
+Node count: 29
+Perimeter Bound: 26
+1.308 billion states visited
+
+    (+)-(P)-(P)
+             |
+(P) (H)-(H) ( )
+ |   |   |   |
+(P)-(H) (P) (P)
+         |   |
+(-)-(H)-(H) (H)-(P)-(P)
+ |                   |
+(P)-(H) (H)-(H) (H)-(-)
+     |   |   |   |
+    (+) (-) (+)-(P)
+     |   |
+    (+)-(P)
+
+Elapsed time: 33.0 minutes
+Lattice energy: -11.33
+Perimeter: 26/26

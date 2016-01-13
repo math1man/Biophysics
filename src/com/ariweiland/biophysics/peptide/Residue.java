@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.peptide;
+package com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide;
 
 import java.util.Collections;
 import java.util.HashMap;

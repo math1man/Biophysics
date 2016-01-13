@@ -1,0 +1,104 @@
+A folded 29-long polypeptide: Glucagon
+(+)-(P)-(P)-( )-(P)-(H)-(P)-(P)-(-)-(H)-(P)-(+)-(H)-(H)-(-)-(P)-(+)-(+)-(H)-(P)-(-)-(H)-(H)-(P)-(H)-(H)-(H)-(P)-(P)
++PP PHPP-HP+HH-P++HP-HHPHHHPP
+Node count: 29
+Perimeter Bound: 26
+1.308 billion states visited
+
+    (+)-(P)-(P)
+             |
+(P) (H)-(H) ( )
+ |   |   |   |
+(P)-(H) (P) (P)
+         |   |
+(-)-(H)-(H) (H)-(P)-(P)
+ |                   |
+(P)-(H) (H)-(H) (H)-(-)
+     |   |   |   |
+    (+) (-) (+)-(P)
+     |   |
+    (+)-(P)
+
+Elapsed time: 33.0 minutes
+Lattice energy: -11.33
+Perimeter: 26/26
+
+H-H2O and H-P interactions:
+
+        (+)-(P)-(P)
+                 |
+    (P)-(P)-(H) ( )-(P)
+             |       |
+    (P)-(-) (H)-(H) (H)
+     |   |       |   |
+(+)-(H) (H)-(H)-(P) (P)
+ |                   |
+(+) (H)-(H) (H)-(-)-(P)
+ |   |   |   |
+(P)-(-) (+)-(P)
+
+Elapsed time: 41.0 minutes
+Lattice energy: -1.0
+Perimeter: 24/24
+1.3B states visited
+
+H-H interactions only:
+
+    (+)-(P)-(P)-( )-(P)
+                     |
+(H)-(P) (-)-(P)-(P)-(H)
+ |   |   |
+(H) (H) (H)-(P)-(+)-(H)
+ |   |               |
+(H) (H) (H)-(+) (-)-(H)
+ |   |   |   |   |
+(P) (-)-(P) (+)-(P)
+ |
+(P)
+
+Elapsed time: 10.1 minutes
+Lattice energy: -14.0
+Perimeter: 24/24
+396M states visited
+
+With favorable H2O interactions:
+
+            (P)-(+)
+             |   |
+    (P)-(+) (-) (+)
+     |   |   |   |
+(-)-(H) (H)-(H) (H)-(P)
+ |                   |
+(P)-(P) (P)-(H)-(H)-(-)
+     |   |
+    (H) (H)-(H)-(H)
+     |           |
+    (P)-( ) (P)-(P)
+         |
+(+)-(P)-(P)
+
+Elapsed time: 30.4 minutes
+Lattice energy: -8.85
+Perimeter: 28/26
+1.03B states visited
+
+Original folding:
+
+    (+)-(P)
+     |   |
+    (+) (-) (+)-(P)
+     |   |   |   |
+(P)-(H) (H)-(H) (H)-(-)
+ |                   |
+(-)-(H)-(H) (H)-(P)-(P)
+         |   |
+(P)-(H) (P) (P)
+ |   |   |   |
+(P) (H)-(H) ( )
+             |
+    (+)-(P)-(P)
+
+Elapsed time: 34.1 minutes
+Lattice energy: -3.21
+Perimeter: 26/26
+1.3B states visited

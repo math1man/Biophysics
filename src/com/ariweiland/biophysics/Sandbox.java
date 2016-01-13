@@ -1,8 +1,8 @@
-package com.ariweiland.biophysics;
+package com.ariweiland.biophysics.src.com.ariweiland.biophysics;
 
-import com.ariweiland.biophysics.lattice.SurfaceLattice;
-import com.ariweiland.biophysics.peptide.Peptide;
-import com.ariweiland.biophysics.peptide.Residue;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.SurfaceLattice;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Residue;
 
 /**
  * @author Ari Weiland

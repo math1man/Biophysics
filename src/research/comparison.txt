@@ -1,0 +1,58 @@
+(H)-(H)-(H)-(P)-(P)-(P)-(P)-(H)-(P)-(P)-(P)-(P)-(H)-(P)-(P)-(P)-(P)-(H)-(H)-(H)-(P)
+HHHPPPPHPPPPHPPPPHHHP
+Node count: 21
+
+With limiting perimeter bound:
+Perimeter Bound: 20
+
+(P)-(P)-(P)
+ |       |
+(P)-(H) (H) (H)-(H)
+     |   |       |
+(P)-(P) (H)-(H) (H)
+ |           |   |
+(P)-(P)-(H) (P) (P)
+         |       |
+        (P)-(P)-(P)
+
+Lattice energy: -5.8
+Perimeter: 20
+
+Without limiting perimeter bound:
+Perimeter Bound: 24
+
+(P)-(P)-(P)-(P)
+ |           |
+(H) (H)-(H) (H)-(P)-(P)
+ |       |           |
+(H)-(H) (H) (H)-(P)-(P)
+     |   |   |
+    (P) (P) (P)
+         |   |
+        (P)-(P)
+
+Lattice energy: -6.96
+Perimeter: 22
+
+With fully improved algorithm:
+Perimeter Bound: 24
+
+        (P)-(P)-(P)
+         |       |
+(P)-(P)-(H) (H)-(P)
+ |           |
+(P) (H)-(H) (H)
+ |       |   |
+(P)-(H) (H) (H)
+     |   |   |
+    (P) (P) (P)
+     |   |
+    (P)-(P)
+
+Lattice energy: -4.86
+Perimeter: 22
+
+
+
+
+

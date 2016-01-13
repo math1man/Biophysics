@@ -1,19 +1,32 @@
-package com.ariweiland.biophysics.modeler;
+package com.ariweiland.biophysics.src.com.ariweiland.biophysics.modeler;
 
-import com.ariweiland.biophysics.*;
-import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice;
-import com.ariweiland.biophysics.peptide.Peptide;
-import com.ariweiland.biophysics.peptide.Polypeptide;
-import com.ariweiland.biophysics.peptide.Residue;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.Folding;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
+ * Possibly add to the Heuristic some function of the perimeter?
+ * Confirmations with lower perimeter are better.
+ *
  * @author Ari Weiland
  */
-public class OldModeler2 extends Modeler {
+public class OldParallelModeler extends Modeler {
 
+    public OldParallelModeler(int seedCount) {
+        super(seedCount);
+    }
+
+    /**
+     * The fastest version of the algorithm yet. Parallelization works!
+     * Useful for all sizes of Polypeptides, assuming an appropriate seed
+     * count is used.
+     * @return
+     */
     @Override
     public Lattice fold(Polypeptide polypeptide) {
         // initialize the lattices
@@ -30,8 +43,8 @@ public class OldModeler2 extends Modeler {
             return line;
         }
 
-        // fill the queue
-        FixedHeap<Folding> heap = new FixedHeap<>(MAX_HEAP_SIZE - 1);
+        // fill the queue initially.  this removes symmetrical solutions
+        PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
@@ -41,23 +54,23 @@ public class OldModeler2 extends Modeler {
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
             }
-            heap.add(new Folding(bend, i - 1, 1, i, lowerBound));
+            initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
             line.put(i, 0, next);
         }
-        heap.add(new Folding(line, size - 1, 0, size - 1, lowerBound));
+        initialHeap.add(new Folding(line, size - 1, 0, size - 1, lowerBound));
 
-        // begin the iteration
-        Folding solution = null;
+        // iterate a few times to make the initial heap bigger
         int count = 0;
-        while (solution == null) {
-            solution = iterate(polypeptide, heap);
-            count++;
-            if (count % 100000 == 0) {
-                System.out.println(count + " states visited, " + heap.size() + " states in queue");
+        while (count < getSeedCount()) {
+            Folding solution = iterate(polypeptide, initialHeap);
+            if (solution != null) {
+                return solution.lattice;
             }
+            count++;
         }
-        System.out.println(count + " states visited, " + heap.size() + " states left in queue");
-        return solution.lattice;
+
+        int processors = Runtime.getRuntime().availableProcessors();
+        return parallelize(polypeptide, initialHeap, processors, MAX_HEAP_SIZE / processors - 1);
     }
 
     @Override
@@ -77,22 +90,22 @@ public class OldModeler2 extends Modeler {
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
                     if (l.boundingPerimeter() <= getPerimBound(size)) {
-                        double lb;
+                        double nextBound;
                         if (nextIndex < size - 1) {
-                            lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);
+                            nextBound = bound;
                             if (l.containsPoint(next.getAdjacent(d))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d)));
+                                nextBound += p.interaction(l.get(next.getAdjacent(d)));
                             }
                             if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
+                                nextBound += p.interaction(l.get(next.getAdjacent(d.getLeft())));
                             }
                             if (l.containsPoint(next.getAdjacent(d.getRight()))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
+                                nextBound += p.interaction(l.get(next.getAdjacent(d.getRight())));
                             }
                         } else {
-                            lb = l.getEnergy();
+                            nextBound = l.getEnergy();
                         }
-                        queue.add(new Folding(l, next, nextIndex, lb));
+                        queue.add(new Folding(l, next, nextIndex, nextBound));
                     }
                 }
             }
@@ -101,5 +114,4 @@ public class OldModeler2 extends Modeler {
             return folding;
         }
     }
-
 }

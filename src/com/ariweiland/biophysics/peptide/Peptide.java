@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.peptide;
+package com.ariweiland.biophysics.src.com.ariweiland.biophysics.peptide;
 
 /**
  * This class wraps a residue with an index, which is useful for a variety of things.
