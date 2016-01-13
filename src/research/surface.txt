@@ -30,3 +30,23 @@ Perimeter: 21/38
 136M states visited
 
 
+
+(H)-(H)-(P)-(H)-(H)-(P)-(P)-(H)-(P)-(H)-(H)-(H)
+Node count: 12
+Perimeter Bound: 18
+
+Processors: 4
+Initial Heap Size: 1330
+    (P)-(P)
+     |   |
+(P)-(H) (H)-(H)-(P)
+ |               |
+(H)-(H)-(H) (H)-(H)
+
+(H) (H) (H) (H) (H)
+-+---+---+---+---+--
+Elapsed time: 1.322 s
+Lattice energy: -3.2
+Perimeter: 11/16
+
+
