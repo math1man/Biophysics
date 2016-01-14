@@ -52,6 +52,28 @@ public class Residue {
     }
 
     /**
+     * Returns the residue corresponding to the input character.
+     * Any characters besides +, m, P, or H default to the neutral residue.
+     * @param c
+     * @return
+     */
+    public static Residue get(char c) {
+        c = Character.toUpperCase(c);
+        switch (c) {
+            case '+':
+                return Residue.POS;
+            case 'M':
+                return Residue.NEG;
+            case 'P':
+                return Residue.P;
+            case 'H':
+                return Residue.H;
+            default:
+                return Residue.NEUT;
+        }
+    }
+
+    /**
      * Returns the interaction energy between this and another residue, in eV/kT for T=310K
      * @param residue
      * @return

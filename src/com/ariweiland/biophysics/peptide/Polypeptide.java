@@ -23,27 +23,9 @@ public class Polypeptide {
 
     public Polypeptide(String peptideString) {
         this();
-        peptideString = peptideString.toUpperCase();
+        peptideString = peptideString.toUpperCase().replaceAll("[^+mPH ]", "");
         for (int i=0; i<peptideString.length(); i++) {
-            switch (peptideString.charAt(i)) {
-                case '+':
-                    add(Residue.POS);
-                    break;
-                case 'm':
-                    add(Residue.NEG);
-                    break;
-                case 'P':
-                    add(Residue.P);
-                    break;
-                case 'H':
-                    add(Residue.H);
-                    break;
-                case ' ':
-                    add(Residue.NEUT);
-                    break;
-                default:
-                    break;
-            }
+            polypeptide.add(Residue.get(peptideString.charAt(i)));
         }
     }
 
