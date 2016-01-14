@@ -15,7 +15,7 @@ import java.util.Queue;
 public class CurrentSurfaceModeler extends SurfaceModeler {
 
 
-    protected CurrentSurfaceModeler(Residue surface) {
+    public CurrentSurfaceModeler(Residue surface) {
         super(surface);
     }
 
