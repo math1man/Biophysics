@@ -56,19 +56,4 @@ public class Point {
         return "(" + x + ", " + y + ")";
     }
 
-    public static enum Direction {
-        NORTH, EAST, SOUTH, WEST;
-
-        public Direction getLeft() {
-            return values()[(ordinal() + 3) % 4];
-        }
-
-        public Direction getReverse() {
-            return values()[(ordinal() + 2) % 4];
-        }
-
-        public Direction getRight() {
-            return values()[(ordinal() + 1) % 4];
-        }
-    }
 }

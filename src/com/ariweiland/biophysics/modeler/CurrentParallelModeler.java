@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.Lattice;
@@ -57,8 +58,7 @@ public class CurrentParallelModeler extends ParallelModeler {
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            double bound = folding.energyBound - 2 * p.minInteraction();
-            for (Point.Direction d : Point.Direction.values()) {
+            for (Direction d : Direction.values()) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(folding.lattice);
@@ -69,22 +69,22 @@ public class CurrentParallelModeler extends ParallelModeler {
                     if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
                         // subtract a water interaction where the next residue will end up
                         // note that if there is nowhere for the next residue, the foldings will be dropped on the next iteration
-                        double nextBound = bound - getFavorableWaterInteraction(p);
+                        double bound = folding.energyBound - 2 * p.minInteraction() - getFavorableWaterInteraction(p);
                         if (nextIndex < size - 1) {
-                            for (Point.Direction d1 : Point.Direction.values()) {
+                            for (Direction d1 : Direction.values()) {
                                 if (d1 != d.getReverse()) {
                                     if (l.containsPoint(next.getAdjacent(d1))) {
                                         Peptide adjacent = l.get(next.getAdjacent(d1));
-                                        nextBound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
+                                        bound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
                                     } else {
-                                        nextBound += getFavorableWaterInteraction(p);
+                                        bound += getFavorableWaterInteraction(p);
                                     }
                                 }
                             }
                         } else {
-                            nextBound = l.getEnergy();
+                            bound = l.getEnergy();
                         }
-                        queue.add(new Folding(l, next, nextIndex, nextBound));
+                        queue.add(new Folding(l, next, nextIndex, bound));
                     }
                 }
             }

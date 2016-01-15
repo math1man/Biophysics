@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Peptide;
@@ -81,8 +82,7 @@ public class OldModeler1 extends Modeler {
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            double bound = folding.energyBound - 2 * p.minInteraction();
-            for (Point.Direction d : Point.Direction.values()) {
+            for (Direction d : Direction.values()) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(folding.lattice);
@@ -91,22 +91,18 @@ public class OldModeler1 extends Modeler {
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
                     if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
-                        double lb;
+                        double bound = folding.energyBound - 2 * p.minInteraction()
+                                - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);
                         if (nextIndex < size - 1) {
-                            lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);
-                            if (l.containsPoint(next.getAdjacent(d))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d)));
-                            }
-                            if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
-                            }
-                            if (l.containsPoint(next.getAdjacent(d.getRight()))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
+                            for (Direction d1 : Direction.values()) {
+                                if (d1 != d.getReverse()) {
+                                    bound += p.interaction(l.get(next.getAdjacent(d1)));
+                                }
                             }
                         } else {
-                            lb = l.getEnergy();
+                            bound = l.getEnergy();
                         }
-                        queue.add(new Folding(l, next, nextIndex, lb));
+                        queue.add(new Folding(l, next, nextIndex, bound));
                     }
                 }
             }

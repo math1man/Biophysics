@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.lattice;
 
+import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -144,7 +145,7 @@ public class Lattice {
                 minusYBound = point.y;
             }
         }
-        for (Point.Direction d : Point.Direction.values()) {
+        for (Direction d : Direction.values()) {
             Peptide adj = get(point.getAdjacent(d));
             if (adj != null) {
                 if (adj.index >= 0) { // this is for use with surface lattice, so that it properly handles surface-perimeter
