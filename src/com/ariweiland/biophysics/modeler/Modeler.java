@@ -15,6 +15,9 @@ public abstract class Modeler {
 
     public static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
 
+    /**
+     * This method should stop the current folding process, if one is occurring.
+     */
     public abstract void terminate();
 
     /**
