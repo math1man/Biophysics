@@ -8,7 +8,7 @@ import java.util.*;
  */
 public class Polypeptide {
 
-    public static final Polypeptide GLUCAGON = new Polypeptide("+PP PHPPmHP+HHmP++HPmHHPHHHPP");
+    public static final Polypeptide GLUCAGON = new Polypeptide("+PP_PHPPmHP+HHmP++HPmHHPHHHPP");
     
     private final List<Residue> polypeptide;
     private final Map<Residue, Integer> typeCount = new HashMap<>();
@@ -23,7 +23,7 @@ public class Polypeptide {
 
     public Polypeptide(String peptideString) {
         this();
-        peptideString = peptideString.toUpperCase().replaceAll("[^+mPH ]", "");
+        peptideString = peptideString.toUpperCase().replaceAll("[^+mPH_]", "");
         for (int i=0; i<peptideString.length(); i++) {
             add(Residue.get(peptideString.charAt(i)));
         }

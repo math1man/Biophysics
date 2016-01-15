@@ -14,13 +14,12 @@ public class Residue {
     public static final Residue NEG = new Residue("(m)");
     public static final Residue P = new Residue("(P)");
     public static final Residue H = new Residue("(H)");
-    public static final Residue NEUT = new Residue("( )");
+    public static final Residue NEUT = new Residue("(_)");
     public static final Residue H2O = null;
     private static final EnergyMap ENERGY_MAP = new EnergyMap();
 
     static {
         // all in ev/kT for T=310K
-        // note that favorable (negative) interactions with water disrupt the algorithm
         // ion-ion: +-1.24
         ENERGY_MAP.put(POS, POS,  1.24);
         ENERGY_MAP.put(POS, NEG, -1.24);
