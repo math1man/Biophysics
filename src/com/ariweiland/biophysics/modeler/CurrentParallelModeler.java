@@ -1,9 +1,8 @@
 package com.ariweiland.biophysics.modeler;
 
-import com.ariweiland.biophysics.lattice.Direction;
-import com.ariweiland.biophysics.lattice.Point2D;
+import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice2D;
+import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
@@ -21,7 +20,7 @@ public class CurrentParallelModeler extends ParallelModeler {
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice2D line = new Lattice2D();
+        Lattice line = new Lattice();
         line.put(0, 0, first);
 
         if (size > 1) {
@@ -37,7 +36,7 @@ public class CurrentParallelModeler extends ParallelModeler {
                     + 2 * getFavorableWaterInteraction(second);
             for (int i=2; i<size; i++) {
                 Peptide next = polypeptide.get(i);
-                Lattice2D bend = new Lattice2D(line);
+                Lattice bend = new Lattice(line);
                 bend.put(i - 1, 1, next);
                 line.put(i, 0, next);
                 lowerBound += 2 * getFavorableWaterInteraction(next) - 2 * next.minInteraction();
@@ -59,10 +58,10 @@ public class CurrentParallelModeler extends ParallelModeler {
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
             double bound = folding.energyBound - 2 * p.minInteraction();
-            for (Direction d : Direction.values2D()) {
-                Point2D next = folding.lastPoint.getAdjacent(d);
+            for (Point.Direction d : Point.Direction.values()) {
+                Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
-                    Lattice2D l = new Lattice2D(folding.lattice);
+                    Lattice l = new Lattice(folding.lattice);
                     l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
@@ -72,7 +71,7 @@ public class CurrentParallelModeler extends ParallelModeler {
                         // note that if there is nowhere for the next residue, the foldings will be dropped on the next iteration
                         double nextBound = bound - getFavorableWaterInteraction(p);
                         if (nextIndex < size - 1) {
-                            for (Direction d1 : Direction.values2D()) {
+                            for (Point.Direction d1 : Point.Direction.values()) {
                                 if (d1 != d.getReverse()) {
                                     if (l.containsPoint(next.getAdjacent(d1))) {
                                         Peptide adjacent = l.get(next.getAdjacent(d1));

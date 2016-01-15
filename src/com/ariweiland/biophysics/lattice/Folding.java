@@ -1,5 +1,7 @@
 package com.ariweiland.biophysics.lattice;
 
+import com.ariweiland.biophysics.Point;
+
 /**
  * This class is a simple wrapper class for a partial folding of a polypeptide.
  * It contains a Lattice, the last point in the lattice a peptide was added, the
@@ -9,16 +11,16 @@ package com.ariweiland.biophysics.lattice;
  */
 public class Folding implements Comparable<Folding> {
 
-    public final Lattice2D lattice;
-    public final Point2D lastPoint;
+    public final Lattice lattice;
+    public final Point lastPoint;
     public final int index;
     public final double energyBound;
 
-    public Folding(Lattice2D lattice, int lastX, int lastY, int index, double energyBound) {
-        this(lattice, new Point2D(lastX, lastY), index, energyBound);
+    public Folding(Lattice lattice, int lastX, int lastY, int index, double energyBound) {
+        this(lattice, new Point(lastX, lastY), index, energyBound);
     }
 
-    public Folding(Lattice2D lattice, Point2D lastPoint, int index, double energyBound) {
+    public Folding(Lattice lattice, Point lastPoint, int index, double energyBound) {
         this.lattice = lattice;
         this.lastPoint = lastPoint;
         this.index = index;

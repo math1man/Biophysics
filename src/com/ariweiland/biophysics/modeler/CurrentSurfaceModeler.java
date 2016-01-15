@@ -1,7 +1,6 @@
 package com.ariweiland.biophysics.modeler;
 
-import com.ariweiland.biophysics.lattice.Direction;
-import com.ariweiland.biophysics.lattice.Point2D;
+import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.SurfaceLattice;
 import com.ariweiland.biophysics.peptide.Peptide;
@@ -71,8 +70,8 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
             // try to add the peptide in every direction
-            for (Direction d : Direction.values2D()) {
-                Point2D next = folding.lastPoint.getAdjacent(d);
+            for (Point.Direction d : Point.Direction.values()) {
+                Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next) && next.y < getMaxY(polypeptide)) {
                     SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
                     l.put(next, p);
@@ -80,7 +79,7 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
                     // minus one favorable water interaction which
                     double bound = folding.energyBound - 2 * p.minInteraction() - getFavorableWaterInteraction(p);
                     if (nextIndex < size - 1) {
-                        for (Direction d1 : Direction.values2D()) {
+                        for (Point.Direction d1 : Point.Direction.values()) {
                             if (d1 != d.getReverse()) {
                                 if (l.containsPoint(next.getAdjacent(d1))) {
                                     Peptide adjacent = l.get(next.getAdjacent(d1));

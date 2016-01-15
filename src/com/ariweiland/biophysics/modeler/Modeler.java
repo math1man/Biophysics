@@ -1,7 +1,7 @@
 package com.ariweiland.biophysics.modeler;
 
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice2D;
+import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -21,7 +21,7 @@ public abstract class Modeler {
      * This method takes in a polypeptide and returns a folded lattice.
      * @return
      */
-    public abstract Lattice2D fold(Polypeptide polypeptide);
+    public abstract Lattice fold(Polypeptide polypeptide);
 
     /**
      * The core of the algorithm. This method should pop one Folding from the
@@ -82,7 +82,7 @@ public abstract class Modeler {
         System.out.println();
 
         long start = System.currentTimeMillis();
-        Lattice2D lattice = modeler.fold(polypeptide);
+        Lattice lattice = modeler.fold(polypeptide);
         long elapsed = System.currentTimeMillis() - start;
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");

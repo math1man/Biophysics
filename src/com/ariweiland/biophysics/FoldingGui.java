@@ -1,7 +1,7 @@
 package com.ariweiland.biophysics;
 
 import acm.program.ConsoleProgram;
-import com.ariweiland.biophysics.lattice.Lattice2D;
+import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.modeler.CurrentParallelModeler;
 import com.ariweiland.biophysics.modeler.CurrentSurfaceModeler;
 import com.ariweiland.biophysics.modeler.Modeler;
@@ -120,7 +120,7 @@ public class FoldingGui extends ConsoleProgram {
             println();
 
             long start = System.currentTimeMillis();
-            Lattice2D lattice = modeler.fold(polypeptide);
+            Lattice lattice = modeler.fold(polypeptide);
             long elapsed = System.currentTimeMillis() - start;
 
             for (String line : lattice.visualize()) {

@@ -1,6 +1,7 @@
 package com.ariweiland.biophysics.lattice;
 
 import com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.*;
@@ -11,9 +12,9 @@ import java.util.*;
  * and perimeter of the polypeptide in the lattice and the lattice energy.
  * @author Ari Weiland
  */
-public class Lattice2D {
+public class Lattice {
 
-    private final Map<Point2D, Peptide> lattice;
+    private final Map<Point, Peptide> lattice;
     protected int plusXBound = 0;
     protected int minusXBound = 0;
     protected int plusYBound = 0;
@@ -21,16 +22,16 @@ public class Lattice2D {
     private int perimeter = 0;
     private double energy = 0;
 
-    public Lattice2D() {
-        this(new HashMap<Point2D, Peptide>());
+    public Lattice() {
+        this(new HashMap<Point, Peptide>());
     }
 
-    public Lattice2D(Map<Point2D, Peptide> lattice) {
+    public Lattice(Map<Point, Peptide> lattice) {
         this.lattice = new HashMap<>();
         putAll(lattice);
     }
 
-    public Lattice2D(Lattice2D lattice) {
+    public Lattice(Lattice lattice) {
         this.lattice = new HashMap<>(lattice.lattice);
         this.plusXBound = lattice.plusXBound;
         this.minusXBound = lattice.minusXBound;
@@ -63,7 +64,7 @@ public class Lattice2D {
      * @return
      */
     public boolean containsPoint(int x, int y) {
-        return containsPoint(new Point2D(x, y));
+        return containsPoint(new Point(x, y));
     }
 
     /**
@@ -71,7 +72,7 @@ public class Lattice2D {
      * @param point
      * @return
      */
-    public boolean containsPoint(Point2D point) {
+    public boolean containsPoint(Point point) {
         return lattice.containsKey(point);
     }
 
@@ -91,7 +92,7 @@ public class Lattice2D {
      * @return
      */
     public Peptide get(int x, int y) {
-        return get(new Point2D(x, y));
+        return get(new Point(x, y));
     }
 
     /**
@@ -99,7 +100,7 @@ public class Lattice2D {
      * @param point
      * @return
      */
-    public Peptide get(Point2D point) {
+    public Peptide get(Point point) {
         return lattice.get(point);
     }
 
@@ -112,7 +113,7 @@ public class Lattice2D {
      * @return
      */
     public void put(int x, int y, Peptide peptide) {
-        put(new Point2D(x, y), peptide);
+        put(new Point(x, y), peptide);
     }
 
     /**
@@ -122,7 +123,7 @@ public class Lattice2D {
      * @param peptide
      * @return
      */
-    public void put(Point2D point, Peptide peptide) {
+    public void put(Point point, Peptide peptide) {
         if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");
         }
@@ -143,7 +144,7 @@ public class Lattice2D {
                 minusYBound = point.y;
             }
         }
-        for (Direction d : Direction.values2D()) {
+        for (Point.Direction d : Point.Direction.values()) {
             Peptide adj = get(point.getAdjacent(d));
             if (adj != null) {
                 if (adj.index >= 0) { // this is for use with surface lattice, so that it properly handles surface-perimeter
@@ -166,8 +167,8 @@ public class Lattice2D {
      * Puts the contents of another lattice map into this lattice
      * @param lattice
      */
-    public void putAll(Map<Point2D, Peptide> lattice) {
-        for (Map.Entry<Point2D, Peptide> e : lattice.entrySet()) {
+    public void putAll(Map<Point, Peptide> lattice) {
+        for (Map.Entry<Point, Peptide> e : lattice.entrySet()) {
             put(e.getKey(), e.getValue());
         }
     }
@@ -189,7 +190,7 @@ public class Lattice2D {
      * Returns a set of all occupied points in the lattice
      * @return
      */
-    public Set<Point2D> keySet() {
+    public Set<Point> keySet() {
         return lattice.keySet();
     }
 
