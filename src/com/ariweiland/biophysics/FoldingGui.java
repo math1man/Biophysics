@@ -16,7 +16,7 @@ import java.awt.event.ActionEvent;
  */
 public class FoldingGui extends ConsoleProgram {
 
-    private final JTextField sequence = new JTextField("HP +m", 30);
+    private final JTextField sequence = new JTextField("HP_+m", 40);
 
     private final JCheckBox surface = new JCheckBox("Surface Fold?");
     private final ButtonGroup group = new ButtonGroup();
@@ -27,7 +27,10 @@ public class FoldingGui extends ConsoleProgram {
     private Residue surfaceType;
 
     private final JButton fold = new JButton("Fold");
+    private final JButton stop = new JButton("Stop");
     private final JButton clear = new JButton("Clear");
+
+    private GuiThread thread;
 
     @Override
     public void init() {
@@ -37,6 +40,7 @@ public class FoldingGui extends ConsoleProgram {
         sequence.addActionListener(this);
 
         add(fold, SOUTH);
+        add(stop, SOUTH);
         add(clear, SOUTH);
 
         add(surface, EAST);
@@ -73,51 +77,62 @@ public class FoldingGui extends ConsoleProgram {
         } else if (source.equals(negative)) {
             surfaceType = Residue.NEG;
         } else if (source.equals(sequence) || source.equals(fold)) {
+            Modeler modeler;
+            if (surface.isSelected()) {
+                modeler = new CurrentSurfaceModeler(surfaceType);
+            } else {
+                modeler = new CurrentParallelModeler();
+            }
+            thread = new GuiThread(new Polypeptide(sequence.getText()), modeler);
+            thread.start();
+        } else if (source.equals(stop)) {
+            if (thread != null) {
+                thread.terminate();
+            }
+        } else if (source.equals(clear)) {
+            getConsole().clear();
+        }
+    }
+
+    private class GuiThread extends Thread {
+
+        private final Polypeptide polypeptide;
+        private final Modeler modeler;
+
+        private GuiThread(Polypeptide polypeptide, Modeler modeler) {
+            this.polypeptide = polypeptide;
+            this.modeler = modeler;
+        }
+
+        public void terminate() {
+            modeler.terminate();
+            fold.setEnabled(true);
+            sequence.setEnabled(true);
+        }
+
+        @Override
+        public void run() {
             fold.setEnabled(false);
             sequence.setEnabled(false);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String temp = sequence.getText();
-                    foldPolypeptide(temp);
-                    fold.setEnabled(true);
-                    sequence.setEnabled(true);
-                }
-            }).start();
-        } else if (source.equals(clear)) {
-            clear();
+
+            println("Folding " + polypeptide + "...");
+            println("Node count: " + polypeptide.size());
+            println();
+
+            long start = System.currentTimeMillis();
+            Lattice lattice = modeler.fold(polypeptide);
+            long elapsed = System.currentTimeMillis() - start;
+
+            for (String line : lattice.visualize()) {
+                println(line);
+            }
+
+            println("Elapsed time: " + (elapsed / 1000.0) + " s");
+            println("Lattice energy: " + lattice.getEnergy());
+            println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
+            println();
+            terminate();
         }
-    }
-
-    public void foldPolypeptide(String sequence) {
-        Polypeptide polypeptide = new Polypeptide(sequence);
-        Modeler modeler;
-        if (surface.isSelected()) {
-            modeler = new CurrentSurfaceModeler(surfaceType);
-        } else {
-            modeler = new CurrentParallelModeler();
-        }
-
-        println("Folding " + polypeptide + "...");
-        println("Node count: " + polypeptide.size());
-        println();
-
-        long start = System.currentTimeMillis();
-        Lattice lattice = modeler.fold(polypeptide);
-        long elapsed = System.currentTimeMillis() - start;
-
-        for (String line : lattice.visualize()) {
-            println(line);
-        }
-
-        println("Elapsed time: " + (elapsed / 1000.0) + " s");
-        println("Lattice energy: " + lattice.getEnergy());
-        println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
-        println();
-    }
-
-    public void clear() {
-        getConsole().clear();
     }
 
     public static void main(String[] args) {

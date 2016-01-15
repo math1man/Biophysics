@@ -21,6 +21,8 @@ public class PeptideThread extends Thread {
     private final PriorityBlockingQueue<Folding> solutions;
     private final FixedHeap<Folding> heap;
 
+    private boolean running = true;
+
     public PeptideThread(Modeler modeler, Polypeptide polypeptide, PriorityBlockingQueue<Folding> initialHeap,
                          PriorityBlockingQueue<Folding> solutions, int heapSize) {
         this.modeler = modeler;
@@ -30,13 +32,17 @@ public class PeptideThread extends Thread {
         this.heap = new FixedHeap<>(heapSize);
     }
 
+    public void terminate() {
+        running = false;
+    }
+
     @Override
     public void run() {
         int count = 0;
         if (!initialHeap.isEmpty()) {
             heap.add(initialHeap.poll());
         }
-        while (!heap.isEmpty()) {
+        while (running && !heap.isEmpty()) {
             Folding state = modeler.iterate(polypeptide, heap);
             if (state != null) { // found a solution
                 // don't bother with the solution if it isn't better than the current best
@@ -59,7 +65,7 @@ public class PeptideThread extends Thread {
         }
     }
 
-    public boolean isWorthExploring(Folding next) {
+    private boolean isWorthExploring(Folding next) {
         return solutions.isEmpty() || next.compareTo(solutions.peek()) < 0;
     }
 }

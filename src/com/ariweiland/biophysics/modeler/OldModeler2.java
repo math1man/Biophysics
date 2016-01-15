@@ -9,14 +9,23 @@ import com.ariweiland.biophysics.FixedHeap;
 import com.ariweiland.biophysics.Point;
 
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Ari Weiland
  */
 public class OldModeler2 extends Modeler {
 
+    private AtomicBoolean running = new AtomicBoolean();
+
+    @Override
+    public void terminate() {
+        running.set(false);
+    }
+
     @Override
     public Lattice fold(Polypeptide polypeptide) {
+        running.set(true);
         // initialize the lattices
         int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
@@ -50,7 +59,7 @@ public class OldModeler2 extends Modeler {
         // begin the iteration
         Folding solution = null;
         int count = 0;
-        while (solution == null) {
+        while (running.get() && solution == null) {
             solution = iterate(polypeptide, heap);
             count++;
             if (count % 100000 == 0) {
@@ -58,7 +67,11 @@ public class OldModeler2 extends Modeler {
             }
         }
         System.out.println(count + " states visited, " + heap.size() + " states left in queue");
-        return solution.lattice;
+        if (solution == null) {
+            return new Lattice();
+        } else {
+            return solution.lattice;
+        }
     }
 
     @Override

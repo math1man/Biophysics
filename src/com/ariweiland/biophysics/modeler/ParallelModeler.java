@@ -5,11 +5,15 @@ import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Ari Weiland
  */
 public abstract class ParallelModeler extends Modeler {
+
+    private AtomicBoolean running = new AtomicBoolean();
+    private PeptideThread[] threads;
 
     /**
      * Dynamically calculates an ideal seed count for a given polypeptide.
@@ -36,12 +40,24 @@ public abstract class ParallelModeler extends Modeler {
     protected abstract PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide);
 
     @Override
+    public void terminate() {
+        if (running.getAndSet(false) && threads != null) {
+            for (PeptideThread thread : threads) {
+                if (thread != null) {
+                    thread.terminate();
+                }
+            }
+        }
+    }
+
+    @Override
     public Lattice fold(Polypeptide polypeptide) {
+        running.set(true);
         PriorityBlockingQueue<Folding> initialHeap = initializeHeap(polypeptide);
 
         // iterate a few times to make the initial heap bigger
         int count = 0;
-        while (count < getSeedCount(polypeptide)) {
+        while (running.get() && count < getSeedCount(polypeptide)) {
             Folding solution = iterate(polypeptide, initialHeap);
             if (solution != null) {
                 return solution.lattice;
@@ -50,14 +66,16 @@ public abstract class ParallelModeler extends Modeler {
         }
 
         int processors = Runtime.getRuntime().availableProcessors();
-        PeptideThread[] threads = new PeptideThread[processors];
+        threads = new PeptideThread[processors];
         PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>();
 
         System.out.println("Processors: " + processors);
         System.out.println("Initial Heap Size: " + initialHeap.size());
         for (int i=0; i< processors; i++) {
             threads[i] = new PeptideThread(this, polypeptide, initialHeap, solutions, MAX_HEAP_SIZE / processors - 1);
-            threads[i].start();
+            if (running.get()) {
+                threads[i].start();
+            }
         }
         for (int i=0; i< processors; i++) {
             try {
@@ -66,6 +84,10 @@ public abstract class ParallelModeler extends Modeler {
                 throw new RuntimeException(e);
             }
         }
-        return solutions.poll().lattice;
+        if (running.get()) {
+            return solutions.poll().lattice;
+        } else {
+            return new Lattice();
+        }
     }
 }

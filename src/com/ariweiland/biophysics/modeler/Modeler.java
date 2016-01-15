@@ -15,6 +15,8 @@ public abstract class Modeler {
 
     public static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
 
+    public abstract void terminate();
+
     /**
      * This method takes in a polypeptide and returns a folded lattice.
      * @return
@@ -67,7 +69,7 @@ public abstract class Modeler {
 //        Polypeptide polypeptide = Polypeptide.GLUCAGON;
 //        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<12; i++) {
             if (Math.random() < 0.4) {
                 polypeptide.add(Residue.H);
             } else {
