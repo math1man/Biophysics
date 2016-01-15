@@ -73,9 +73,17 @@ public class FoldingGui extends ConsoleProgram {
         } else if (source.equals(negative)) {
             surfaceType = Residue.NEG;
         } else if (source.equals(sequence) || source.equals(fold)) {
-            String temp = sequence.getText();
-            clear();
-            foldPolypeptide(temp);
+            fold.setEnabled(false);
+            sequence.setEnabled(false);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String temp = sequence.getText();
+                    foldPolypeptide(temp);
+                    fold.setEnabled(true);
+                    sequence.setEnabled(true);
+                }
+            }).start();
         } else if (source.equals(clear)) {
             clear();
         }
@@ -90,7 +98,7 @@ public class FoldingGui extends ConsoleProgram {
             modeler = new CurrentParallelModeler();
         }
 
-        println(polypeptide);
+        println("Folding " + polypeptide + "...");
         println("Node count: " + polypeptide.size());
         println();
 
@@ -105,6 +113,7 @@ public class FoldingGui extends ConsoleProgram {
         println("Elapsed time: " + (elapsed / 1000.0) + " s");
         println("Lattice energy: " + lattice.getEnergy());
         println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
+        println();
     }
 
     public void clear() {
