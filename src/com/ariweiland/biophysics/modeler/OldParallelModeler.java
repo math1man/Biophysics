@@ -24,12 +24,12 @@ public class OldParallelModeler extends ParallelModeler {
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice();
-        line.put(0, 0, first);
+        Lattice line = new Lattice(2);
+        line.put(first, 0, 0);
 
         if (size > 1) {
             Peptide second = polypeptide.get(1);
-            line.put(1, 0, second);
+            line.put(second, 1, 0);
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
@@ -38,12 +38,12 @@ public class OldParallelModeler extends ParallelModeler {
                 Peptide next = polypeptide.get(i);
                 lowerBound -= 2 * next.minInteraction();
                 Lattice bend = new Lattice(line);
-                bend.put(i - 1, 1, next);
+                bend.put(next, i - 1, 1);
                 if (i == size - 1) {
                     lowerBound = bend.getEnergy();
                 }
                 initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
-                line.put(i, 0, next);
+                line.put(next, i, 0);
             }
         }
         initialHeap.add(new Folding(line, size - 1, 0, size - 1, line.getEnergy()));
@@ -57,18 +57,18 @@ public class OldParallelModeler extends ParallelModeler {
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            for (Direction d : Direction.values()) {
+            for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(folding.lattice);
-                    l.put(next, p);
+                    l.put(p, next);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
                     if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
                         double bound = folding.energyBound - 2 * p.minInteraction();
                         if (nextIndex < size - 1) {
-                            for (Direction d1 : Direction.values()) {
+                            for (Direction d1 : Direction.values(2)) {
                                 if (d1 != d.getReverse()) {
                                     bound += p.interaction(l.get(next.getAdjacent(d1)));
                                 }

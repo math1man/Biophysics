@@ -1,17 +1,18 @@
 package com.ariweiland.biophysics;
 
+import java.util.Arrays;
+
 /**
  * Simple wrapper class for a coordinate in a lattice.
  * Also has a convenience method to get adjacent points.
  * @author Ari Weiland
  */
 public class Point {
-    public final int x;
-    public final int y;
 
-    public Point(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public final int[] coords;
+
+    public Point(int... coords) {
+        this.coords = coords;
     }
 
     /**
@@ -20,40 +21,50 @@ public class Point {
      * @return
      */
     public Point getAdjacent(Direction direction) {
-        switch (direction) {
-            case EAST:
-                return new Point(x + 1, y);
-            case NORTH:
-                return new Point(x, y - 1);
-            case WEST:
-                return new Point(x - 1, y);
-            case SOUTH:
-            default:
-                return new Point(x, y + 1);
+        int d = getDimension();
+        int[] adj = new int[d];
+        System.arraycopy(coords, 0, adj, 0, d);
+        if (d > 0 && direction == Direction.EAST) {
+            adj[0] += 1;
+        } else if (d > 0 && direction == Direction.WEST) {
+            adj[0] -= 1;
+        } else if (d > 1 && direction == Direction.NORTH) {
+                adj[1] += 1;
+        } else if (d > 1 && direction == Direction.SOUTH) {
+            adj[1] -= 1;
+        } else if (d > 2 && direction == Direction.UP) {
+            adj[2] += 1;
+        } else if (d > 2 && direction == Direction.DOWN) {
+            adj[2] -= 1;
+        } else {
+            throw new IllegalArgumentException(direction + " is out of the dimension of this point");
         }
+        return new Point(adj);
+    }
+
+    public int getDimension() {
+        return coords.length;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Point)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         Point point = (Point) o;
 
-        return x == point.x && y == point.y;
+        return Arrays.equals(coords, point.coords);
 
     }
 
     @Override
     public int hashCode() {
-        int result = x;
-        result = 31 * result + y;
-        return result;
+        return Arrays.hashCode(coords);
     }
 
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ")";
+        return Arrays.toString(coords);
     }
 
 }

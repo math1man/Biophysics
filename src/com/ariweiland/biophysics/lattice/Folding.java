@@ -31,13 +31,13 @@ public class Folding implements Comparable<Folding> {
     public int compareTo(Folding o) {
         int compare = Double.compare(energyBound, o.energyBound);
         if (compare == 0) {
-            compare = Integer.compare(lattice.getPerimeter(), o.lattice.getPerimeter());
+            compare = Integer.compare(lattice.getSurfaceSize(), o.lattice.getSurfaceSize());
         }
         return compare;
     }
 
     @Override
     public String toString() {
-        return energyBound + "/" + lattice.getPerimeter();
+        return energyBound + "/" + lattice.getSurfaceSize();
     }
 }

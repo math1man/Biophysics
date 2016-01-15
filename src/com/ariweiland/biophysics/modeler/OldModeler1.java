@@ -30,13 +30,13 @@ public class OldModeler1 extends Modeler {
         // initialize the lattices
         int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice();
-        line.put(0, 0, first);
+        Lattice line = new Lattice(2);
+        line.put(first, 0, 0);
         if (size == 1) {
             return line;
         }
         Peptide second = polypeptide.get(1);
-        line.put(1, 0, second);
+        line.put(second, 1, 0);
         if (size == 2) {
             return line;
         }
@@ -48,12 +48,12 @@ public class OldModeler1 extends Modeler {
             Peptide next = polypeptide.get(i);
             lowerBound -= 2 * next.minInteraction();
             Lattice bend = new Lattice(line);
-            bend.put(i-1, 1, next);
-            if (i == size-1) {
+            bend.put(next, i - 1, 1);
+            if (i == size - 1) {
                 lowerBound = bend.getEnergy();
             }
             pq.add(new Folding(bend, i - 1, 1, i, lowerBound));
-            line.put(i, 0, next);
+            line.put(next, i, 0);
         }
         pq.add(new Folding(line, size - 1, 0, size - 1, lowerBound));
 
@@ -69,7 +69,7 @@ public class OldModeler1 extends Modeler {
         }
         System.out.println(count + " states visited, " + pq.size() + " states left in queue");
         if (solution == null) {
-            return new Lattice();
+            return new Lattice(2);
         } else {
             return solution.lattice;
         }
@@ -82,11 +82,11 @@ public class OldModeler1 extends Modeler {
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            for (Direction d : Direction.values()) {
+            for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(folding.lattice);
-                    l.put(next, p);
+                    l.put(p, next);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
@@ -94,7 +94,7 @@ public class OldModeler1 extends Modeler {
                         double bound = folding.energyBound - 2 * p.minInteraction()
                                 - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);
                         if (nextIndex < size - 1) {
-                            for (Direction d1 : Direction.values()) {
+                            for (Direction d1 : Direction.values(2)) {
                                 if (d1 != d.getReverse()) {
                                     bound += p.interaction(l.get(next.getAdjacent(d1)));
                                 }

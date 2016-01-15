@@ -87,7 +87,7 @@ public abstract class ParallelModeler extends Modeler {
         if (running.get()) {
             return solutions.poll().lattice;
         } else {
-            return new Lattice();
+            return new Lattice(2);
         }
     }
 }

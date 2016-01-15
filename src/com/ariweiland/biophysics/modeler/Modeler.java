@@ -90,6 +90,6 @@ public abstract class Modeler {
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Lattice energy: " + lattice.getEnergy());
-        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
+        System.out.println("Perimeter: " + lattice.getSurfaceSize() + "/" + lattice.boundingPerimeter());
     }
 }

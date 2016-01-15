@@ -70,16 +70,16 @@ public class OldSurfaceModeler extends SurfaceModeler {
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
             // try to add the peptide in every direction
-            for (Direction d : Direction.values()) {
+            for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
-                if (!folding.lattice.containsPoint(next) && next.y < getMaxY(polypeptide)) {
+                if (!folding.lattice.containsPoint(next) && next.coords[2 - 1] < getMaxY(polypeptide)) {
                     SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
-                    l.put(next, p);
+                    l.put(p, next);
                     // set the bound from the previous bound, minus the min interactions for this peptide,
                     // minus one favorable water interaction which
                     double bound = folding.energyBound - 2 * p.minInteraction() - getFavorableWaterInteraction(p);
                     if (nextIndex < size - 1) {
-                        for (Direction d1 : Direction.values()) {
+                        for (Direction d1 : Direction.values(2)) {
                             if (d1 != d.getReverse()) {
                                 if (l.containsPoint(next.getAdjacent(d1))) {
                                     Peptide adjacent = l.get(next.getAdjacent(d1));

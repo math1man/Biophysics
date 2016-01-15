@@ -129,7 +129,7 @@ public class FoldingGui extends ConsoleProgram {
 
             println("Elapsed time: " + (elapsed / 1000.0) + " s");
             println("Lattice energy: " + lattice.getEnergy());
-            println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
+            println("Perimeter: " + lattice.getSurfaceSize() + "/" + lattice.boundingPerimeter());
             println();
             terminate();
         }
