@@ -30,7 +30,7 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
     }
 
     protected double getInitialEnergyBound(Polypeptide polypeptide) {
-        return polypeptide.getMinEnergy()
+        return polypeptide.getMinEnergy(2)
                 + getFavorableWaterInteraction(polypeptide.get(0))
                 + polypeptide.size() * getAdjustedSurfaceMinInteraction();
     }

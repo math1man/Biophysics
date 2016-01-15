@@ -43,7 +43,7 @@ public class OldModeler2 extends Modeler {
 
         // fill the queue
         FixedHeap<Folding> heap = new FixedHeap<>(MAX_HEAP_SIZE - 1);
-        double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
+        double lowerBound = polypeptide.getMinEnergy(2) - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
             lowerBound -= 2 * next.minInteraction();

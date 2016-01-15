@@ -43,7 +43,7 @@ public class OldModeler1 extends Modeler {
 
         // fill the queue
         PriorityQueue<Folding> pq = new PriorityQueue<>();
-        double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
+        double lowerBound = polypeptide.getMinEnergy(2) - 2 * first.minInteraction() - 2 * second.minInteraction();
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
             lowerBound -= 2 * next.minInteraction();

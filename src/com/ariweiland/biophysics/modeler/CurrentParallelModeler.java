@@ -30,7 +30,7 @@ public class CurrentParallelModeler extends ParallelModeler {
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
-            double lowerBound = polypeptide.getMinEnergy()
+            double lowerBound = polypeptide.getMinEnergy(2)
                     - 2 * first.minInteraction()
                     + 3 * getFavorableWaterInteraction(first)
                     - 2 * second.minInteraction()

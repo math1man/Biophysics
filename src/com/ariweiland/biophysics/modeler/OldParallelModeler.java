@@ -33,7 +33,7 @@ public class OldParallelModeler extends ParallelModeler {
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
-            double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
+            double lowerBound = polypeptide.getMinEnergy(2) - 2 * first.minInteraction() - 2 * second.minInteraction();
             for (int i=2; i<size; i++) {
                 Peptide next = polypeptide.get(i);
                 lowerBound -= 2 * next.minInteraction();

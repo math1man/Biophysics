@@ -29,7 +29,7 @@ public class OldSurfaceModeler extends SurfaceModeler {
 
     @Override
     protected double getInitialEnergyBound(Polypeptide polypeptide) {
-        return polypeptide.getMinEnergy()
+        return polypeptide.getMinEnergy(2)
                 + getFavorableWaterInteraction(polypeptide.get(0))
                 - polypeptide.size() * getAbsWaterSurfaceInteraction();
     }
