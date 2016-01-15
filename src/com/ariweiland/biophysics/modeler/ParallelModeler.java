@@ -1,7 +1,7 @@
 package com.ariweiland.biophysics.modeler;
 
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.Lattice2D;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.concurrent.PriorityBlockingQueue;
@@ -51,7 +51,7 @@ public abstract class ParallelModeler extends Modeler {
     }
 
     @Override
-    public Lattice fold(Polypeptide polypeptide) {
+    public Lattice2D fold(Polypeptide polypeptide) {
         running.set(true);
         PriorityBlockingQueue<Folding> initialHeap = initializeHeap(polypeptide);
 
@@ -87,7 +87,7 @@ public abstract class ParallelModeler extends Modeler {
         if (running.get()) {
             return solutions.poll().lattice;
         } else {
-            return new Lattice();
+            return new Lattice2D();
         }
     }
 }

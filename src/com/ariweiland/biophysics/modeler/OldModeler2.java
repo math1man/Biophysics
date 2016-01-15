@@ -1,12 +1,13 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.lattice.Direction;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.Lattice2D;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 import com.ariweiland.biophysics.FixedHeap;
-import com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.lattice.Point2D;
 
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,12 +25,12 @@ public class OldModeler2 extends Modeler {
     }
 
     @Override
-    public Lattice fold(Polypeptide polypeptide) {
+    public Lattice2D fold(Polypeptide polypeptide) {
         running.set(true);
         // initialize the lattices
         int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice();
+        Lattice2D line = new Lattice2D();
         line.put(0, 0, first);
         if (size == 1) {
             return line;
@@ -46,7 +47,7 @@ public class OldModeler2 extends Modeler {
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
             lowerBound -= 2 * next.minInteraction();
-            Lattice bend = new Lattice(line);
+            Lattice2D bend = new Lattice2D(line);
             bend.put(i-1, 1, next);
             if (i == size-1) {
                 lowerBound = bend.getEnergy();
@@ -68,7 +69,7 @@ public class OldModeler2 extends Modeler {
         }
         System.out.println(count + " states visited, " + heap.size() + " states left in queue");
         if (solution == null) {
-            return new Lattice();
+            return new Lattice2D();
         } else {
             return solution.lattice;
         }
@@ -81,32 +82,27 @@ public class OldModeler2 extends Modeler {
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            double bound = folding.energyBound - 2 * p.minInteraction();
-            for (Point.Direction d : Point.Direction.values()) {
-                Point next = folding.lastPoint.getAdjacent(d);
+            for (Direction d : Direction.values2D()) {
+                Point2D next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
-                    Lattice l = new Lattice(folding.lattice);
+                    Lattice2D l = new Lattice2D(folding.lattice);
                     l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
                     if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
-                        double lb;
+                        double bound = folding.energyBound - 2 * p.minInteraction()
+                                - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);
                         if (nextIndex < size - 1) {
-                            lb = bound - l.get(next.getAdjacent(d.getReverse())).interaction(Residue.H2O);
-                            if (l.containsPoint(next.getAdjacent(d))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d)));
-                            }
-                            if (l.containsPoint(next.getAdjacent(d.getLeft()))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d.getLeft())));
-                            }
-                            if (l.containsPoint(next.getAdjacent(d.getRight()))) {
-                                lb += p.interaction(l.get(next.getAdjacent(d.getRight())));
+                            for (Direction d1 : Direction.values2D()) {
+                                if (d1 != d.getReverse()) {
+                                    bound += p.interaction(l.get(next.getAdjacent(d)));
+                                }
                             }
                         } else {
-                            lb = l.getEnergy();
+                            bound = l.getEnergy();
                         }
-                        queue.add(new Folding(l, next, nextIndex, lb));
+                        queue.add(new Folding(l, next, nextIndex, bound));
                     }
                 }
             }

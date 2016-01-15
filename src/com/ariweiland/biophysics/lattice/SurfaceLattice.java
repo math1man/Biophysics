@@ -1,7 +1,6 @@
 package com.ariweiland.biophysics.lattice;
 
 import com.ariweiland.biophysics.peptide.Peptide;
-import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
  * points, and will cause exceptions to be thrown.
  * @author Ari Weiland
  */
-public class SurfaceLattice extends Lattice {
+public class SurfaceLattice extends Lattice2D {
 
     private final Residue surface;
 
@@ -29,7 +28,7 @@ public class SurfaceLattice extends Lattice {
     }
 
     @Override
-    public boolean containsPoint(Point point) {
+    public boolean containsPoint(Point2D point) {
         if (point.y < 0) {
             throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
         }
@@ -37,7 +36,7 @@ public class SurfaceLattice extends Lattice {
     }
 
     @Override
-    public Peptide get(Point point) {
+    public Peptide get(Point2D point) {
         if (point.y < 0) {
             throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
         } else if (point.y == 0) {
@@ -48,7 +47,7 @@ public class SurfaceLattice extends Lattice {
     }
 
     @Override
-    public void put(Point point, Peptide peptide) {
+    public void put(Point2D point, Peptide peptide) {
         if (point.y < 1) {
             throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
         }
