@@ -54,11 +54,11 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
      */
     @Override
     protected double getBoundAdjust(int y, Peptide p) {
-        double boundAdjust = (getDimension() - 1) * getFavorableWaterInteraction(p) - getDimension() * p.minInteraction();
+        int dim = getDimension();
+        double boundAdjust = (dim - 1) * 2 * getFavorableWaterInteraction(p) - (dim - 1) * 2 * p.minInteraction();
         if (y == 1) {
-            boundAdjust += p.interaction(getSurface()) - getAdjustedSurfaceMinInteraction();
-        } else {
-            boundAdjust += getFavorableWaterInteraction(p);
+            boundAdjust += p.interaction(getSurface()) - getAdjustedSurfaceMinInteraction()
+                    - getFavorableWaterInteraction(p);
         }
         return boundAdjust;
     }
@@ -74,12 +74,12 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
             // try to add the peptide in every direction
             for (Direction nextDir : Direction.values(dim)) {
                 Point next = folding.lastPoint.getAdjacent(nextDir);
-                if (!folding.lattice.containsPoint(next) && next.coords[dim - 1] < getMaxY(polypeptide)) {
+                if (!folding.lattice.containsPoint(next) && next.getCoords()[dim - 1] < getMaxY(polypeptide)) {
                     SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
                     l.put(p, next);
                     // set the bound from the previous bound, minus the min interactions for this peptide,
                     // minus one favorable water interaction which
-                    double bound = folding.energyBound - dim * p.minInteraction() - getFavorableWaterInteraction(p);
+                    double bound = folding.energyBound - (dim - 1) * 2 * p.minInteraction() - getFavorableWaterInteraction(p);
                     if (nextIndex < size - 1) {
                         for (Direction d : Direction.values(dim)) {
                             // the adjustments for the attached residue are already handled
@@ -92,7 +92,7 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
                                 }
                             }
                         }
-                        if (next.coords[1] > 1) {
+                        if (next.getCoords()[1] > 1) {
                             bound -= getAdjustedSurfaceMinInteraction();
                         }
                     } else {

@@ -53,11 +53,9 @@ public class OldSurfaceModeler extends SurfaceModeler {
      */
     @Override
     protected double getBoundAdjust(int y, Peptide p) {
-        double boundAdjust = getFavorableWaterInteraction(p) - 2 * p.minInteraction() + getAbsWaterSurfaceInteraction();
+        double boundAdjust = 2 * getFavorableWaterInteraction(p) - 2 * p.minInteraction() + getAbsWaterSurfaceInteraction();
         if (y == 1) {
-            boundAdjust += p.interaction(getSurface());
-        } else {
-            boundAdjust += getFavorableWaterInteraction(p);
+            boundAdjust += p.interaction(getSurface()) - getFavorableWaterInteraction(p);
         }
         return boundAdjust;
     }
@@ -72,7 +70,7 @@ public class OldSurfaceModeler extends SurfaceModeler {
             // try to add the peptide in every direction
             for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
-                if (!folding.lattice.containsPoint(next) && next.coords[2 - 1] < getMaxY(polypeptide)) {
+                if (!folding.lattice.containsPoint(next) && next.getCoords()[2 - 1] < getMaxY(polypeptide)) {
                     SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
                     l.put(p, next);
                     // set the bound from the previous bound, minus the min interactions for this peptide,

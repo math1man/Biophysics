@@ -39,8 +39,8 @@ public class Lattice {
         }
         this.lattice = new HashMap<>(lattice.lattice);
         this.energy = lattice.energy;
-        this.plusBounds = lattice.plusBounds;
-        this.minusBounds = lattice.minusBounds;
+        this.plusBounds = Arrays.copyOf(lattice.plusBounds, dimension);
+        this.minusBounds = Arrays.copyOf(lattice.minusBounds, dimension);
         this.surfaceSize = lattice.surfaceSize;
     }
 
@@ -138,17 +138,18 @@ public class Lattice {
             throw new IllegalArgumentException("That point is already occupied");
         }
         if (isEmpty()) {
-            System.arraycopy(point.coords, 0, plusBounds, 0, dimension);
+            System.arraycopy(point.getCoords(), 0, plusBounds, 0, dimension);
+            System.arraycopy(point.getCoords(), 0, minusBounds, 0, dimension);
         } else {
             for (int i=0; i<dimension; i++) {
-                if (point.coords[i] > plusBounds[i]) {
-                    plusBounds[i] = point.coords[i];
-                } else {
-                    minusBounds[i] = point.coords[i];
+                if (point.getCoords()[i] > plusBounds[i]) {
+                    plusBounds[i] = point.getCoords()[i];
+                } else if (point.getCoords()[i] < minusBounds[i]) {
+                    minusBounds[i] = point.getCoords()[i];
                 }
             }
         }
-        for (Direction d : Direction.values()) {
+        for (Direction d : Direction.values(dimension)) {
             Peptide adj = get(point.getAdjacent(d));
             if (adj != null) {
                 if (adj.index >= 0) { // this is for use with surface lattice, so that it properly handles surface-perimeter

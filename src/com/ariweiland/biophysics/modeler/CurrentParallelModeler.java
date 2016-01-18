@@ -45,7 +45,7 @@ public class CurrentParallelModeler extends ParallelModeler {
                 Lattice bend = new Lattice(line);
                 bend.put(next, makeAsymmetricPoint(i - 1, 1));
                 line.put(next, makeAsymmetricPoint(i, 0));
-                lowerBound += dim * getFavorableWaterInteraction(next) - dim * next.minInteraction();
+                lowerBound += (dim - 1) * 2 * getFavorableWaterInteraction(next) - (dim - 1) * 2 * next.minInteraction();
                 if (i == size - 1) {
                     lowerBound = bend.getEnergy();
                 }
@@ -75,7 +75,7 @@ public class CurrentParallelModeler extends ParallelModeler {
                     if (l.boundingPerimeter() <= getSurfaceBound(polypeptide)) {
                         // subtract a water interaction where the next residue will end up
                         // note that if there is nowhere for the next residue, the foldings will be dropped on the next iteration
-                        double bound = folding.energyBound - dim * p.minInteraction() - getFavorableWaterInteraction(p);
+                        double bound = folding.energyBound - (dim - 1) * 2 * p.minInteraction() - getFavorableWaterInteraction(p);
                         if (nextIndex < size - 1) {
                             for (Direction d : Direction.values(dim)) {
                                 // the adjustments for the attached residue are already handled

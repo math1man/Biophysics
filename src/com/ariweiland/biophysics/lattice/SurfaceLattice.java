@@ -31,17 +31,17 @@ public class SurfaceLattice extends Lattice {
 
     @Override
     public boolean containsPoint(Point point) {
-        if (point.coords[1] < 0) {
+        if (point.getCoords()[1] < 0) {
             throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
         }
-        return point.coords[1] == 0 || super.containsPoint(point);
+        return point.getCoords()[1] == 0 || super.containsPoint(point);
     }
 
     @Override
     public Peptide get(Point point) {
-        if (point.coords[1] < 0) {
+        if (point.getCoords()[1] < 0) {
             throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
-        } else if (point.coords[1] == 0) {
+        } else if (point.getCoords()[1] == 0) {
             return new Peptide(-2, surface);
         } else {
             return super.get(point);
@@ -50,7 +50,7 @@ public class SurfaceLattice extends Lattice {
 
     @Override
     public void put(Peptide peptide, Point point) {
-        if (point.coords[1] < 1) {
+        if (point.getCoords()[1] < 1) {
             throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
         }
         super.put(peptide, point);

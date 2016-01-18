@@ -9,10 +9,14 @@ import java.util.Arrays;
  */
 public class Point {
 
-    public final int[] coords;
+    private final int[] coords;
 
     public Point(int... coords) {
         this.coords = coords;
+    }
+
+    public int[] getCoords() {
+        return Arrays.copyOf(coords, coords.length);
     }
 
     /**
@@ -22,14 +26,13 @@ public class Point {
      */
     public Point getAdjacent(Direction direction) {
         int d = getDimension();
-        int[] adj = new int[d];
-        System.arraycopy(coords, 0, adj, 0, d);
+        int[] adj = getCoords();
         if (d > 0 && direction == Direction.EAST) {
             adj[0] += 1;
         } else if (d > 0 && direction == Direction.WEST) {
             adj[0] -= 1;
         } else if (d > 1 && direction == Direction.NORTH) {
-                adj[1] += 1;
+            adj[1] += 1;
         } else if (d > 1 && direction == Direction.SOUTH) {
             adj[1] -= 1;
         } else if (d > 2 && direction == Direction.UP) {
@@ -43,7 +46,7 @@ public class Point {
     }
 
     public int getDimension() {
-        return coords.length;
+        return getCoords().length;
     }
 
     @Override
@@ -53,18 +56,17 @@ public class Point {
 
         Point point = (Point) o;
 
-        return Arrays.equals(coords, point.coords);
+        return Arrays.equals(getCoords(), point.getCoords());
 
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(coords);
+        return Arrays.hashCode(getCoords());
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(coords);
+        return Arrays.toString(getCoords());
     }
-
 }

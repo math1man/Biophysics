@@ -238,8 +238,6 @@ public class FixedHeap<T extends Comparable<T>> implements Queue<T> {
 
     @Override
     public String toString() {
-        Comparable<T>[] output = new Comparable[size];
-        System.arraycopy(array, 0, output, 0, size);
-        return Arrays.toString(output);
+        return Arrays.toString(Arrays.copyOf(array, size));
     }
 }
