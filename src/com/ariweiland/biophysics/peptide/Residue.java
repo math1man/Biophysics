@@ -41,7 +41,7 @@ public class Residue {
         ENERGY_MAP.put(H,   H2O,  1.16);
 //        ENERGY_MAP.put(H,   P,    1.16);
 
-        // TODO: add more interactions with H2O?
+        // TODO: adjust interactions?
     }
 
     private final String symbol;
