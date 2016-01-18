@@ -15,7 +15,8 @@ public abstract class SurfaceModeler extends ParallelModeler {
 
     private final Residue surface;
 
-    protected SurfaceModeler(Residue surface) {
+    protected SurfaceModeler(int dimension, Residue surface) {
+        super(dimension);
         this.surface = surface;
     }
 
@@ -56,7 +57,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
         // fill the queue initially.  this avoids symmetrical solutions
         for (int i = 1; i < maxY; i++) {
             for (int j = 1; j < maxY; j++) {
-                SurfaceLattice lattice = new SurfaceLattice(surface);
+                SurfaceLattice lattice = new SurfaceLattice(getDimension(), surface);
                 double bound = getInitialEnergyBound(polypeptide);
                 int k;
                 // add some number of residues between 0 and all of them in a vertical line, either rising or falling
@@ -68,7 +69,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
                     } else {
                         y = i + k;
                     }
-                    lattice.put(0, y, next);
+                    lattice.put(next, makeAsymmetricPoint(0, y));
                     bound += getBoundAdjust(y, next);
                 }
                 int lastX = 0;
@@ -76,7 +77,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
                 if (k < size) {
                     Peptide next = polypeptide.get(k);
                     lastX = 1;
-                    lattice.put(lastX, j, next);
+                    lattice.put(next, makeAsymmetricPoint(lastX, j));
                     bound += getBoundAdjust(j, next);
                 }
                 // if all residues have been placed, replace the bound with the actual lattice energy

@@ -18,6 +18,10 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class OldParallelModeler extends ParallelModeler {
 
+    public OldParallelModeler() {
+        super(2);
+    }
+
     @Override
     protected PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();

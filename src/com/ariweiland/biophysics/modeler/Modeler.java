@@ -15,6 +15,19 @@ public abstract class Modeler {
 
     public static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
 
+    private final int dimension;
+
+    protected Modeler(int dimension) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
+        }
+        this.dimension = dimension;
+    }
+
+    public int getDimension() {
+        return dimension;
+    }
+
     /**
      * This method should stop the current folding process, if one is occurring.
      */
@@ -42,6 +55,9 @@ public abstract class Modeler {
      * For m^2 < n <= (m+1)^2,
      *  - returns 4m + 6 if n <= m(m+1)
      *  - returns 4m + 8 otherwise
+     *
+     * TODO: configure for higher dimensions
+     *
      * @param polypeptide
      * @return
      */
@@ -68,7 +84,7 @@ public abstract class Modeler {
     }
 
     public static void main(String[] args) {
-        Modeler modeler = new CurrentSurfaceModeler(Residue.P);
+        Modeler modeler = new CurrentSurfaceModeler(2, Residue.P);
 //        Polypeptide polypeptide = Polypeptide.GLUCAGON;
 //        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();

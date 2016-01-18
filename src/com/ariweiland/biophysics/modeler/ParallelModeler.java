@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
@@ -15,6 +16,10 @@ public abstract class ParallelModeler extends Modeler {
     private AtomicBoolean running = new AtomicBoolean();
     private PeptideThread[] threads;
 
+    protected ParallelModeler(int dimension) {
+        super(dimension);
+    }
+
     /**
      * Dynamically calculates an ideal seed count for a given polypeptide.
      *
@@ -22,12 +27,23 @@ public abstract class ParallelModeler extends Modeler {
      *
      * This results in a seed count of 1000 for size 10, 10000 for size 20,
      * 100000 for size 30, etc. with intermediate sizes being in between.
+     *
+     * TODO: update for higher dimensions
+     *
      * @param polypeptide
      * @return
      */
     protected int getSeedCount(Polypeptide polypeptide) {
         double exponent = polypeptide.size() / 10.0 + 1.0;
         return (int) Math.pow(10.0, exponent);
+    }
+
+    protected Point makeAsymmetricPoint(int x, int y) {
+        if (getDimension() == 2) {
+            return new Point(x, y);
+        } else {
+            return new Point(x, y, 0);
+        }
     }
 
     /**
@@ -87,7 +103,7 @@ public abstract class ParallelModeler extends Modeler {
         if (running.get()) {
             return solutions.poll().lattice;
         } else {
-            return new Lattice(2);
+            return new Lattice(getDimension());
         }
     }
 }

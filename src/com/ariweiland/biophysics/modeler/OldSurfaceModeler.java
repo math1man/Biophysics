@@ -16,7 +16,7 @@ import java.util.Queue;
 public class OldSurfaceModeler extends SurfaceModeler {
 
     public OldSurfaceModeler(Residue surface) {
-        super(surface);
+        super(2, surface);
     }
 
     /**

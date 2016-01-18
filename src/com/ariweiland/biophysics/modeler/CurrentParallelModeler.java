@@ -15,32 +15,37 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class CurrentParallelModeler extends ParallelModeler {
 
+    public CurrentParallelModeler(int dimension) {
+        super(dimension);
+    }
+
     @Override
     protected PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
+        int dim = getDimension();
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice(2);
-        line.put(first, 0, 0);
+        Lattice line = new Lattice(dim);
+        line.put(first, makeAsymmetricPoint(0, 0));
 
         if (size > 1) {
             Peptide second = polypeptide.get(1);
-            line.put(second, 1, 0);
+            line.put(second, makeAsymmetricPoint(1, 0));
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
-            double lowerBound = polypeptide.getMinEnergy(2)
-                    - 2 * first.minInteraction()
-                    + 3 * getFavorableWaterInteraction(first)
-                    - 2 * second.minInteraction()
-                    + 2 * getFavorableWaterInteraction(second);
+            double lowerBound = polypeptide.getMinEnergy(dim)
+                    - dim * first.minInteraction()
+                    + (dim + 1) * getFavorableWaterInteraction(first)
+                    - dim * second.minInteraction()
+                    + dim * getFavorableWaterInteraction(second);
             for (int i=2; i<size; i++) {
                 Peptide next = polypeptide.get(i);
                 Lattice bend = new Lattice(line);
-                bend.put(next, i - 1, 1);
-                line.put(next, i, 0);
-                lowerBound += 2 * getFavorableWaterInteraction(next) - 2 * next.minInteraction();
+                bend.put(next, makeAsymmetricPoint(i - 1, 1));
+                line.put(next, makeAsymmetricPoint(i, 0));
+                lowerBound += dim * getFavorableWaterInteraction(next) - dim * next.minInteraction();
                 if (i == size - 1) {
                     lowerBound = bend.getEnergy();
                 }
@@ -53,13 +58,14 @@ public class CurrentParallelModeler extends ParallelModeler {
 
     @Override
     public Folding iterate(Polypeptide polypeptide, Queue<Folding> queue) {
+        int dim = getDimension();
         int size = polypeptide.size();
         Folding folding = queue.poll();
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            for (Direction d : Direction.values(2)) {
-                Point next = folding.lastPoint.getAdjacent(d);
+            for (Direction nextDir : Direction.values(dim)) {
+                Point next = folding.lastPoint.getAdjacent(nextDir);
                 if (!folding.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(folding.lattice);
                     l.put(p, next);
@@ -69,12 +75,13 @@ public class CurrentParallelModeler extends ParallelModeler {
                     if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
                         // subtract a water interaction where the next residue will end up
                         // note that if there is nowhere for the next residue, the foldings will be dropped on the next iteration
-                        double bound = folding.energyBound - 2 * p.minInteraction() - getFavorableWaterInteraction(p);
+                        double bound = folding.energyBound - dim * p.minInteraction() - getFavorableWaterInteraction(p);
                         if (nextIndex < size - 1) {
-                            for (Direction d1 : Direction.values(2)) {
-                                if (d1 != d.getReverse()) {
-                                    if (l.containsPoint(next.getAdjacent(d1))) {
-                                        Peptide adjacent = l.get(next.getAdjacent(d1));
+                            for (Direction d : Direction.values(dim)) {
+                                // the adjustments for the attached residue are already handled
+                                if (d != nextDir.getReverse()) {
+                                    if (l.containsPoint(next.getAdjacent(d))) {
+                                        Peptide adjacent = l.get(next.getAdjacent(d));
                                         bound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
                                     } else {
                                         bound += getFavorableWaterInteraction(p);

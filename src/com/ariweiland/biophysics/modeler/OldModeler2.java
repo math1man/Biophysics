@@ -19,6 +19,10 @@ public class OldModeler2 extends Modeler {
 
     private AtomicBoolean running = new AtomicBoolean();
 
+    public OldModeler2() {
+        super(2);
+    }
+
     @Override
     public void terminate() {
         running.set(false);
