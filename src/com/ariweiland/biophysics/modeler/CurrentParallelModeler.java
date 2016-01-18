@@ -72,7 +72,7 @@ public class CurrentParallelModeler extends ParallelModeler {
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
+                    if (l.boundingPerimeter() <= getSurfaceBound(polypeptide)) {
                         // subtract a water interaction where the next residue will end up
                         // note that if there is nowhere for the next residue, the foldings will be dropped on the next iteration
                         double bound = folding.energyBound - dim * p.minInteraction() - getFavorableWaterInteraction(p);

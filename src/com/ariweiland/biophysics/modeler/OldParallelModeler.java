@@ -69,7 +69,7 @@ public class OldParallelModeler extends ParallelModeler {
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
+                    if (l.boundingPerimeter() <= getSurfaceBound(polypeptide)) {
                         double bound = folding.energyBound - 2 * p.minInteraction();
                         if (nextIndex < size - 1) {
                             for (Direction d1 : Direction.values(2)) {

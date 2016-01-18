@@ -98,6 +98,6 @@ public abstract class SurfaceModeler extends ParallelModeler {
      * @return
      */
     protected int getMaxY(Polypeptide polypeptide) {
-        return getPerimeterBound(polypeptide) / 4 + 2;
+        return getSurfaceBound(polypeptide) / 4 + 2;
     }
 }
