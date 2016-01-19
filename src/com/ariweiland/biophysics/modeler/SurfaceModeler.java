@@ -58,7 +58,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
         // fill the queue initially.  this avoids symmetrical solutions
         for (int i = 1; i < maxY; i++) {
             for (int j = 1; j < maxY; j++) {
-                SurfaceLattice lattice = new SurfaceLattice(getDimension(), surface);
+                SurfaceLattice lattice = new SurfaceLattice(getDimension(), surface, size);
                 double bound = getInitialEnergyBound(polypeptide);
                 int k;
                 // add some number of residues between 0 and all of them in a vertical line, either rising or falling

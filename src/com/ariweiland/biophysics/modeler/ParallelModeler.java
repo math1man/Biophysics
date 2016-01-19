@@ -28,13 +28,11 @@ public abstract class ParallelModeler extends Modeler {
      * This results in a seed count of 1000 for size 10, 10000 for size 20,
      * 100000 for size 30, etc. with intermediate sizes being in between.
      *
-     * TODO: update for higher dimensions
-     *
      * @param polypeptide
      * @return
      */
     protected int getSeedCount(Polypeptide polypeptide) {
-        double exponent = polypeptide.size() / 10.0 + 1.0;
+        double exponent = polypeptide.size() / 10.0 + 1.0; // TODO + getDimension() - 1.0;
         return (int) Math.pow(10.0, exponent);
     }
 
@@ -83,7 +81,7 @@ public abstract class ParallelModeler extends Modeler {
 
         int processors = Runtime.getRuntime().availableProcessors();
         threads = new PeptideThread[processors];
-        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>(MAX_HEAP_SIZE / 4);
+        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>(initialHeap.size());
 
         System.out.println("Processors: " + processors);
         System.out.println("Initial Heap Size: " + initialHeap.size());

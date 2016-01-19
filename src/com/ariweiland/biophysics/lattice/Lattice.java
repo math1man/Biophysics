@@ -34,6 +34,14 @@ public class Lattice {
         this.lattice = new HashMap<>();
     }
 
+    public Lattice(int dimension, int initialCapacity) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
+        }
+        this.dimension = dimension;
+        this.lattice = new HashMap<>(initialCapacity);
+    }
+
     public Lattice(Lattice lattice) {
         this.dimension = lattice.dimension;
         if (dimension < 2 || dimension > 3) {
@@ -226,11 +234,11 @@ public class Lattice {
      * Draws an ASCII visualization of the peptides in the lattice to the console.
      * Also returns the drawing as a list of strings. Currently only draws 2D lattices.
      *
-     * TODO: handle drawing 3D lattice???
+     * TODO: handle drawing 3D lattice better
      */
     public List<String> visualize() {
         List<String> lines = new ArrayList<>();
-        if (dimension == 2) {
+        for (int k=minusZBound; k<=plusZBound; k++) {
             for (int i=plusYBound; i>=minusYBound; i--) {
                 StringBuilder latticeString = new StringBuilder();
                 StringBuilder connectionsString = new StringBuilder();

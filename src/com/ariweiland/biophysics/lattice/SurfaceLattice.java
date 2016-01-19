@@ -24,6 +24,14 @@ public class SurfaceLattice extends Lattice {
         this.surface = surface;
     }
 
+    public SurfaceLattice(int dimension, Residue surface, int initialCapacity) {
+        super(dimension, initialCapacity);
+        if (surface == Residue.H2O) {
+            throw new IllegalArgumentException("Surface cannot be water (null)");
+        }
+        this.surface = surface;
+    }
+
     public SurfaceLattice(SurfaceLattice lattice) {
         super(lattice);
         this.surface = lattice.surface;

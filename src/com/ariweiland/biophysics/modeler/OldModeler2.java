@@ -34,7 +34,7 @@ public class OldModeler2 extends Modeler {
         // initialize the lattices
         int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice(2);
+        Lattice line = new Lattice(2, size);
         line.put(new Point(0, 0), first);
         if (size == 1) {
             return line;

@@ -96,7 +96,7 @@ public abstract class Modeler {
 //        Polypeptide polypeptide = Polypeptide.GLUCAGON;
 //        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<16; i++) {
             if (Math.random() < 0.4) {
                 polypeptide.add(Residue.H);
             } else {

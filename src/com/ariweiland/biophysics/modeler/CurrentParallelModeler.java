@@ -26,7 +26,7 @@ public class CurrentParallelModeler extends ParallelModeler {
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice(dim);
+        Lattice line = new Lattice(dim, size);
         line.put(makeAsymmetricPoint(0, 0), first);
 
         if (size > 1) {

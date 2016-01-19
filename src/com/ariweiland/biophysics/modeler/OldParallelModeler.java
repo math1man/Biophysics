@@ -28,7 +28,7 @@ public class OldParallelModeler extends ParallelModeler {
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice(2);
+        Lattice line = new Lattice(2, size);
         line.put(new Point(0, 0), first);
 
         if (size > 1) {
