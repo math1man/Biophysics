@@ -61,12 +61,8 @@ public class Point {
 
         Point point = (Point) o;
 
-        if (dimension != point.dimension) return false;
-        if (x != point.x) return false;
-        if (y != point.y) return false;
-        if (z != point.z) return false;
+        return x == point.x && y == point.y && z == point.z;
 
-        return true;
     }
 
     @Override
@@ -74,7 +70,6 @@ public class Point {
         int result = x;
         result = 31 * result + y;
         result = 31 * result + z;
-        result = 31 * result + dimension;
         return result;
     }
 

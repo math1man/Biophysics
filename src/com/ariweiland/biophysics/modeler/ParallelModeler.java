@@ -94,10 +94,12 @@ public abstract class ParallelModeler extends Modeler {
         for (int i=0; i< processors; i++) {
             try {
                 threads[i].join();
+                count += threads[i].getCount();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+        System.out.println("States Visited: " + count);
         if (running.get()) {
             return solutions.poll().lattice;
         } else {

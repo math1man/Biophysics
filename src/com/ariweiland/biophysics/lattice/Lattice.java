@@ -84,9 +84,6 @@ public class Lattice {
      * @return
      */
     public boolean containsPoint(Point point) {
-        if (point.dimension != dimension) {
-            throw new IllegalArgumentException("Incorrect dimension");
-        }
         return lattice.containsKey(point);
     }
 
@@ -105,9 +102,6 @@ public class Lattice {
      * @return
      */
     public Peptide get(Point point) {
-        if (point.dimension != dimension) {
-            throw new IllegalArgumentException("Incorrect number of points");
-        }
         return lattice.get(point);
     }
 
@@ -119,6 +113,9 @@ public class Lattice {
      * @return
      */
     public void put(Point point, Peptide peptide) {
+        if (point.dimension != dimension) {
+            throw new IllegalArgumentException("Incorrect dimension");
+        }
         if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");
         }
@@ -239,21 +236,32 @@ public class Lattice {
     public List<String> visualize() {
         List<String> lines = new ArrayList<>();
         for (int k=minusZBound; k<=plusZBound; k++) {
+            StringBuilder edge = new StringBuilder();
+            for (int j=minusXBound; j<=plusXBound; j++) {
+                edge.append("====");
+            }
+            lines.add(edge.toString());
+            System.out.println(edge);
             for (int i=plusYBound; i>=minusYBound; i--) {
                 StringBuilder latticeString = new StringBuilder();
                 StringBuilder connectionsString = new StringBuilder();
                 for (int j=minusXBound; j<=plusXBound; j++) {
-                    Peptide p = get(new Point(j, i));
+                    Peptide p = get(new Point(j, i, k));
                     if (p != null) {
-                        latticeString.append(p.residue);
                         int index = p.index;
-                        Point right = new Point(j + 1, i);
+                        String residue = p.residue.toString();
+                        Point up = new Point(j, i, k + 1);
+                        if (containsPoint(up) && (get(up).index == index + 1 || get(up).index == index - 1)) {
+                            residue = residue.replace('(', '{').replace(')', '}');
+                        }
+                        latticeString.append(residue);
+                        Point right = new Point(j + 1, i, k);
                         if (containsPoint(right) && (get(right).index == index + 1 || get(right).index == index - 1)) {
                             latticeString.append("-");
                         } else {
                             latticeString.append(" ");
                         }
-                        Point below = new Point(j, i - 1);
+                        Point below = new Point(j, i - 1, k);
                         if (containsPoint(below) && (get(below).index == index + 1 || get(below).index == index - 1)) {
                             connectionsString.append(" |  ");
                         } else {

@@ -22,6 +22,7 @@ public class PeptideThread extends Thread {
     private final FixedHeap<Folding> heap;
 
     private boolean running = true;
+    private int count = 0;
 
     public PeptideThread(Modeler modeler, Polypeptide polypeptide, PriorityBlockingQueue<Folding> initialHeap,
                          PriorityBlockingQueue<Folding> solutions, int heapSize) {
@@ -32,13 +33,16 @@ public class PeptideThread extends Thread {
         this.heap = new FixedHeap<>(heapSize);
     }
 
+    public int getCount() {
+        return count;
+    }
+
     public void terminate() {
         running = false;
     }
 
     @Override
     public void run() {
-        int count = 0;
         if (!initialHeap.isEmpty()) {
             heap.add(initialHeap.poll());
         }

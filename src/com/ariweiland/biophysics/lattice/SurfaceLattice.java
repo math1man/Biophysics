@@ -67,7 +67,7 @@ public class SurfaceLattice extends Lattice {
     @Override
     public List<String> visualize() {
         List<String> lines = super.visualize();
-        if (getDimension() == 2) {
+        for (int k=minusZBound; k<=plusZBound; k++) {
             for (int i=1; i<minusYBound; i++) {
                 lines.add("");
                 lines.add("");
