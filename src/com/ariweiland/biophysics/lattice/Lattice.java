@@ -19,8 +19,12 @@ public class Lattice {
     private final Map<Point, Peptide> lattice;
     private double energy = 0;
     private int surfaceSize = 0;
-    protected final int plusBounds[];
-    protected final int minusBounds[];
+    protected int plusXBound = 0;
+    protected int minusXBound = 0;
+    protected int plusYBound = 0;
+    protected int minusYBound = 0;
+    protected int plusZBound = 0;
+    protected int minusZBound = 0;
 
     public Lattice(int dimension) {
         if (dimension < 2 || dimension > 3) {
@@ -28,8 +32,6 @@ public class Lattice {
         }
         this.dimension = dimension;
         this.lattice = new HashMap<>();
-        plusBounds = new int[dimension];
-        minusBounds = new int[dimension];
     }
 
     public Lattice(Lattice lattice) {
@@ -39,9 +41,13 @@ public class Lattice {
         }
         this.lattice = new HashMap<>(lattice.lattice);
         this.energy = lattice.energy;
-        this.plusBounds = Arrays.copyOf(lattice.plusBounds, dimension);
-        this.minusBounds = Arrays.copyOf(lattice.minusBounds, dimension);
         this.surfaceSize = lattice.surfaceSize;
+        this.plusXBound  = lattice.plusXBound;
+        this.minusXBound = lattice.minusXBound;
+        this.plusYBound  = lattice.plusYBound;
+        this.minusYBound = lattice.minusYBound;
+        this.plusZBound  = lattice.plusZBound;
+        this.minusZBound = lattice.minusZBound;
     }
 
     public int getDimension() {
@@ -70,7 +76,7 @@ public class Lattice {
      * @return
      */
     public boolean containsPoint(Point point) {
-        if (point.getDimension() != dimension) {
+        if (point.dimension != dimension) {
             throw new IllegalArgumentException("Incorrect dimension");
         }
         return lattice.containsKey(point);
@@ -91,7 +97,7 @@ public class Lattice {
      * @return
      */
     public Peptide get(Point point) {
-        if (point.getDimension() != dimension) {
+        if (point.dimension != dimension) {
             throw new IllegalArgumentException("Incorrect number of points");
         }
         return lattice.get(point);
@@ -109,15 +115,27 @@ public class Lattice {
             throw new IllegalArgumentException("That point is already occupied");
         }
         if (isEmpty()) {
-            System.arraycopy(point.getCoords(), 0, plusBounds, 0, dimension);
-            System.arraycopy(point.getCoords(), 0, minusBounds, 0, dimension);
+            plusXBound  = point.x;
+            minusXBound = point.x;
+            plusYBound  = point.y;
+            minusYBound = point.y;
+            plusZBound  = point.z;
+            minusZBound = point.z;
         } else {
-            for (int i=0; i<dimension; i++) {
-                if (point.getCoords()[i] > plusBounds[i]) {
-                    plusBounds[i] = point.getCoords()[i];
-                } else if (point.getCoords()[i] < minusBounds[i]) {
-                    minusBounds[i] = point.getCoords()[i];
-                }
+            if (point.x > plusXBound) {
+                plusXBound = point.x;
+            } else if (point.x < minusXBound) {
+                minusXBound = point.x;
+            }
+            if (point.y > plusYBound) {
+                plusYBound = point.y;
+            } else if (point.y < minusYBound) {
+                minusYBound = point.y;
+            }
+            if (point.z > plusZBound) {
+                plusZBound = point.z;
+            } else if (point.z < minusZBound) {
+                minusZBound = point.z;
             }
         }
         for (Direction d : Direction.values(dimension)) {
@@ -156,8 +174,12 @@ public class Lattice {
         lattice.clear();
         energy = 0;
         surfaceSize = 0;
-        Arrays.fill(plusBounds, 0);
-        Arrays.fill(minusBounds, 0);
+        plusXBound  = 0;
+        minusXBound = 0;
+        plusYBound  = 0;
+        minusYBound = 0;
+        plusZBound  = 0;
+        minusZBound = 0;
     }
 
     /**
@@ -190,11 +212,14 @@ public class Lattice {
      * @return
      */
     public int boundingPerimeter() {
-        int bound = 0;
-        for (int i=0; i<dimension; i++) {
-            bound += plusBounds[i] - minusBounds[i] + 1;
+        int xRange = plusXBound - minusXBound + 1;
+        int yRange = plusYBound - minusYBound + 1;
+        if (dimension == 2) {
+            return 2 * (xRange + yRange);
+        } else {
+            int zRange = plusZBound - minusZBound + 1;
+            return 2 * (xRange * yRange + xRange * zRange + yRange * zRange);
         }
-        return 2 * bound;
     }
 
     /**
@@ -206,10 +231,10 @@ public class Lattice {
     public List<String> visualize() {
         List<String> lines = new ArrayList<>();
         if (dimension == 2) {
-            for (int i=plusBounds[1]; i>=minusBounds[1]; i--) {
+            for (int i=plusYBound; i>=minusYBound; i--) {
                 StringBuilder latticeString = new StringBuilder();
                 StringBuilder connectionsString = new StringBuilder();
-                for (int j=minusBounds[0]; j<=plusBounds[0]; j++) {
+                for (int j=minusXBound; j<=plusXBound; j++) {
                     Peptide p = get(new Point(j, i));
                     if (p != null) {
                         latticeString.append(p.residue);

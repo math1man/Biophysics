@@ -1,7 +1,5 @@
 package com.ariweiland.biophysics;
 
-import java.util.Arrays;
-
 /**
  * Simple wrapper class for a coordinate in a lattice.
  * Also has a convenience method to get adjacent points.
@@ -9,14 +7,28 @@ import java.util.Arrays;
  */
 public class Point {
 
-    private final int[] coords;
+    public final int x;
+    public final int y;
+    public final int z;
+    public final int dimension;
 
-    public Point(int... coords) {
-        this.coords = coords;
+    public Point(Point p) {
+        this(p.x, p.y, p.z, p.dimension);
     }
 
-    public int[] getCoords() {
-        return Arrays.copyOf(coords, coords.length);
+    public Point(int x, int y) {
+        this(x, y, 0, 2);
+    }
+
+    public Point(int x, int y, int z) {
+        this(x, y, z, 3);
+    }
+
+    private Point(int x, int y, int z, int dimension) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.dimension = dimension;
     }
 
     /**
@@ -25,28 +37,21 @@ public class Point {
      * @return
      */
     public Point getAdjacent(Direction direction) {
-        int d = getDimension();
-        int[] adj = getCoords();
-        if (d > 0 && direction == Direction.EAST) {
-            adj[0] += 1;
-        } else if (d > 0 && direction == Direction.WEST) {
-            adj[0] -= 1;
-        } else if (d > 1 && direction == Direction.NORTH) {
-            adj[1] += 1;
-        } else if (d > 1 && direction == Direction.SOUTH) {
-            adj[1] -= 1;
-        } else if (d > 2 && direction == Direction.UP) {
-            adj[2] += 1;
-        } else if (d > 2 && direction == Direction.DOWN) {
-            adj[2] -= 1;
+        if (direction == Direction.EAST) {
+            return new Point(x + 1, y, z, dimension);
+        } else if (direction == Direction.WEST) {
+            return new Point(x - 1, y, z, dimension);
+        } else if (direction == Direction.NORTH) {
+            return new Point(x, y + 1, z, dimension);
+        } else if (direction == Direction.SOUTH) {
+            return new Point(x, y - 1, z, dimension);
+        } else if (dimension > 2 && direction == Direction.UP) {
+            return new Point(x, y, z + 1, dimension);
+        } else if (dimension > 2 && direction == Direction.DOWN) {
+            return new Point(x, y, z - 1, dimension);
         } else {
             throw new IllegalArgumentException(direction + " is out of the dimension of this point");
         }
-        return new Point(adj);
-    }
-
-    public int getDimension() {
-        return coords.length;
     }
 
     @Override
@@ -56,17 +61,29 @@ public class Point {
 
         Point point = (Point) o;
 
-        return Arrays.equals(coords, point.coords);
+        if (dimension != point.dimension) return false;
+        if (x != point.x) return false;
+        if (y != point.y) return false;
+        if (z != point.z) return false;
 
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(coords);
+        int result = x;
+        result = 31 * result + y;
+        result = 31 * result + z;
+        result = 31 * result + dimension;
+        return result;
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(coords);
+        if (dimension == 2) {
+            return "(" + x + ", " + y + ")";
+        } else {
+            return "(" + x + ", " + y + ", " + z + ")";
+        }
     }
 }

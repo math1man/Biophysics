@@ -74,7 +74,7 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
             // try to add the peptide in every direction
             for (Direction nextDir : Direction.values(dim)) {
                 Point next = folding.lastPoint.getAdjacent(nextDir);
-                if (!folding.lattice.containsPoint(next) && next.getCoords()[dim - 1] < getMaxY(polypeptide)) {
+                if (!folding.lattice.containsPoint(next) && next.y < getMaxY(polypeptide)) {
                     SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
                     l.put(next, p);
                     // set the bound from the previous bound, minus the min interactions for this peptide,
@@ -92,7 +92,7 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
                                 }
                             }
                         }
-                        if (next.getCoords()[1] > 1) {
+                        if (next.y > 1) {
                             bound -= getAdjustedSurfaceMinInteraction();
                         }
                     } else {

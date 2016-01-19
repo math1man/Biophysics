@@ -31,17 +31,17 @@ public class SurfaceLattice extends Lattice {
 
     @Override
     public boolean containsPoint(Point point) {
-        if (point.getCoords()[1] < 0) {
+        if (point.y < 0) {
             throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
         }
-        return point.getCoords()[1] == 0 || super.containsPoint(point);
+        return point.y == 0 || super.containsPoint(point);
     }
 
     @Override
     public Peptide get(Point point) {
-        if (point.getCoords()[1] < 0) {
+        if (point.y < 0) {
             throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
-        } else if (point.getCoords()[1] == 0) {
+        } else if (point.y == 0) {
             return new Peptide(-2, surface);
         } else {
             return super.get(point);
@@ -50,7 +50,7 @@ public class SurfaceLattice extends Lattice {
 
     @Override
     public void put(Point point, Peptide peptide) {
-        if (point.getCoords()[1] < 1) {
+        if (point.y < 1) {
             throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
         }
         super.put(point, peptide);
@@ -60,7 +60,7 @@ public class SurfaceLattice extends Lattice {
     public List<String> visualize() {
         List<String> lines = super.visualize();
         if (getDimension() == 2) {
-            for (int i=1; i<minusBounds[1]; i++) {
+            for (int i=1; i<minusYBound; i++) {
                 lines.add("");
                 lines.add("");
                 System.out.println();
@@ -68,7 +68,7 @@ public class SurfaceLattice extends Lattice {
             }
             StringBuilder surface = new StringBuilder();
             StringBuilder base = new StringBuilder();
-            for (int j=minusBounds[0]; j<=plusBounds[0]; j++) {
+            for (int j=minusXBound; j<=plusXBound; j++) {
                 surface.append(this.surface).append(" ");
                 base.append("-+--");
             }
