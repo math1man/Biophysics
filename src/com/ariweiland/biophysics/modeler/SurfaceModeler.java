@@ -86,7 +86,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
                     bound = lattice.getEnergy();
                 }
                 // add the lattice to the heap as a Folding
-                initialHeap.add(new Folding(lattice, new Point(lastX, j), k, bound));
+                initialHeap.add(new Folding(lattice, Point.point(lastX, j), k, bound));
             }
         }
         return initialHeap;

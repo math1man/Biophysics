@@ -4,6 +4,7 @@ import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.peptide.Residue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -66,13 +67,42 @@ public class SurfaceLattice extends Lattice {
 
     @Override
     public List<String> visualize() {
-        List<String> lines = super.visualize();
+        List<String> lines = new ArrayList<>();
         for (int k=minusZBound; k<=plusZBound; k++) {
-            for (int i=1; i<minusYBound; i++) {
-                lines.add("");
-                lines.add("");
-                System.out.println();
-                System.out.println();
+            for (int i=plusYBound; i > 0; i--) {
+                StringBuilder latticeString = new StringBuilder();
+                StringBuilder connectionsString = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    Peptide p = get(Point.point(j, i, k));
+                    if (p != null) {
+                        int index = p.index;
+                        String residue = p.residue.toString();
+                        Point up = Point.point(j, i, k + 1);
+                        if (containsPoint(up) && (get(up).index == index + 1 || get(up).index == index - 1)) {
+                            residue = residue.replace('(', '{').replace(')', '}');
+                        }
+                        latticeString.append(residue);
+                        Point right = Point.point(j + 1, i, k);
+                        if (containsPoint(right) && (get(right).index == index + 1 || get(right).index == index - 1)) {
+                            latticeString.append("-");
+                        } else {
+                            latticeString.append(" ");
+                        }
+                        Point below = Point.point(j, i - 1, k);
+                        if (containsPoint(below) && (get(below).index == index + 1 || get(below).index == index - 1)) {
+                            connectionsString.append(" |  ");
+                        } else {
+                            connectionsString.append("    ");
+                        }
+                    } else {
+                        latticeString.append("    ");
+                        connectionsString.append("    ");
+                    }
+                }
+                lines.add(latticeString.toString());
+                lines.add(connectionsString.toString());
+                System.out.println(latticeString);
+                System.out.println(connectionsString);
             }
             StringBuilder surface = new StringBuilder();
             StringBuilder base = new StringBuilder();

@@ -38,9 +38,9 @@ public abstract class ParallelModeler extends Modeler {
 
     protected Point makeAsymmetricPoint(int x, int y) {
         if (getDimension() == 2) {
-            return new Point(x, y);
+            return Point.point(x, y);
         } else {
-            return new Point(x, y, 0);
+            return Point.point(x, y, 0);
         }
     }
 

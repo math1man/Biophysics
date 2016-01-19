@@ -29,11 +29,11 @@ public class OldParallelModeler extends ParallelModeler {
         // initialize the lattices
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice(2, size);
-        line.put(new Point(0, 0), first);
+        line.put(Point.point(0, 0), first);
 
         if (size > 1) {
             Peptide second = polypeptide.get(1);
-            line.put(new Point(1, 0), second);
+            line.put(Point.point(1, 0), second);
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
@@ -42,16 +42,16 @@ public class OldParallelModeler extends ParallelModeler {
                 Peptide next = polypeptide.get(i);
                 lowerBound -= 2 * next.minInteraction();
                 Lattice bend = new Lattice(line);
-                Point point = new Point(i - 1, 1);
+                Point point = Point.point(i - 1, 1);
                 bend.put(point, next);
                 if (i == size - 1) {
                     lowerBound = bend.getEnergy();
                 }
                 initialHeap.add(new Folding(bend, point, i, lowerBound));
-                line.put(new Point(i, 0), next);
+                line.put(Point.point(i, 0), next);
             }
         }
-        initialHeap.add(new Folding(line, new Point(size - 1, 0), size - 1, line.getEnergy()));
+        initialHeap.add(new Folding(line, Point.point(size - 1, 0), size - 1, line.getEnergy()));
         return initialHeap;
     }
 
