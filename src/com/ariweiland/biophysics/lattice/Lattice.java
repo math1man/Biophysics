@@ -47,7 +47,7 @@ public class Lattice {
         if (dimension < 2 || dimension > 3) {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }
-        this.lattice = new HashMap<>(lattice.lattice);
+        this.lattice = new HashMap<>(lattice.lattice); // TODO: this is throwing java.lang.OutOfMemoryError: GC overhead limit exceeded
         this.energy = lattice.energy;
         this.surfaceSize = lattice.surfaceSize;
         this.plusXBound  = lattice.plusXBound;
