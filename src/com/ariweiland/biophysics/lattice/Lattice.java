@@ -66,21 +66,12 @@ public class Lattice {
 
     /**
      * Returns true if the specified point is occupied
-     * @param coords
-     * @return
-     */
-    public boolean containsPoint(int... coords) {
-        return containsPoint(new Point(coords));
-    }
-
-    /**
-     * Returns true if the specified point is occupied
      * @param point
      * @return
      */
     public boolean containsPoint(Point point) {
         if (point.getDimension() != dimension) {
-            throw new IllegalArgumentException("Incorrect number of points");
+            throw new IllegalArgumentException("Incorrect dimension");
         }
         return lattice.containsKey(point);
     }
@@ -92,15 +83,6 @@ public class Lattice {
      */
     public boolean containsValue(Peptide peptide) {
         return lattice.containsValue(peptide);
-    }
-
-    /**
-     * Returns the peptide at the specified point, or null
-     * @param coords
-     * @return
-     */
-    public Peptide get(int... coords) {
-        return get(new Point(coords));
     }
 
     /**
@@ -118,22 +100,11 @@ public class Lattice {
     /**
      * Puts the peptide in the lattice at the specified point.
      * Returns the peptide that previously occupied the point.
-     * @param peptide
-     * @param coords
-     * @return
-     */
-    public void put(Peptide peptide, int... coords) {
-        put(peptide, new Point(coords));
-    }
-
-    /**
-     * Puts the peptide in the lattice at the specified point.
-     * Returns the peptide that previously occupied the point.
-     * @param peptide
      * @param point
+     * @param peptide
      * @return
      */
-    public void put(Peptide peptide, Point point) {
+    public void put(Point point, Peptide peptide) {
         if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");
         }
@@ -174,7 +145,7 @@ public class Lattice {
      */
     public void putAll(Map<Point, Peptide> lattice) {
         for (Map.Entry<Point, Peptide> e : lattice.entrySet()) {
-            put(e.getValue(), e.getKey());
+            put(e.getKey(), e.getValue());
         }
     }
 
@@ -239,16 +210,18 @@ public class Lattice {
                 StringBuilder latticeString = new StringBuilder();
                 StringBuilder connectionsString = new StringBuilder();
                 for (int j=minusBounds[0]; j<=plusBounds[0]; j++) {
-                    Peptide p = get(j, i);
+                    Peptide p = get(new Point(j, i));
                     if (p != null) {
                         latticeString.append(p.residue);
                         int index = p.index;
-                        if (containsPoint(j + 1, i) && (get(j + 1, i).index == index + 1 || get(j + 1, i).index == index - 1)) {
+                        Point right = new Point(j + 1, i);
+                        if (containsPoint(right) && (get(right).index == index + 1 || get(right).index == index - 1)) {
                             latticeString.append("-");
                         } else {
                             latticeString.append(" ");
                         }
-                        if (containsPoint(j, i - 1) && (get(j, i - 1).index == index + 1 || get(j, i - 1).index == index - 1)) {
+                        Point below = new Point(j, i - 1);
+                        if (containsPoint(below) && (get(below).index == index + 1 || get(below).index == index - 1)) {
                             connectionsString.append(" |  ");
                         } else {
                             connectionsString.append("    ");

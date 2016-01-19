@@ -83,7 +83,7 @@ public abstract class ParallelModeler extends Modeler {
 
         int processors = Runtime.getRuntime().availableProcessors();
         threads = new PeptideThread[processors];
-        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>();
+        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>(MAX_HEAP_SIZE / 4);
 
         System.out.println("Processors: " + processors);
         System.out.println("Initial Heap Size: " + initialHeap.size());

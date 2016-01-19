@@ -92,11 +92,11 @@ public abstract class Modeler {
     }
 
     public static void main(String[] args) {
-        Modeler modeler = new CurrentSurfaceModeler(2, Residue.P);
+        Modeler modeler = new CurrentParallelModeler(3);
 //        Polypeptide polypeptide = Polypeptide.GLUCAGON;
 //        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<12; i++) {
+        for (int i=0; i<20; i++) {
             if (Math.random() < 0.4) {
                 polypeptide.add(Residue.H);
             } else {

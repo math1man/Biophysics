@@ -49,11 +49,11 @@ public class SurfaceLattice extends Lattice {
     }
 
     @Override
-    public void put(Peptide peptide, Point point) {
+    public void put(Point point, Peptide peptide) {
         if (point.getCoords()[1] < 1) {
             throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
         }
-        super.put(peptide, point);
+        super.put(point, peptide);
     }
 
     @Override

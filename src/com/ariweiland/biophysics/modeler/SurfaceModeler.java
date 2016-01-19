@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.SurfaceLattice;
 import com.ariweiland.biophysics.peptide.Peptide;
@@ -69,7 +70,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
                     } else {
                         y = i + k;
                     }
-                    lattice.put(next, makeAsymmetricPoint(0, y));
+                    lattice.put(makeAsymmetricPoint(0, y), next);
                     bound += getBoundAdjust(y, next);
                 }
                 int lastX = 0;
@@ -77,7 +78,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
                 if (k < size) {
                     Peptide next = polypeptide.get(k);
                     lastX = 1;
-                    lattice.put(next, makeAsymmetricPoint(lastX, j));
+                    lattice.put(makeAsymmetricPoint(lastX, j), next);
                     bound += getBoundAdjust(j, next);
                 }
                 // if all residues have been placed, replace the bound with the actual lattice energy
@@ -85,7 +86,7 @@ public abstract class SurfaceModeler extends ParallelModeler {
                     bound = lattice.getEnergy();
                 }
                 // add the lattice to the heap as a Folding
-                initialHeap.add(new Folding(lattice, lastX, j, k, bound));
+                initialHeap.add(new Folding(lattice, new Point(lastX, j), k, bound));
             }
         }
         return initialHeap;

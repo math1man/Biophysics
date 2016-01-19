@@ -16,10 +16,6 @@ public class Folding implements Comparable<Folding> {
     public final int index;
     public final double energyBound;
 
-    public Folding(Lattice lattice, int lastX, int lastY, int index, double energyBound) {
-        this(lattice, new Point(lastX, lastY), index, energyBound);
-    }
-
     public Folding(Lattice lattice, Point lastPoint, int index, double energyBound) {
         this.lattice = lattice;
         this.lastPoint = lastPoint;

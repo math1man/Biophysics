@@ -29,11 +29,11 @@ public class OldParallelModeler extends ParallelModeler {
         // initialize the lattices
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice(2);
-        line.put(first, 0, 0);
+        line.put(new Point(0, 0), first);
 
         if (size > 1) {
             Peptide second = polypeptide.get(1);
-            line.put(second, 1, 0);
+            line.put(new Point(1, 0), second);
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
@@ -42,15 +42,16 @@ public class OldParallelModeler extends ParallelModeler {
                 Peptide next = polypeptide.get(i);
                 lowerBound -= 2 * next.minInteraction();
                 Lattice bend = new Lattice(line);
-                bend.put(next, i - 1, 1);
+                Point point = new Point(i - 1, 1);
+                bend.put(point, next);
                 if (i == size - 1) {
                     lowerBound = bend.getEnergy();
                 }
-                initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
-                line.put(next, i, 0);
+                initialHeap.add(new Folding(bend, point, i, lowerBound));
+                line.put(new Point(i, 0), next);
             }
         }
-        initialHeap.add(new Folding(line, size - 1, 0, size - 1, line.getEnergy()));
+        initialHeap.add(new Folding(line, new Point(size - 1, 0), size - 1, line.getEnergy()));
         return initialHeap;
     }
 
@@ -65,7 +66,7 @@ public class OldParallelModeler extends ParallelModeler {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(folding.lattice);
-                    l.put(p, next);
+                    l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all

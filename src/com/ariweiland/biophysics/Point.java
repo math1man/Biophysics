@@ -46,7 +46,7 @@ public class Point {
     }
 
     public int getDimension() {
-        return getCoords().length;
+        return coords.length;
     }
 
     @Override
@@ -56,17 +56,17 @@ public class Point {
 
         Point point = (Point) o;
 
-        return Arrays.equals(getCoords(), point.getCoords());
+        return Arrays.equals(coords, point.coords);
 
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(getCoords());
+        return Arrays.hashCode(coords);
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(getCoords());
+        return Arrays.toString(coords);
     }
 }
