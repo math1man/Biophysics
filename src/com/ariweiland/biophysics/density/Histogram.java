@@ -33,11 +33,11 @@ public abstract class Histogram {
         Map<Double, Integer> count = histogram.count(3, polypeptide);
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
-        System.out.println("Bins : Counts");
+        System.out.println("Bins\tCounts");
         List<Double> keys = new ArrayList<>(count.keySet());
         Collections.sort(keys);
         for (double d : keys) {
-            System.out.println(d + "\t" + count.get(d));
+            System.out.println(d + " \t" + count.get(d));
         }
     }
 
