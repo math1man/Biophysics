@@ -1,0 +1,27 @@
+(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)
+Node count: 14
+
+Brute Force:
+33140297 total states counted
+Elapsed time: 80.015 s
+Bins : Counts
+-6.0 : 288
+-5.0 : 9328
+-4.0 : 73432
+-3.0 : 512684
+-2.0 : 2476652
+-1.0 : 9925868
+0.0 : 20142045
+
+Pure Monte Carlo:
+9999936 total states counted
+Elapsed time: 151.943 s
+Bins : Counts
+-6.0 : 198
+-5.0 : 5820
+-4.0 : 43981
+-3.0 : 251460
+-2.0 : 1024032
+-1.0 : 3269360
+0.0 : 5405085
+

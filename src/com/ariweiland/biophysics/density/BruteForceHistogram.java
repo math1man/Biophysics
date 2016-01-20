@@ -21,14 +21,14 @@ public class BruteForceHistogram extends Histogram {
         Map<Double, Integer> counter = new HashMap<>();
         int[] state = new int[size]; // we won't actually use the 0 index
         Arrays.fill(state, -1);
-        Point last = Point.point(0, 0, 0);
         Lattice first = new Lattice(dimension, size);
-        first.put(last, polypeptide.get(0));
+        first.put(Point.point(0, 0, 0), polypeptide.get(0));
+        first.put(Point.point(1, 0, 0), polypeptide.get(1));
         Folding[] foldings = new Folding[size];
-        foldings[0] = new Folding(first, last, 0, 0);
-        int foldIndex = 1; // the first residue is directionless
+        foldings[1] = new Folding(first, Point.point(1, 0, 0), 1, 0);
+        int foldIndex = 2; // the first residue is directionless, and the second one just determines symmetry
         int count = 0;
-        while (foldIndex > 0) {
+        while (foldIndex > 1) {
             // Increment the position of the queen in the currently specified row
             state[foldIndex]++;
             // If we go over, reset that row and decrement the foldIndex
