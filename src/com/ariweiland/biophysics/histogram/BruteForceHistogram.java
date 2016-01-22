@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.density;
+package com.ariweiland.biophysics.histogram;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
@@ -27,14 +27,12 @@ public class BruteForceHistogram extends Histogram {
         Folding[] foldings = new Folding[size];
         foldings[1] = new Folding(first, Point.point(1, 0, 0), 1, 0);
         int foldIndex = 2; // the first residue is directionless, and the second one just determines symmetry
-        int count = 0;
+        long count = 0;
         while (foldIndex > 1) {
-            // Increment the position of the queen in the currently specified row
+            // Change the direction of the currently specified residue
             state[foldIndex]++;
-            // If we go over, reset that row and decrement the foldIndex
-            // so that it will increment the previous row position
-            // If we are at the first row, placing the queen past
-            // half way is symmetric, so we can ignore them
+            // If we go over, reset that direction and decrement the foldIndex
+            // so that it will modify the previous residue direction
             if (state[foldIndex] >= 2 * dimension) {
                 state[foldIndex] = -1;
                 foldIndex--;
@@ -45,11 +43,11 @@ public class BruteForceHistogram extends Histogram {
                 if (!lattice.containsPoint(next)) {
                     lattice.put(next, polypeptide.get(foldIndex));
                     if (foldIndex < size - 1) {
-                        // If valid and there are still more rows to position, go to the next row
+                        // If valid and there are still more residues to position, go to the next residue
                         foldings[foldIndex] = new Folding(lattice, next, foldIndex, 0);
                         foldIndex++;
                     } else {
-                        // Otherwise, increment the counter, reset the current row, and go back
+                        // Otherwise, increment the counter, reset the current residues, and go back
                         double energy = lattice.getEnergy();
                         if (!counter.containsKey(energy)) {
                             counter.put(energy, 0);
@@ -59,7 +57,7 @@ public class BruteForceHistogram extends Histogram {
                         foldIndex--;
                         count++;
                         if (count % 1000000 == 0) {
-                            System.out.println(count + " states counted");
+                            System.out.println((count / 1000000) + "M states counted");
                         }
                     }
                 }

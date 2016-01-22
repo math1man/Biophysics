@@ -60,3 +60,72 @@ and slightly under-represent the higher energy confirmations. Of course,
 because the higher energy confirmations account for the majority of all the
 confirmations, this is inconsistent.
 
+
+===========================================
+Surface Version:
+
+(P)-(H)-(H)-(P)-(H)-(P)-(H)-(H)-(H)-(P)-(P)-(P)
+Node count: 12
+
+Brute Force:
+83683492 total states counted
+Elapsed time: 183.605 s
+Bins	Counts
+-9.0 	552
+-8.0 	6744
+-7.0 	49240
+-6.0 	175256
+-5.0 	307544
+-4.0 	806520
+-3.0 	2087848
+-2.0 	5143056
+-1.0 	19249804
+0.0 	55856928
+
+Pure Monte Carlo:
+9999745 total states counted
+Elapsed time: 147.053 s
+Bins	Counts
+-9.0 	827
+-8.0 	7922
+-7.0 	46507
+-6.0 	122625
+-5.0 	159375
+-4.0 	297514
+-3.0 	492231
+-2.0 	883280
+-1.0 	2540093
+0.0 	5449371
+
+(H)-(H)-(H)-(P)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(P)
+Node count: 14
+
+Brute Force:
+2213127580 total states counted
+Elapsed time: 6143.078 s
+Bins	Counts
+-9.0 	4480
+-8.0 	45864
+-7.0 	395064
+-6.0 	1879928
+-5.0 	4182268
+-4.0 	12283016
+-3.0 	47464296
+-2.0 	78270852
+-1.0 	352498641
+0.0 	1716103171
+
+Pure Monte Carlo:
+9999246 total states counted
+Elapsed time: 256.772 s
+Bins	Counts
+-9.0 	387
+-8.0 	3033
+-7.0 	18886
+-6.0 	65112
+-5.0 	101465
+-4.0 	208486
+-3.0 	492759
+-2.0 	591506
+-1.0 	1915091
+0.0 	6602521

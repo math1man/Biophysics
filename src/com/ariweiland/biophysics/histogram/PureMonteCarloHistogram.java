@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.density;
+package com.ariweiland.biophysics.histogram;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
@@ -58,7 +58,7 @@ public class PureMonteCarloHistogram extends Histogram {
                 counter.put(energy, 1 + counter.get(energy));
                 count++;
                 if (count % 1000000 == 0) {
-                    System.out.println(count + " states counted");
+                    System.out.println((count / 1000000) + "M states counted");
                 }
             }
         }

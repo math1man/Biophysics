@@ -15,6 +15,7 @@ public class Residue {
     public static final Residue P = new Residue("(P)");
     public static final Residue H = new Residue("(H)");
     public static final Residue NEUT = new Residue("(_)");
+    public static final Residue S = new Residue("(S)"); // arbitrary "Surface" residue with custom interactions
     public static final Residue H2O = null;
     private static final EnergyMap ENERGY_MAP = new EnergyMap();
 
@@ -40,6 +41,9 @@ public class Residue {
         ENERGY_MAP.put(H,   H,   -1);
 //        ENERGY_MAP.put(H,   H2O,  1.16);
 //        ENERGY_MAP.put(H,   P,    1.16);
+
+        ENERGY_MAP.put(S,   H,   -1);
+//        ENERGY_MAP.put(S,   P,   -1);
 
         // TODO: adjust interactions?
     }
@@ -67,6 +71,8 @@ public class Residue {
                 return Residue.P;
             case 'H':
                 return Residue.H;
+            case 'S':
+                return Residue.S;
             default:
                 return Residue.NEUT;
         }

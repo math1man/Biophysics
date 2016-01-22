@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.density;
+package com.ariweiland.biophysics.histogram;
 
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -16,10 +16,10 @@ public abstract class Histogram {
     public abstract Map<Double, Integer> count(int dimension, Polypeptide polypeptide);
 
     public static void main(String[] args) {
-        Histogram histogram = new PureMonteCarloHistogram(10000000);
+        Histogram histogram = new PureMCSurfaceHistogram(10000000, Residue.S);
 //        Polypeptide polypeptide = new Polypeptide("(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<16; i++) {
+        for (int i=0; i<14; i++) {
             if (Math.random() < 0.4) {
                 polypeptide.add(Residue.H);
             } else {
