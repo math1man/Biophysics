@@ -64,6 +64,29 @@ public class Point {
                 return this;
         }
     }
+    
+    public boolean isAdjacentTo(Point p) {
+        int shifts = 0;
+        int dif = Math.abs(this.x - p.x);
+        if (dif == 1) {
+            shifts++;
+        } else if (dif > 1) {
+            return false;
+        }
+        dif = Math.abs(this.y - p.y);
+        if (dif == 1) {
+            shifts++;
+        } else if (dif > 1) {
+            return false;
+        }
+        dif = Math.abs(this.z - p.z);
+        if (dif == 1) {
+            shifts++;
+        } else if (dif > 1) {
+            return false;
+        }
+        return shifts == 1;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -16,9 +16,9 @@ import java.util.*;
 public class Lattice {
 
     private final int dimension;
-    private final Map<Point, Peptide> lattice;
-    private double energy = 0;
-    private int surfaceSize = 0;
+    protected final Map<Point, Peptide> lattice;
+    protected double energy = 0;
+    protected int surfaceSize = 0;
     protected int plusXBound = 0;
     protected int minusXBound = 0;
     protected int plusYBound = 0;
@@ -230,8 +230,6 @@ public class Lattice {
     /**
      * Draws an ASCII visualization of the peptides in the lattice to the console.
      * Also returns the drawing as a list of strings. Currently only draws 2D lattices.
-     *
-     * TODO: handle drawing 3D lattice better
      */
     public List<String> visualize() {
         List<String> lines = new ArrayList<>();

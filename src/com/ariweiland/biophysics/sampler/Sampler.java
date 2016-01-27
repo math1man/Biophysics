@@ -1,22 +1,31 @@
-package com.ariweiland.biophysics.histogram;
+package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Ari Weiland
  */
-public abstract class Histogram {
+public abstract class Sampler {
 
-    public abstract Map<Double, Integer> count(int dimension, Polypeptide polypeptide);
+    public abstract Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide);
+    
+    public Map<Double, Double> normalize(Map<Double, Double> density) {
+        double total = 0;
+        for (double d : density.values()) {
+            total += d;
+        }
+        Map<Double, Double> normalized = new HashMap<>();
+        for (double d : density.keySet()) {
+            normalized.put(d, density.get(d) / total);
+        }
+        return normalized;
+    }
 
     public static void main(String[] args) {
-        Histogram histogram = new NaiveMCSurfaceHistogram(10000000, Residue.S);
+        Sampler sampler = new NaiveMCSurfaceSampler(10000000, Residue.S);
 //        Polypeptide polypeptide = new Polypeptide("(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
         for (int i=0; i<14; i++) {
@@ -30,14 +39,14 @@ public abstract class Histogram {
         System.out.println("Node count: " + polypeptide.size());
         System.out.println();
         long start = System.currentTimeMillis();
-        Map<Double, Integer> count = histogram.count(3, polypeptide);
+        Map<Double, Double> density = sampler.getDensity(3, polypeptide);
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Bins\tCounts");
-        List<Double> keys = new ArrayList<>(count.keySet());
+        List<Double> keys = new ArrayList<>(density.keySet());
         Collections.sort(keys);
         for (double d : keys) {
-            System.out.println(d + " \t" + count.get(d));
+            System.out.println(d + " \t" + density.get(d));
         }
     }
 

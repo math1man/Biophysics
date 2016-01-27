@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics.histogram;
+package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
@@ -13,12 +13,12 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class BruteForceHistogram extends Histogram {
+public class BruteForceSampler extends Sampler {
 
     @Override
-    public Map<Double, Integer> count(int dimension, Polypeptide polypeptide) {
+    public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
         int size = polypeptide.size();
-        Map<Double, Integer> counter = new HashMap<>();
+        Map<Double, Double> counter = new HashMap<>();
         int[] state = new int[size]; // we won't actually use the 0 index
         Arrays.fill(state, -1);
         Lattice first = new Lattice(dimension, size);
@@ -50,7 +50,7 @@ public class BruteForceHistogram extends Histogram {
                         // Otherwise, increment the counter, reset the current residues, and go back
                         double energy = lattice.getEnergy();
                         if (!counter.containsKey(energy)) {
-                            counter.put(energy, 0);
+                            counter.put(energy, 0.0);
                         }
                         counter.put(energy, 1 + counter.get(energy));
                         state[foldIndex] = -1;

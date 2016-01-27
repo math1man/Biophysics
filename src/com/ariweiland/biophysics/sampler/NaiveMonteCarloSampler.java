@@ -1,10 +1,9 @@
-package com.ariweiland.biophysics.histogram;
+package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
-import com.ariweiland.biophysics.lattice.SurfaceLattice;
+import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
-import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,39 +13,34 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class NaiveMCSurfaceHistogram extends Histogram {
+public class NaiveMonteCarloSampler extends Sampler {
 
     private final int samples;
-    private final Residue surface;
 
-    public NaiveMCSurfaceHistogram(int samples, Residue surface) {
+    public NaiveMonteCarloSampler(int samples) {
         this.samples = samples;
-        this.surface = surface;
     }
 
     public int getSamples() {
         return samples;
     }
 
-    public Residue getSurface() {
-        return surface;
-    }
-
     @Override
-    public Map<Double, Integer> count(int dimension, Polypeptide polypeptide) {
+    public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
         int size = polypeptide.size();
-        Map<Double, Integer> counter = new HashMap<>();
+        Map<Double, Double> counter = new HashMap<>();
+        Lattice base = new Lattice(dimension, size);
+        base.put(Point.point(0, 0, 0), polypeptide.get(0));
+        base.put(Point.point(1, 0, 0), polypeptide.get(1));
         int count = 0;
         for (int i=0; i<samples; i++) {
-            SurfaceLattice lattice = new SurfaceLattice(dimension, surface, size);
-            // start out at a random y value between 1 and size, inclusive
-            Point last = Point.point(0, (int) (Math.random() * size) + 1, 0);
-            lattice.put(last, polypeptide.get(0));
+            Lattice lattice = new Lattice(base);
+            Point last = Point.point(1, 0, 0);
             boolean isBoxedIn = false;
-            for (int j=1; j<size && !isBoxedIn; j++) {
+            for (int j=2; j<size && !isBoxedIn; j++) {
                 List<Direction> opens = new ArrayList<>();
                 for (Direction d : Direction.values(dimension)) {
-                    if (!lattice.containsPoint(last.getAdjacent(d)) && last.getAdjacent(d).y <= size) {
+                    if (!lattice.containsPoint(last.getAdjacent(d))) {
                         opens.add(d);
                     }
                 }
@@ -62,7 +56,7 @@ public class NaiveMCSurfaceHistogram extends Histogram {
             if (lattice.size() == size) {
                 double energy = lattice.getEnergy();
                 if (!counter.containsKey(energy)) {
-                    counter.put(energy, 0);
+                    counter.put(energy, 0.0);
                 }
                 counter.put(energy, 1 + counter.get(energy));
                 count++;
