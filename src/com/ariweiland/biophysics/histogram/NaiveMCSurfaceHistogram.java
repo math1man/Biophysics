@@ -2,52 +2,61 @@ package com.ariweiland.biophysics.histogram;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.SurfaceLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
+import com.ariweiland.biophysics.peptide.Residue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Ari Weiland
  */
-public class PureMonteCarloHistogram extends Histogram {
+public class NaiveMCSurfaceHistogram extends Histogram {
 
     private final int samples;
+    private final Residue surface;
 
-    public PureMonteCarloHistogram(int samples) {
+    public NaiveMCSurfaceHistogram(int samples, Residue surface) {
         this.samples = samples;
+        this.surface = surface;
     }
 
     public int getSamples() {
         return samples;
     }
 
+    public Residue getSurface() {
+        return surface;
+    }
+
     @Override
     public Map<Double, Integer> count(int dimension, Polypeptide polypeptide) {
         int size = polypeptide.size();
         Map<Double, Integer> counter = new HashMap<>();
-        Lattice base = new Lattice(dimension, size);
-        base.put(Point.point(0, 0, 0), polypeptide.get(0));
-        base.put(Point.point(1, 0, 0), polypeptide.get(1));
         int count = 0;
         for (int i=0; i<samples; i++) {
-            Lattice lattice = new Lattice(base);
-            Point last = Point.point(1, 0, 0);
+            SurfaceLattice lattice = new SurfaceLattice(dimension, surface, size);
+            // start out at a random y value between 1 and size, inclusive
+            Point last = Point.point(0, (int) (Math.random() * size) + 1, 0);
+            lattice.put(last, polypeptide.get(0));
             boolean isBoxedIn = false;
-            for (int j=2; j<size && !isBoxedIn; j++) {
-                Point next;
-                do {
-                    Direction d = Direction.values()[((int) (Math.random() * 2 * dimension))];
-                    next = last.getAdjacent(d);
-                } while (lattice.containsPoint(next));
-                lattice.put(next, polypeptide.get(j));
-                last = next;
-                isBoxedIn = true;
+            for (int j=1; j<size && !isBoxedIn; j++) {
+                List<Direction> opens = new ArrayList<>();
                 for (Direction d : Direction.values(dimension)) {
-                    if (!lattice.containsPoint(last.getAdjacent(d))) {
-                        isBoxedIn = false;
+                    if (!lattice.containsPoint(last.getAdjacent(d)) && last.getAdjacent(d).y <= size) {
+                        opens.add(d);
                     }
+                }
+                if (opens.isEmpty()) {
+                    isBoxedIn = true;
+                } else {
+                    Direction d = opens.get((int) (Math.random() * opens.size()));
+                    Point next = last.getAdjacent(d);
+                    lattice.put(next, polypeptide.get(j));
+                    last = next;
                 }
             }
             if (lattice.size() == size) {

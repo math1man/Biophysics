@@ -16,7 +16,7 @@ public abstract class Histogram {
     public abstract Map<Double, Integer> count(int dimension, Polypeptide polypeptide);
 
     public static void main(String[] args) {
-        Histogram histogram = new PureMCSurfaceHistogram(10000000, Residue.S);
+        Histogram histogram = new NaiveMCSurfaceHistogram(10000000, Residue.S);
 //        Polypeptide polypeptide = new Polypeptide("(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
         for (int i=0; i<14; i++) {
