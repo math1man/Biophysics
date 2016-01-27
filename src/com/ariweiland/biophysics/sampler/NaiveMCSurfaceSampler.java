@@ -2,7 +2,7 @@ package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
-import com.ariweiland.biophysics.lattice.SurfaceLattice;
+import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
@@ -38,7 +38,7 @@ public class NaiveMCSurfaceSampler extends Sampler {
         Map<Double, Double> counter = new HashMap<>();
         int count = 0;
         for (int i=0; i<samples; i++) {
-            SurfaceLattice lattice = new SurfaceLattice(dimension, surface, size);
+            Lattice lattice = new Lattice(dimension, surface, size);
             // start out at a random y value between 1 and size, inclusive
             Point last = Point.point(0, (int) (Math.random() * size) + 1, 0);
             lattice.put(last, polypeptide.get(0));

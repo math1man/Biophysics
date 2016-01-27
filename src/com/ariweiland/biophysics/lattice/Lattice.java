@@ -16,6 +16,7 @@ import java.util.*;
 public class Lattice {
 
     private final int dimension;
+    private final Residue surface;
     protected final Map<Point, Peptide> lattice;
     protected double energy = 0;
     protected int surfaceSize = 0;
@@ -27,26 +28,37 @@ public class Lattice {
     protected int minusZBound = 0;
 
     public Lattice(int dimension) {
-        if (dimension < 2 || dimension > 3) {
-            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
-        }
-        this.dimension = dimension;
-        this.lattice = new HashMap<>();
+        this(dimension, null);
     }
 
     public Lattice(int dimension, int initialCapacity) {
+        this(dimension, null, initialCapacity);
+    }
+
+    public Lattice(int dimension, Residue surface) {
         if (dimension < 2 || dimension > 3) {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }
         this.dimension = dimension;
+        this.surface = surface;
+        this.lattice = new HashMap<>();
+    }
+
+    public Lattice(int dimension, Residue surface, int initialCapacity) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
+        }
+        this.dimension = dimension;
+        this.surface = surface;
         this.lattice = new HashMap<>(initialCapacity);
     }
 
     public Lattice(Lattice lattice) {
-        this.dimension = lattice.dimension;
-        if (dimension < 2 || dimension > 3) {
+        if (lattice.dimension < 2 || lattice.dimension > 3) {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }
+        this.dimension = lattice.dimension;
+        this.surface = lattice.surface;
         this.lattice = new HashMap<>(lattice.lattice); // TODO: this is throwing java.lang.OutOfMemoryError: GC overhead limit exceeded
         this.energy = lattice.energy;
         this.surfaceSize = lattice.surfaceSize;
@@ -84,7 +96,10 @@ public class Lattice {
      * @return
      */
     public boolean containsPoint(Point point) {
-        return lattice.containsKey(point);
+        if (hasSurface() && point.y < 0) {
+            throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
+        }
+        return (hasSurface() && point.y == 0) || lattice.containsKey(point);
     }
 
     /**
@@ -102,6 +117,13 @@ public class Lattice {
      * @return
      */
     public Peptide get(Point point) {
+        if (hasSurface()) {
+            if (point.y < 0) {
+                throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
+            } else if (point.y == 0) {
+                return new Peptide(-2, surface);
+            }
+        }
         return lattice.get(point);
     }
 
@@ -115,6 +137,9 @@ public class Lattice {
     public void put(Point point, Peptide peptide) {
         if (dimension == 2 && point.z != 0) {
             throw new IllegalArgumentException("2D points cannot have a z-component");
+        }
+        if (hasSurface() && point.y < 1) {
+            throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
         }
         if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");
@@ -196,6 +221,22 @@ public class Lattice {
     }
 
     /**
+     * Returns whether or not this lattice has a surface
+     * @return
+     */
+    public boolean hasSurface() {
+        return surface != null;
+    }
+
+    /**
+     * Returns the surface of this lattice, or null if it does not have a surface
+     * @return
+     */
+    public Residue getSurface() {
+        return surface;
+    }
+
+    /**
      * Returns the lattice energy
      * @return
      */
@@ -269,12 +310,25 @@ public class Lattice {
                 System.out.println(latticeString);
                 System.out.println(connectionsString);
             }
-            StringBuilder edge = new StringBuilder();
-            for (int j=minusXBound; j<=plusXBound; j++) {
-                edge.append("====");
+            if (hasSurface()) {
+                StringBuilder surface = new StringBuilder();
+                StringBuilder base = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    surface.append(this.surface).append(" ");
+                    base.append("-+--");
+                }
+                lines.add(surface.toString());
+                lines.add(base.toString());
+                System.out.println(surface);
+                System.out.println(base);
+            } else {
+                StringBuilder edge = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    edge.append("====");
+                }
+                lines.add(edge.toString());
+                System.out.println(edge);
             }
-            lines.add(edge.toString());
-            System.out.println(edge);
         }
         return lines;
     }

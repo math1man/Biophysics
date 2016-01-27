@@ -3,6 +3,7 @@ package com.ariweiland.biophysics.lattice;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.peptide.Peptide;
+import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,24 +21,44 @@ public class MovableLattice extends Lattice {
     private boolean modified = false;
 
     public MovableLattice(int dimension) {
-        super(dimension);
-        pointSequence = new ArrayList<>();
+        this(dimension, null);
     }
 
     public MovableLattice(int dimension, int initialCapacity) {
-        super(dimension, initialCapacity);
+        this(dimension, null, initialCapacity);
+    }
+
+    public MovableLattice(int dimension, Residue surface) {
+        super(dimension, surface);
+        pointSequence = new ArrayList<>();
+    }
+
+    public MovableLattice(int dimension, Residue surface, int initialCapacity) {
+        super(dimension, surface, initialCapacity);
         pointSequence = new ArrayList<>(initialCapacity);
     }
 
-    public MovableLattice(MovableLattice lattice) {
+    // TODO this constructor is untested with normal Lattices
+    public MovableLattice(Lattice lattice) {
         super(lattice);
-        pointSequence = new ArrayList<>(lattice.pointSequence);
+        if (lattice instanceof MovableLattice) {
+            pointSequence = new ArrayList<>(((MovableLattice) lattice).pointSequence);
+        } else {
+            pointSequence = new ArrayList<>(lattice.size());
+            for (Point p : keySet()) {
+                Peptide peptide = get(p);
+                pointSequence.add(peptide.index, p);
+            }
+        }
     }
 
     @Override
     public void put(Point point, Peptide peptide) {
         if (getDimension() == 2 && point.z != 0) {
             throw new IllegalArgumentException("2D points cannot have a z-component");
+        }
+        if (hasSurface() && point.y < 1) {
+            throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
         }
         if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");

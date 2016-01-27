@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.modeler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.SurfaceLattice;
+import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -75,7 +75,7 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
             for (Direction nextDir : Direction.values(dim)) {
                 Point next = folding.lastPoint.getAdjacent(nextDir);
                 if (!folding.lattice.containsPoint(next) && next.y < getMaxY(polypeptide)) {
-                    SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
+                    Lattice l = new Lattice(folding.lattice);
                     l.put(next, p);
                     // set the bound from the previous bound, minus the min interactions for this peptide,
                     // minus one favorable water interaction which
