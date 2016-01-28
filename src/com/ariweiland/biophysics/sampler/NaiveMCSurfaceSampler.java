@@ -40,7 +40,7 @@ public class NaiveMCSurfaceSampler extends Sampler {
         for (int i=0; i<samples; i++) {
             Lattice lattice = new Lattice(dimension, surface, size);
             // start out at a random y value between 1 and size, inclusive
-            Point last = Point.point(0, (int) (Math.random() * size) + 1, 0);
+            Point last = new Point(0, (int) (Math.random() * size) + 1, 0);
             lattice.put(last, polypeptide.get(0));
             boolean isBoxedIn = false;
             for (int j=1; j<size && !isBoxedIn; j++) {

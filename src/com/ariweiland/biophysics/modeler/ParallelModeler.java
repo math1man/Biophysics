@@ -1,6 +1,5 @@
 package com.ariweiland.biophysics.modeler;
 
-import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
@@ -34,14 +33,6 @@ public abstract class ParallelModeler extends Modeler {
     protected int getSeedCount(Polypeptide polypeptide) {
         double exponent = polypeptide.size() / 10.0 + 1.0; // TODO + getDimension() - 1.0;
         return (int) Math.pow(10.0, exponent);
-    }
-
-    protected Point makeAsymmetricPoint(int x, int y) {
-        if (getDimension() == 2) {
-            return Point.point(x, y);
-        } else {
-            return Point.point(x, y, 0);
-        }
     }
 
     /**

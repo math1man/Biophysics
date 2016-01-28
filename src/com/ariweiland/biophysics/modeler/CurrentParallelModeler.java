@@ -27,11 +27,11 @@ public class CurrentParallelModeler extends ParallelModeler {
         // initialize the lattices
         Peptide first = polypeptide.get(0);
         Lattice line = new Lattice(dim, size);
-        line.put(makeAsymmetricPoint(0, 0), first);
+        line.put(new Point(0, 0, 0), first);
 
         if (size > 1) {
             Peptide second = polypeptide.get(1);
-            line.put(makeAsymmetricPoint(1, 0), second);
+            line.put(new Point(1, 0, 0), second);
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
@@ -43,9 +43,9 @@ public class CurrentParallelModeler extends ParallelModeler {
             for (int i=2; i<size; i++) {
                 Peptide next = polypeptide.get(i);
                 Lattice bend = new Lattice(line);
-                Point point = makeAsymmetricPoint(i - 1, 1);
+                Point point = new Point(i - 1, 1, 0);
                 bend.put(point, next);
-                line.put(makeAsymmetricPoint(i, 0), next);
+                line.put(new Point(i, 0, 0), next);
                 lowerBound += (dim - 1) * 2 * getFavorableWaterInteraction(next) - (dim - 1) * 2 * next.minInteraction();
                 if (i == size - 1) {
                     lowerBound = bend.getEnergy();
@@ -53,7 +53,7 @@ public class CurrentParallelModeler extends ParallelModeler {
                 initialHeap.add(new Folding(bend, point, i, lowerBound));
             }
         }
-        initialHeap.add(new Folding(line, makeAsymmetricPoint(size - 1, 0), size - 1, line.getEnergy()));
+        initialHeap.add(new Folding(line, new Point(size - 1, 0, 0), size - 1, line.getEnergy()));
         return initialHeap;
     }
 

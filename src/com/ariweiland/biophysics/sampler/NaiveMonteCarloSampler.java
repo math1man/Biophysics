@@ -30,12 +30,12 @@ public class NaiveMonteCarloSampler extends Sampler {
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
         Lattice base = new Lattice(dimension, size);
-        base.put(Point.point(0, 0, 0), polypeptide.get(0));
-        base.put(Point.point(1, 0, 0), polypeptide.get(1));
+        base.put(new Point(0, 0, 0), polypeptide.get(0));
+        base.put(new Point(1, 0, 0), polypeptide.get(1));
         int count = 0;
         for (int i=0; i<samples; i++) {
             Lattice lattice = new Lattice(base);
-            Point last = Point.point(1, 0, 0);
+            Point last = new Point(1, 0, 0);
             boolean isBoxedIn = false;
             for (int j=2; j<size && !isBoxedIn; j++) {
                 List<Direction> opens = new ArrayList<>();

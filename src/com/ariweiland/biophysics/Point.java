@@ -1,8 +1,5 @@
 package com.ariweiland.biophysics;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Simple wrapper class for a coordinate in a lattice.
  * Also has a convenience method to get adjacent points.
@@ -14,28 +11,11 @@ public class Point {
     public final int y;
     public final int z;
 
-    private static Map<Integer, Map<Integer, Map<Integer, Point>>> pointMap = new HashMap<>();
-
-    public static Point point(int x, int y) {
-        return point(x, y, 0);
+    public Point(int x, int y) {
+        this(x, y, 0);
     }
 
-    public static Point point(int x, int y, int z) {
-        if (!pointMap.containsKey(x)) {
-            pointMap.put(x, new HashMap<Integer, Map<Integer, Point>>());
-        }
-        Map<Integer, Map<Integer, Point>> xMap = pointMap.get(x);
-        if (!xMap.containsKey(y)) {
-            xMap.put(y, new HashMap<Integer, Point>());
-        }
-        Map<Integer, Point> yMap = xMap.get(y);
-        if (!yMap.containsKey(z)) {
-            yMap.put(z, new Point(x, y, z));
-        }
-        return yMap.get(z);
-    }
-
-    private Point(int x, int y, int z) {
+    public Point(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -49,17 +29,17 @@ public class Point {
     public Point getAdjacent(Direction direction) {
         switch (direction) {
             case EAST:
-                return Point.point(x + 1, y, z);
+                return new Point(x + 1, y, z);
             case WEST:
-                return Point.point(x - 1, y, z);
+                return new Point(x - 1, y, z);
             case NORTH:
-                return Point.point(x, y + 1, z);
+                return new Point(x, y + 1, z);
             case SOUTH:
-                return Point.point(x, y - 1, z);
+                return new Point(x, y - 1, z);
             case UP:
-                return Point.point(x, y, z + 1);
+                return new Point(x, y, z + 1);
             case DOWN:
-                return Point.point(x, y, z - 1);
+                return new Point(x, y, z - 1);
             default: // should never get called
                 return this;
         }
@@ -67,25 +47,44 @@ public class Point {
     
     public boolean isAdjacentTo(Point p) {
         int shifts = 0;
-        int dif = Math.abs(this.x - p.x);
+        int dif = Math.abs(x - p.x);
         if (dif == 1) {
             shifts++;
         } else if (dif > 1) {
             return false;
         }
-        dif = Math.abs(this.y - p.y);
+        dif = Math.abs(y - p.y);
         if (dif == 1) {
             shifts++;
         } else if (dif > 1) {
             return false;
         }
-        dif = Math.abs(this.z - p.z);
+        dif = Math.abs(z - p.z);
         if (dif == 1) {
             shifts++;
         } else if (dif > 1) {
             return false;
         }
         return shifts == 1;
+    }
+
+    public Direction getDirectionTo(Point p) {
+        if (!isAdjacentTo(p)) {
+            throw new IllegalArgumentException("Points are not adjacent");
+        }
+        if (p.x > x) {
+            return Direction.EAST;
+        } else if (p.x < x) {
+            return Direction.WEST;
+        } else if (p.y > y) {
+            return Direction.NORTH;
+        } else if (p.y < y) {
+            return Direction.SOUTH;
+        } else if (p.z > z) {
+            return Direction.UP;
+        } else {
+            return Direction.DOWN;
+        }
     }
 
     @Override
@@ -101,10 +100,8 @@ public class Point {
 
     @Override
     public int hashCode() {
-        int result = x;
-        result = 31 * result + y;
-        result = 31 * result + z;
-        return result;
+        int hashCode = (x >>> 20) ^ (x >>> 12) ^ x ^ (y >>> 20) ^ (y >>> 12) ^ y ^ (z >>> 20) ^ (z >>> 12) ^ z;
+        return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.Point;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.MovableLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.HashMap;
@@ -19,8 +19,8 @@ public class WangLandauSampler extends Sampler {
     private final Map<Double, Double> g = new HashMap<>();
     private final Map<Double, Integer> h = new HashMap<>();
 
-    private boolean accept(Lattice old, Lattice trial) {
-        double threshold = g.get(old.getEnergy()) / g.get(trial.getEnergy());
+    private boolean accept(MovableLattice old, MovableLattice trial) {
+        double threshold = g(old.getEnergy()) / g(trial.getEnergy());
         // potentially slightly faster because randoms do not always need to be generated
         return threshold >= 1 || Math.random() < threshold;
     }
@@ -46,10 +46,16 @@ public class WangLandauSampler extends Sampler {
     }
 
     private void updateMaps(double e, double f) {
-        if (g.containsKey(e)) {
-            g.put(e, g.get(e) * f);
+        g.put(e, g(e) * f);
+        if (h.containsKey(e)) {
             h.put(e, h.get(e) + 1);
         } else {
+            h.put(e, 1);
+        }
+    }
+
+    private double g(double energy) {
+        if (!g.containsKey(energy)) {
             double min = 0;
             for (double d : g.values()) {
                 if (min == 0 || d < min) {
@@ -59,15 +65,27 @@ public class WangLandauSampler extends Sampler {
             if (min == 0) {
                 min = 1; // the starting value
             }
-            g.put(e, min);
-            h.put(e, 1);
+            g.put(energy, min);
         }
+        return g.get(energy);
     }
 
-    private Lattice applyMove(Lattice l) {
-        Lattice moved = new Lattice(l);
-        // TODO: moves
+    private MovableLattice applyMove(MovableLattice l) {
+        MovableLattice moved = new MovableLattice(l);
+        boolean success = false;
+        while (!success) {
+            int i = randomInt(moved.size() - 1);
+            if (Math.random() < 0.2) { // pull move
+                success = moved.pull(i);
+            } else {                   // bond-rebridging move
+                success = moved.rebridge(i);
+            }
+        }
         return moved;
+    }
+
+    private static int randomInt(int max) {
+        return (int) (Math.random() * max);
     }
 
     @Override
@@ -75,15 +93,16 @@ public class WangLandauSampler extends Sampler {
         int count = 0;
         double f = Math.E;
         g.clear();
-        Lattice old = new Lattice(dimension);
         int size = polypeptide.size();
+        MovableLattice old = new MovableLattice(dimension, size);
         for (int i=0; i<size; i++) {
-            old.put(Point.point(i, 0, 0), polypeptide.get(i));
+            old.put(new Point(i, 0, 0), polypeptide.get(i));
         }
+        updateMaps(old.getEnergy(), f);
         while (f > F_FINAL) {
             h.clear();
             while (!isSufficientlyFlat()) {
-                Lattice trial = applyMove(old);
+                MovableLattice trial = applyMove(old);
                 if (accept(old, trial)) {
                     updateMaps(trial.getEnergy(), f);
                     old = trial;
@@ -92,11 +111,12 @@ public class WangLandauSampler extends Sampler {
                 }
                 count++;
                 if (count % 1000000 == 0) {
-                    System.out.println((count / 1000000) + "M states counted");
+                    System.out.println((count / 1000000) + "M trials");
                 }
             }
             f = Math.sqrt(f);
         }
+        System.out.println(count + " total trials");
         return g;
     }
 }

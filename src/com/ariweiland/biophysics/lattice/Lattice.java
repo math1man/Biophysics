@@ -96,10 +96,7 @@ public class Lattice {
      * @return
      */
     public boolean containsPoint(Point point) {
-        if (hasSurface() && point.y < 0) {
-            throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
-        }
-        return (hasSurface() && point.y == 0) || lattice.containsKey(point);
+        return lattice.containsKey(point) || (surface != null && point.y == 0);
     }
 
     /**
@@ -279,22 +276,22 @@ public class Lattice {
                 StringBuilder latticeString = new StringBuilder();
                 StringBuilder connectionsString = new StringBuilder();
                 for (int j=minusXBound; j<=plusXBound; j++) {
-                    Peptide p = get(Point.point(j, i, k));
+                    Peptide p = get(new Point(j, i, k));
                     if (p != null) {
                         int index = p.index;
                         String residue = p.residue.toString();
-                        Point up = Point.point(j, i, k + 1);
+                        Point up = new Point(j, i, k + 1);
                         if (containsPoint(up) && (get(up).index == index + 1 || get(up).index == index - 1)) {
                             residue = residue.replace('(', '{').replace(')', '}');
                         }
                         latticeString.append(residue);
-                        Point right = Point.point(j + 1, i, k);
+                        Point right = new Point(j + 1, i, k);
                         if (containsPoint(right) && (get(right).index == index + 1 || get(right).index == index - 1)) {
                             latticeString.append("-");
                         } else {
                             latticeString.append(" ");
                         }
-                        Point below = Point.point(j, i - 1, k);
+                        Point below = new Point(j, i - 1, k);
                         if (containsPoint(below) && (get(below).index == index + 1 || get(below).index == index - 1)) {
                             connectionsString.append(" |  ");
                         } else {

@@ -22,10 +22,10 @@ public class BruteForceSampler extends Sampler {
         int[] state = new int[size]; // we won't actually use the 0 index
         Arrays.fill(state, -1);
         Lattice first = new Lattice(dimension, size);
-        first.put(Point.point(0, 0, 0), polypeptide.get(0));
-        first.put(Point.point(1, 0, 0), polypeptide.get(1));
+        first.put(new Point(0, 0, 0), polypeptide.get(0));
+        first.put(new Point(1, 0, 0), polypeptide.get(1));
         Folding[] foldings = new Folding[size];
-        foldings[1] = new Folding(first, Point.point(1, 0, 0), 1, 0);
+        foldings[1] = new Folding(first, new Point(1, 0, 0), 1, 0);
         int foldIndex = 2; // the first residue is directionless, and the second one just determines symmetry
         long count = 0;
         while (foldIndex > 1) {

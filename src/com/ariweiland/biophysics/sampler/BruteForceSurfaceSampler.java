@@ -36,9 +36,9 @@ public class BruteForceSurfaceSampler extends Sampler {
             int[] state = new int[size]; // we won't actually use the 0 index
             Arrays.fill(state, -1);
             Lattice first = new Lattice(dimension, surface, size);
-            first.put(Point.point(0, y, 0), polypeptide.get(0));
+            first.put(new Point(0, y, 0), polypeptide.get(0));
             Folding[] foldings = new Folding[size];
-            foldings[0] = new Folding(first, Point.point(0, y, 0), 0, 0);
+            foldings[0] = new Folding(first, new Point(0, y, 0), 0, 0);
             int foldIndex = 1; // the first residue is directionless
             while (foldIndex > 0) {
                 // Change the direction of the currently specified residue

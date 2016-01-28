@@ -25,7 +25,7 @@ public abstract class Sampler {
     }
 
     public static void main(String[] args) {
-        Sampler sampler = new NaiveMCSurfaceSampler(10000000, Residue.S);
+        Sampler sampler = new WangLandauSampler();
 //        Polypeptide polypeptide = new Polypeptide("(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
         for (int i=0; i<14; i++) {
@@ -39,7 +39,7 @@ public abstract class Sampler {
         System.out.println("Node count: " + polypeptide.size());
         System.out.println();
         long start = System.currentTimeMillis();
-        Map<Double, Double> density = sampler.getDensity(3, polypeptide);
+        Map<Double, Double> density = sampler.normalize(sampler.getDensity(3, polypeptide));
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Bins\tCounts");

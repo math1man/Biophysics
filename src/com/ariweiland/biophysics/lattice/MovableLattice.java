@@ -5,8 +5,7 @@ import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The standard lattice does not allow modifications to the lattice after a Residue has been dropped,
@@ -46,7 +45,7 @@ public class MovableLattice extends Lattice {
         } else {
             pointSequence = new ArrayList<>(lattice.size());
             for (Point p : keySet()) {
-                Peptide peptide = get(p);
+                Peptide peptide = this.lattice.get(p);
                 pointSequence.add(peptide.index, p);
             }
         }
@@ -63,7 +62,18 @@ public class MovableLattice extends Lattice {
         if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");
         }
-        modified = true;
+        for (Direction d : Direction.values(getDimension())) {
+            Peptide adj = get(point.getAdjacent(d));
+            if (adj != null) {
+                // if they are not adjoining peptides
+                if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
+                    energy += peptide.interaction(adj);
+                }
+                energy -= adj.interaction(Residue.H2O);
+            } else {
+                energy += peptide.interaction(Residue.H2O);
+            }
+        }
         lattice.put(point, peptide);
         pointSequence.add(point);
     }
@@ -79,9 +89,9 @@ public class MovableLattice extends Lattice {
         if (modified) { // lazy update
             energy = 0;
             for (Point p : pointSequence) {
-                Peptide peptide = get(p);
+                Peptide peptide = lattice.get(p);
                 for (Direction d : Direction.values(getDimension())) {
-                    Peptide adj = get(p.getAdjacent(d));
+                    Peptide adj = lattice.get(p.getAdjacent(d));
                     // don't count if lower index to avoid double counting
                     // don't count if the next index because that is not an interaction
                     if (adj == null || adj.index > peptide.index + 1) {
@@ -104,7 +114,7 @@ public class MovableLattice extends Lattice {
     }
 
     /**
-     * Applies a pull move on the residue at index i to a random valid location.
+     * Applies a pull move on the peptide at index i to a random valid location.
      * Returns true if successful, or false if no valid location was found.
      * Throws an IllegalArgumentException if i specifies the end residue.
      * @param i
@@ -114,31 +124,36 @@ public class MovableLattice extends Lattice {
         if (i == size() - 1) {
             throw new IllegalArgumentException("Cannot select the end residue");
         }
-        modified = true;
         Point point = pointSequence.get(i);
         Point next = pointSequence.get(i + 1);
         List<Direction> options = new ArrayList<>();
-        for (Direction d : Direction.values(getDimension())) {
-            Point c = point.getAdjacent(d);
+        for (Direction d : point.getDirectionTo(next).getNormals(getDimension())) {
             Point l = next.getAdjacent(d);
-            if (!containsPoint(l) // position L is open
-                    && !next.getAdjacent(d.getReverse()).equals(point) // this is not collinear with point and next
-                    && (!containsPoint(c) || get(c).index == i - 1)) { // point c is open or occupied by peptide i-1
+            Point c = point.getAdjacent(d);
+            // position L is open and point c is open or occupied by peptide i-1
+            if (!containsPoint(l) && (!containsPoint(c) || lattice.get(c).index == i - 1)) {
                 options.add(d);
             }
         }
-        Direction d;
         if (options.isEmpty()) {
             return false;
-        } else if (options.size() == 1) {
-            d = options.get(0);
-        } else {
-            d = options.get((int) (Math.random() * options.size()));
         }
-        Point c = point.getAdjacent(d);
-        Point l = next.getAdjacent(d);
-        lattice.put(l, lattice.remove(point)); // first move point to L
-        pointSequence.add(i, l);
+        Direction normal = selectRandom(options);
+        Point l = next.getAdjacent(normal);
+        Point c = point.getAdjacent(normal);
+        Peptide peptide = lattice.remove(point);
+        lattice.put(l, peptide); // first move point to L
+        pointSequence.set(i, l);
+        for (Direction d : Direction.values(getDimension())) {
+            Point adj1 = point.getAdjacent(d);
+            if (!adj1.equals(next) && !adj1.equals(c)) {
+                energy -= peptide.interaction(lattice.get(adj1));
+            }
+            Point adj2 = l.getAdjacent(d);
+            if (!adj2.equals(next) && !adj2.equals(c)) {
+                energy += peptide.interaction(lattice.get(adj2));
+            }
+        }
         if (!containsPoint(c) && i > 0) {
             int j = i - 1;
             next = l;           // the new location of point j + 1 (used to check adjacency)
@@ -147,8 +162,19 @@ public class MovableLattice extends Lattice {
             while (j >= 0) {
                 point = pointSequence.get(j); // get the next point
                 if (!point.isAdjacentTo(next)) {
-                    lattice.put(two, lattice.remove(point)); // move point to two
-                    pointSequence.add(j, point);
+                    peptide = lattice.remove(point);
+                    lattice.put(two, peptide); // move point to two
+                    pointSequence.set(j, two);
+                    for (Direction d : Direction.values(getDimension())) {
+                        Point adj1 = point.getAdjacent(d);
+                        if (!adj1.equals(one)) {
+                            energy -= peptide.interaction(lattice.get(adj1));
+                        }
+                        Point adj2 = two.getAdjacent(d);
+                        if (!adj2.equals(one)) {
+                            energy += peptide.interaction(lattice.get(adj2));
+                        }
+                    }
                     next = two;
                     two = one;
                     one = point;
@@ -162,13 +188,218 @@ public class MovableLattice extends Lattice {
     }
 
     /**
-     * Applies a bond-rebridging move...
-     * @param index
+     * Applies a bond-rebridging move on the peptide at index i to a random valid location.
+     * Returns true if successful, or false if no valid location was found.
+     * Throws an IllegalArgumentException if i specifies the end residue.
+     * @param i
      * @return
      */
-    public boolean rebridge(int index) {
+    public boolean rebridge(int i) {
+        Point point = pointSequence.get(i);
+        if (i == size() - 1) { // the unique end rebridging case
+            List<Direction> options = new ArrayList<>();
+            for (Direction d : Direction.values(getDimension())) {
+                Point adj = point.getAdjacent(d);
+                if (containsPoint(adj) && adj != pointSequence.get(i - 1)) {
+                    options.add(d);
+                }
+            }
+            if (options.isEmpty()) {
+                return false;
+            }
+            Direction d = selectRandom(options);
+            int j = lattice.get(point.getAdjacent(d)).index + 1;
+            while (j < i) {
+                Point p1 = pointSequence.get(j);
+                Point p2 = pointSequence.get(i);
+                Peptide temp = lattice.remove(p1);
+                lattice.put(p1, lattice.remove(p2));
+                lattice.put(p2, temp);
+                pointSequence.set(i, p1);
+                pointSequence.set(j, p2);
+                j++;
+                i--;
+            }
+            modified = true;
+            return true;
+        }
+        Point next = pointSequence.get(i + 1);
+        Direction direction = point.getDirectionTo(next);
+
+        /*
+        TODO:
+        The following code in my opinion should be used to determine the normal direction, but the paper
+        describes a different method, and initially I plan to follow the paper as closely as possible
+        */
+
+        List<Direction> options = new ArrayList<>();
+        for (Direction d : point.getDirectionTo(next).getNormals(getDimension())) {
+            if (!containsPoint(point.getAdjacent(d)) || !containsPoint(next.getAdjacent(d))) {
+                return false;
+            }
+            int j = lattice.get(point.getAdjacent(d)).index;
+            int k = lattice.get(next.getAdjacent(d)).index;
+            // indices j and k are adjacent, and not consecutive to i and i+1
+            if (Math.abs(j - k) == 1 && (k > i + 2 || j < i - 1)) {
+                options.add(d);
+            }
+        }
+        if (options.isEmpty()) {
+            return false;
+        }
+        Direction normal = selectRandom(options);
+
+//        Direction normal = selectRandom(Arrays.asList(direction.getNormals(getDimension())));
+
+        if (!containsPoint(point.getAdjacent(normal)) || !containsPoint(next.getAdjacent(normal))) {
+            return false;
+        }
+
+        int j = lattice.get(point.getAdjacent(normal)).index;
+        int k = lattice.get(next.getAdjacent(normal)).index;
+        if (k - j == 1) { // parallel case, type 2
+            int m = j > i ? i + 1 : k;
+            int n = j > i ? j : i;
+            while (m < n) {
+                Point p1 = pointSequence.get(m);
+                Point p2 = pointSequence.get(n);
+                Peptide temp = lattice.remove(p1);
+                lattice.put(p1, lattice.remove(p2));
+                lattice.put(p2, temp);
+                pointSequence.set(n, p1);
+                pointSequence.set(m, p2);
+                m++;
+                n--;
+            }
+        } else if (k - j == -1 && (k > i + 2 || j < i - 1)) { // antiparallel case, type 1
+            // the second half of the above conditional prevents i, i+1, j, and k from being consecutive
+            int loopStart;
+            int loopEnd;
+            if (i > j) { // loop is on the j side
+                loopStart = j;
+                loopEnd = i;
+            } else {     // loop is on the k side
+                loopStart = i + 1;
+                loopEnd = k;
+            }
+            int ip = randomInt(loopEnd - loopStart) + loopStart;
+            point = pointSequence.get(ip);
+            next = pointSequence.get(ip + 1);
+            direction = point.getDirectionTo(next);
+            List<Direction> normals = Arrays.asList(direction.getNormals(getDimension()));
+            Collections.shuffle(normals); // try all normals this time, but try them in a random order
+            normal = null;
+            int jp = 0;
+            int kp = 0;
+            for (int m=0; m<normals.size() && normal == null; m++) {
+                Direction d = normals.get(m);
+                if (!containsPoint(point.getAdjacent(d)) || !containsPoint(next.getAdjacent(d))) {
+                    return false;
+                }
+                jp = lattice.get(point.getAdjacent(d)).index;
+                kp = lattice.get(next.getAdjacent(d)).index;
+                if (Math.abs(jp - kp) == 1 && ((kp > loopEnd && jp > loopEnd) || (kp < loopStart && jp < loopStart))) {
+                    normal = d;
+                }
+            }
+            if (normal == null) {
+                return false;
+            }
+            int min = i;
+            for (int a : Arrays.asList(i, k, ip, jp, kp)) {
+                if (a < min) {
+                    min = a;
+                }
+            }
+            int max = i + 1;
+            for (int a : Arrays.asList(i + 1, j, ip + 1, jp, kp)) {
+                if (a > max) {
+                    max = a;
+                }
+            }
+            int[] changes = new int[max - min];
+            // these booleans prevent the reordering to try to go both ways on each swap
+            boolean ij = true;
+            boolean ik = true;
+            boolean ijp = true;
+            boolean ikp = true;
+            int change = 1;
+            // changes[n] keeps track of the point/peptide reordering
+            // the (min+n)th peptide should be moved to the changes[n]'th point of the original sequence
+            changes[0] = min;
+            for (int n=1; n<changes.length; n++) {
+                int index = n + min;            // index specifies which peptide is being moved
+                int lastPoint = changes[n - 1]; // lastPoint specifies the previous point in the modified sequence
+                int nextPoint;                  // nextPoint will specify the point to follow lastPoint
+                if (lastPoint == i && ij) {
+                    nextPoint = j;
+                    ij = false;
+                    change = 1;
+                } else if (lastPoint == j && ij) {
+                    nextPoint = i;
+                    ij = false;
+                    change = -1;
+                } else if (lastPoint == i + 1 && ik) {
+                    nextPoint = k;
+                    ik = false;
+                    change = -1;
+                } else if (lastPoint == k && ik) {
+                    nextPoint = i + 1;
+                    ik = false;
+                    change = 1;
+                } else if (lastPoint == ip && ijp) {
+                    nextPoint = jp;
+                    ijp = false;
+                    change = jp - kp;
+                } else if (lastPoint == jp && ijp) {
+                    nextPoint = ip;
+                    ijp = false;
+                    change = -1;
+                } else if (lastPoint == ip + 1 && ikp) {
+                    nextPoint = kp;
+                    ikp = false;
+                    change = kp - jp;
+                } else if (lastPoint == kp && ikp) {
+                    nextPoint = ip + 1;
+                    ikp = false;
+                    change = 1;
+                } else {
+                    nextPoint = lastPoint + change;
+                }
+                changes[n] = nextPoint;
+                Point oldPoint = pointSequence.get(index);    // oldPoint is the location of the index'th peptide
+                int newIndex = nextPoint;                     // newIndex is the current location of the point
+                while (newIndex < index) {                    // where the index'th peptide needs to go
+                    newIndex = changes[newIndex - min];       // this while loop handles complex swapping behavior
+                }
+                Point newPoint = pointSequence.get(newIndex); // newPoint is the point that peptide needs to be moved to
+                if (!oldPoint.equals(newPoint)) {             // if newPoint and oldPoint are different, do the swap
+                    Peptide temp = lattice.remove(oldPoint);
+                    lattice.put(oldPoint, lattice.remove(newPoint));
+                    lattice.put(newPoint, temp);
+                    pointSequence.set(newIndex, oldPoint);
+                    pointSequence.set(index, newPoint);
+                }
+            }
+        } else { // not a valid selection
+            return false;
+        }
         modified = true;
-        // TODO: bond rebridging moves
         return true;
     }
+
+    private static int randomInt(int max) {
+        return (int) (Math.random() * max);
+    }
+
+    private static <T> T selectRandom(List<T> list) {
+        if (list.isEmpty()) {
+            throw new IllegalArgumentException("Nothing to select from");
+        } else if (list.size() == 1) {
+            return list.get(0);
+        } else {
+            return list.get(randomInt(list.size()));
+        }
+    }
+
 }
