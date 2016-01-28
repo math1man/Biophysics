@@ -100,7 +100,7 @@ public class Point {
 
     @Override
     public int hashCode() {
-        int hashCode = (x >>> 20) ^ (x >>> 12) ^ x ^ (y >>> 20) ^ (y >>> 12) ^ y ^ (z >>> 20) ^ (z >>> 12) ^ z;
+        int hashCode = (x >>> 20) ^ (x >>> 12) ^ x ^ (y >>> 22) ^ (y >>> 10) ^ y ^ (z >>> 18) ^ (z >>> 14) ^ z;
         return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
     }
 
