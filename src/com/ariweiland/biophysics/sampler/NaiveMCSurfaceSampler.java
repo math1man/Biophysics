@@ -2,6 +2,7 @@ package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -40,7 +41,7 @@ public class NaiveMCSurfaceSampler extends Sampler {
         for (int i=0; i<samples; i++) {
             Lattice lattice = new Lattice(dimension, surface, size);
             // start out at a random y value between 1 and size, inclusive
-            Point last = new Point(0, (int) (Math.random() * size) + 1, 0);
+            Point last = new Point(0, RandomUtils.randomInt(size) + 1, 0);
             lattice.put(last, polypeptide.get(0));
             boolean isBoxedIn = false;
             for (int j=1; j<size && !isBoxedIn; j++) {
@@ -53,7 +54,7 @@ public class NaiveMCSurfaceSampler extends Sampler {
                 if (opens.isEmpty()) {
                     isBoxedIn = true;
                 } else {
-                    Direction d = opens.get((int) (Math.random() * opens.size()));
+                    Direction d = RandomUtils.selectRandom(opens);
                     Point next = last.getAdjacent(d);
                     lattice.put(next, polypeptide.get(j));
                     last = next;

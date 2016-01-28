@@ -2,6 +2,7 @@ package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
@@ -47,7 +48,7 @@ public class NaiveMonteCarloSampler extends Sampler {
                 if (opens.isEmpty()) {
                     isBoxedIn = true;
                 } else {
-                    Direction d = opens.get((int) (Math.random() * opens.size()));
+                    Direction d = RandomUtils.selectRandom(opens);
                     Point next = last.getAdjacent(d);
                     lattice.put(next, polypeptide.get(j));
                     last = next;

@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Peptide;
@@ -97,7 +98,7 @@ public abstract class Modeler {
 //        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
         for (int i=0; i<20; i++) {
-            if (Math.random() < 0.4) {
+            if (RandomUtils.tryChance(0.4)) {
                 polypeptide.add(Residue.H);
             } else {
                 polypeptide.add(Residue.P);

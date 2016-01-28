@@ -1,7 +1,6 @@
 package com.ariweiland.biophysics.sampler;
 
 import com.ariweiland.biophysics.peptide.Polypeptide;
-import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.*;
 
@@ -26,15 +25,15 @@ public abstract class Sampler {
 
     public static void main(String[] args) {
         Sampler sampler = new WangLandauSampler();
-//        Polypeptide polypeptide = new Polypeptide("(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)");
-        Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<14; i++) {
-            if (Math.random() < 0.4) {
-                polypeptide.add(Residue.H);
-            } else {
-                polypeptide.add(Residue.P);
-            }
-        }
+        Polypeptide polypeptide = new Polypeptide("(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)");
+//        Polypeptide polypeptide = new Polypeptide();
+//        for (int i=0; i<14; i++) {
+//            if (RandomUtils.tryChance(0.4)) {
+//                polypeptide.add(Residue.H);
+//            } else {
+//                polypeptide.add(Residue.P);
+//            }
+//        }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
         System.out.println();
