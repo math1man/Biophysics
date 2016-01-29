@@ -62,7 +62,7 @@ public class WangLandauSampler extends Sampler {
                 }
             }
             if (min == 0) {
-                min = 1; // the starting value
+                min = Double.MIN_VALUE; // the starting value
             }
             g.put(energy, min);
         }
@@ -94,7 +94,7 @@ public class WangLandauSampler extends Sampler {
                     PullMove move = RandomUtils.selectRandom(aMoves);
                     b.pull(move);
                     List<PullMove> bMoves = b.getPullMoves();
-                    threshold = aMoves.size() / bMoves.size();
+                    threshold = ((double) aMoves.size()) / bMoves.size();
                 } else {      // bond-rebridging move
                     RebridgeMove move = RandomUtils.selectRandom(rebridgeMoves);
                     b.rebridge(move);
@@ -113,7 +113,7 @@ public class WangLandauSampler extends Sampler {
                     updateMaps(a.getEnergy(), f);
                 }
                 count++;
-                if (count % 10000 == 0) {
+                if (count % 100000 == 0) {
                     System.out.println((count / 1000) + "K trials");
                     System.out.println("\t" + (pullCount) + " pull moves");
                     System.out.println("\t" + (rebridgeCount) + " rebridge moves");
