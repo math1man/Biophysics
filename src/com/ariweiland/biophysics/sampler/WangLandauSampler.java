@@ -16,14 +16,19 @@ import java.util.Map;
  */
 public class WangLandauSampler extends Sampler {
 
-    public static final int MIN_SAMPLES = 20;
-    public static final double FLATNESS = 0.8; // must be between 0 and 1 exclusive
     public static final double F_FINAL = 0.00000001; // 10^-8
     public static final double MOVE_RATIO = 0.2;
-    public static final int MOVE_COUNT = 5;
+
+    private final double flatness; // must be between 0 and 1 exclusive
+    private final int moveCount;
 
     private final Map<Double, Double> g = new HashMap<>();
     private final Map<Double, Integer> h = new HashMap<>();
+
+    public WangLandauSampler(double flatness, int moveCount) {
+        this.flatness = flatness;
+        this.moveCount = moveCount;
+    }
 
     private boolean isSufficientlyFlat() {
         if (g.isEmpty() || h.size() != g.size()) {
@@ -31,14 +36,11 @@ public class WangLandauSampler extends Sampler {
         }
         double total = 0;
         for (int i : h.values()) {
-            if (i < MIN_SAMPLES) { // needs to at least have a base number of samples
-                return false;
-            }
             total += i;
         }
         double average = total / h.size();
         for (int i : h.values()) {
-            if (i < FLATNESS * average) {
+            if (i < flatness * average) {
                 return false;
             }
         }
@@ -91,7 +93,7 @@ public class WangLandauSampler extends Sampler {
                 int nOld = pullMoves.size();
                 int pulls = 0;
                 int rebridges = 0;
-                for (int i=0; i<MOVE_COUNT; i++) {
+                for (int i=0; i<moveCount; i++) {
                     List<RebridgeMove> rebridgeMoves = trial.getRebridgeMoves();
                     if (rebridgeMoves.isEmpty() || RandomUtils.tryChance(MOVE_RATIO)) { // pull move
                         PullMove move = RandomUtils.selectRandom(pullMoves);

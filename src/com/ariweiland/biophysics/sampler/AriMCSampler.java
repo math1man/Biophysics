@@ -17,10 +17,11 @@ import java.util.Map;
 public class AriMCSampler extends Sampler {
 
     private final int samples;
-    private final double minChance = 1.0;
+    private final double minChance;
 
-    public AriMCSampler(int samples) {
+    public AriMCSampler(int samples, double minChance) {
         this.samples = samples;
+        this.minChance = minChance;
     }
 
     public int getSamples() {
@@ -28,7 +29,7 @@ public class AriMCSampler extends Sampler {
     }
 
     /**
-     * This method calculates the angle betwen the vector from a to b and a to (0,0,0).
+     * This method calculates the angle between the vector from a to b and a to (0,0,0).
      * If the angle is 0, there is a 50% chance of acceptance, and if it is 180, there
      * is an 100% chance of acceptance. Angles in between scale linearly.
      * @param a
@@ -36,35 +37,16 @@ public class AriMCSampler extends Sampler {
      * @return
      */
     private boolean accept1(Point a, Point b) {
-        int x = b.x - a.x;
-        int y = b.y - a.y;
-        int z = b.z - a.z;
+
+        double a0 = a.x * a.x + a.y * a.y + a.z * a.z;
+        double b0 = b.x * b.x + b.y * b.y + b.z * b.z;
+        double ab = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+
+        double cos = (a0 + ab - b0) / (2 * Math.sqrt(a0) * Math.sqrt(ab));
         // theta has range 0 to Pi
-        double theta = Math.acos(Math.sqrt(x * b.x + y * b.y + z * b.z)
-                / Math.sqrt(b.x * b.x + b.y * b.y + b.z * b.z)
-                / Math.sqrt(x * x + y * y + z * z));
+        double theta = Math.acos(cos);
         // adjust range from 0.5 to 1
         double test = (1 - minChance) * theta / Math.PI + minChance;
-        return RandomUtils.tryChance(test);
-    }
-
-    /**
-     * This method calculates the angle betwen the vector from a to b and a to (0,0,0).
-     * If the angle is 0, there is a 50% chance of acceptance, and if it is 180, there
-     * is an 100% chance of acceptance. Angles in between scale linearly.
-     * @param a
-     * @param b
-     * @return
-     */
-    private boolean accept2(Point a, Point b) {
-        int x = b.x - a.x;
-        int y = b.y - a.y;
-        int z = b.z - a.z;
-        // cos has range 1 to -1
-        double cos = Math.sqrt(x * b.x + y * b.y + z * b.z)
-                / Math.sqrt(b.x * b.x + b.y * b.y + b.z * b.z)
-                / Math.sqrt(x * x + y * y + z * z);
-        double test = 0.5 + minChance / 2 - cos / (1 - minChance);
         return RandomUtils.tryChance(test);
     }
 
@@ -106,8 +88,8 @@ public class AriMCSampler extends Sampler {
                 }
                 counter.put(energy, 1 + counter.get(energy));
                 count++;
-                if (count % 1000000 == 0) {
-                    System.out.println((count / 1000000) + "M states counted");
+                if (count % 100000 == 0) {
+                    System.out.println((count / 1000) + "k states counted");
                 }
             }
         }

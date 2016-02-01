@@ -1,8 +1,6 @@
 package com.ariweiland.biophysics.sampler;
 
-import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.peptide.Polypeptide;
-import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.*;
 
@@ -26,16 +24,16 @@ public abstract class Sampler {
     }
 
     public static void main(String[] args) {
-        Sampler sampler = new BruteForceSampler();
-//        Polypeptide polypeptide = new Polypeptide("(P)-(P)-(H)-(P)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(P)-(P)-(P)-(P)-(P)-(P)-(H)-(P)-(P)-(H)-(H)");
-        Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<24; i++) {
-            if (RandomUtils.tryChance(0.4)) {
-                polypeptide.add(Residue.H);
-            } else {
-                polypeptide.add(Residue.P);
-            }
-        }
+        Sampler sampler = new WangLandauSampler(0.8, 10);
+        Polypeptide polypeptide = new Polypeptide("(P)-(P)-(H)-(H)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)-(P)-(P)-(P)-(H)-(H)-(P)-(H)-(H)-(H)-(P)-(H)-(P)");
+//        Polypeptide polypeptide = new Polypeptide();
+//        for (int i=0; i<24; i++) {
+//            if (RandomUtils.tryChance(0.4)) {
+//                polypeptide.add(Residue.H);
+//            } else {
+//                polypeptide.add(Residue.P);
+//            }
+//        }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
         System.out.println();
