@@ -1,6 +1,8 @@
 package com.ariweiland.biophysics.sampler;
 
+import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.peptide.Polypeptide;
+import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.*;
 
@@ -24,21 +26,21 @@ public abstract class Sampler {
     }
 
     public static void main(String[] args) {
-        Sampler sampler = new WangLandauSampler();
-        Polypeptide polypeptide = new Polypeptide("(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)");
-//        Polypeptide polypeptide = new Polypeptide();
-//        for (int i=0; i<14; i++) {
-//            if (RandomUtils.tryChance(0.4)) {
-//                polypeptide.add(Residue.H);
-//            } else {
-//                polypeptide.add(Residue.P);
-//            }
-//        }
+        Sampler sampler = new BruteForceSampler();
+//        Polypeptide polypeptide = new Polypeptide("(P)-(P)-(H)-(P)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(P)-(P)-(P)-(P)-(P)-(P)-(H)-(P)-(P)-(H)-(H)");
+        Polypeptide polypeptide = new Polypeptide();
+        for (int i=0; i<24; i++) {
+            if (RandomUtils.tryChance(0.4)) {
+                polypeptide.add(Residue.H);
+            } else {
+                polypeptide.add(Residue.P);
+            }
+        }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
         System.out.println();
         long start = System.currentTimeMillis();
-        Map<Double, Double> density = sampler.normalize(sampler.getDensity(3, polypeptide));
+        Map<Double, Double> density = sampler.normalize(sampler.getDensity(2, polypeptide));
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Bins\tCounts");
