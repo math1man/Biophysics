@@ -20,6 +20,7 @@ public class WangLandauSampler extends Sampler {
     public static final double FLATNESS = 0.8; // must be between 0 and 1 exclusive
     public static final double F_FINAL = 0.00000001; // 10^-8
     public static final double MOVE_RATIO = 0.2;
+    public static final int MOVE_COUNT = 5;
 
     private final Map<Double, Double> g = new HashMap<>();
     private final Map<Double, Integer> h = new HashMap<>();
@@ -77,41 +78,40 @@ public class WangLandauSampler extends Sampler {
         double f = Math.E;
         g.clear();
         int size = polypeptide.size();
-        MovableLattice a = new MovableLattice(dimension, size);
+        MovableLattice old = new MovableLattice(dimension, size);
         for (int i=0; i<size; i++) {
-            a.put(new Point(i, 0, 0), polypeptide.get(i));
+            old.put(new Point(i, 0, 0), polypeptide.get(i));
         }
-        updateMaps(a.getEnergy(), f);
+        updateMaps(old.getEnergy(), f);
         while (Math.log(f) > F_FINAL) {
             h.clear();
             while (!isSufficientlyFlat()) {
-                MovableLattice b = new MovableLattice(a);
-                List<RebridgeMove> rebridgeMoves = a.getRebridgeMoves();
-                boolean isPull = rebridgeMoves.isEmpty() || RandomUtils.tryChance(MOVE_RATIO);
-                double threshold = 1;
-                if (isPull) { // pull move
-                    List<PullMove> aMoves = a.getPullMoves();
-                    PullMove move = RandomUtils.selectRandom(aMoves);
-                    b.pull(move);
-                    List<PullMove> bMoves = b.getPullMoves();
-                    threshold = ((double) aMoves.size()) / bMoves.size();
-                } else {      // bond-rebridging move
-                    RebridgeMove move = RandomUtils.selectRandom(rebridgeMoves);
-                    b.rebridge(move);
+                MovableLattice trial = new MovableLattice(old);
+                List<PullMove> pullMoves = old.getPullMoves();
+                int nOld = pullMoves.size();
+                int pulls = 0;
+                int rebridges = 0;
+                for (int i=0; i<MOVE_COUNT; i++) {
+                    List<RebridgeMove> rebridgeMoves = trial.getRebridgeMoves();
+                    if (rebridgeMoves.isEmpty() || RandomUtils.tryChance(MOVE_RATIO)) { // pull move
+                        PullMove move = RandomUtils.selectRandom(pullMoves);
+                        trial.pull(move);
+                        pulls++;
+                    } else {      // bond-rebridging move
+                        RebridgeMove move = RandomUtils.selectRandom(rebridgeMoves);
+                        trial.rebridge(move);
+                        rebridges++;
+                    }
+                    pullMoves = trial.getPullMoves();
                 }
-                threshold *= g(a.getEnergy()) / g(b.getEnergy());
+                double threshold = g(old.getEnergy()) / g(trial.getEnergy()) * nOld / pullMoves.size();
                 // potentially slightly faster because randoms do not always need to be generated
                 if (RandomUtils.tryChance(threshold)) {
-                    updateMaps(b.getEnergy(), f);
-                    a = b;
-                    if (isPull) {
-                        pullCount++;
-                    } else {
-                        rebridgeCount++;
-                    }
-                } else {
-                    updateMaps(a.getEnergy(), f);
+                    old = trial;
+                    pullCount += pulls;
+                    rebridgeCount += rebridges;
                 }
+                updateMaps(old.getEnergy(), f);
                 count++;
                 if (count % 100000 == 0) {
                     System.out.println((count / 1000) + "K trials");
