@@ -14,40 +14,16 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class AriMCSampler extends Sampler {
+public class NaiveSampler extends Sampler {
 
     private final int samples;
-    private final double minChance;
 
-    public AriMCSampler(int samples, double minChance) {
+    public NaiveSampler(int samples) {
         this.samples = samples;
-        this.minChance = minChance;
     }
 
     public int getSamples() {
         return samples;
-    }
-
-    /**
-     * This method calculates the angle between the vector from a to b and a to (0,0,0).
-     * If the angle is 0, there is a 50% chance of acceptance, and if it is 180, there
-     * is an 100% chance of acceptance. Angles in between scale linearly.
-     * @param a
-     * @param b
-     * @return
-     */
-    private boolean accept1(Point a, Point b) {
-
-        double a0 = a.x * a.x + a.y * a.y + a.z * a.z;
-        double b0 = b.x * b.x + b.y * b.y + b.z * b.z;
-        double ab = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
-
-        double cos = (a0 + ab - b0) / (2 * Math.sqrt(a0) * Math.sqrt(ab));
-        // theta has range 0 to Pi
-        double theta = Math.acos(cos);
-        // adjust range from 0.5 to 1
-        double test = (1 - minChance) * theta / Math.PI + minChance;
-        return RandomUtils.tryChance(test);
     }
 
     @Override
@@ -72,11 +48,8 @@ public class AriMCSampler extends Sampler {
                 if (opens.isEmpty()) {
                     isBoxedIn = true;
                 } else {
-                    Point next;
-                    do {
-                        Direction d = RandomUtils.selectRandom(opens);
-                        next = last.getAdjacent(d);
-                    } while (!accept1(last, next));
+                    Direction d = RandomUtils.selectRandom(opens);
+                    Point next = last.getAdjacent(d);
                     lattice.put(next, polypeptide.get(j));
                     last = next;
                 }
@@ -88,8 +61,8 @@ public class AriMCSampler extends Sampler {
                 }
                 counter.put(energy, 1 + counter.get(energy));
                 count++;
-                if (count % 100000 == 0) {
-                    System.out.println((count / 1000) + "k states counted");
+                if (count % 1000000 == 0) {
+                    System.out.println((count / 1000000) + "M states counted");
                 }
             }
         }

@@ -15,12 +15,12 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class NaiveMCSurfaceSampler extends Sampler {
+public class NaiveSurfaceSampler extends Sampler {
 
     private final int samples;
     private final Residue surface;
 
-    public NaiveMCSurfaceSampler(int samples, Residue surface) {
+    public NaiveSurfaceSampler(int samples, Residue surface) {
         this.samples = samples;
         this.surface = surface;
     }
