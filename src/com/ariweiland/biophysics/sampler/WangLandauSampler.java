@@ -17,17 +17,54 @@ import java.util.Map;
 public class WangLandauSampler extends Sampler {
 
     public static final double F_FINAL = 0.00000001; // 10^-8
-    public static final double MOVE_RATIO = 0.2;
 
-    private final double flatness; // must be between 0 and 1 exclusive
-    private final int moveCount;
+    private double flatness; // must be between 0 and 1 exclusive
+    private int moveCount;
+    private double moveRatio;
 
     private final Map<Double, Double> g = new HashMap<>();
     private final Map<Double, Integer> h = new HashMap<>();
 
+    public WangLandauSampler() {
+        this(0.8);
+    }
+
+    public WangLandauSampler(double flatness) {
+        this(flatness, 5);
+    }
+
     public WangLandauSampler(double flatness, int moveCount) {
+        this(flatness, moveCount, 0.2);
+    }
+
+    public WangLandauSampler(double flatness, int moveCount, double moveRatio) {
         this.flatness = flatness;
         this.moveCount = moveCount;
+        this.moveRatio = moveRatio;
+    }
+
+    public double getFlatness() {
+        return flatness;
+    }
+
+    public void setFlatness(double flatness) {
+        this.flatness = flatness;
+    }
+
+    public int getMoveCount() {
+        return moveCount;
+    }
+
+    public void setMoveCount(int moveCount) {
+        this.moveCount = moveCount;
+    }
+
+    public double getMoveRatio() {
+        return moveRatio;
+    }
+
+    public void setMoveRatio(double moveRatio) {
+        this.moveRatio = moveRatio;
     }
 
     private boolean isSufficientlyFlat() {
@@ -95,7 +132,7 @@ public class WangLandauSampler extends Sampler {
                 int rebridges = 0;
                 for (int i=0; i<moveCount; i++) {
                     List<RebridgeMove> rebridgeMoves = trial.getRebridgeMoves();
-                    if (rebridgeMoves.isEmpty() || RandomUtils.tryChance(MOVE_RATIO)) { // pull move
+                    if (rebridgeMoves.isEmpty() || RandomUtils.tryChance(moveRatio)) { // pull move
                         PullMove move = RandomUtils.selectRandom(pullMoves);
                         trial.pull(move);
                         pulls++;

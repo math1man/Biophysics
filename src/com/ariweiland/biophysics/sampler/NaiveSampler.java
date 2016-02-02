@@ -16,7 +16,11 @@ import java.util.Map;
  */
 public class NaiveSampler extends Sampler {
 
-    private final int samples;
+    private int samples;
+
+    public NaiveSampler() {
+        this(10000000);
+    }
 
     public NaiveSampler(int samples) {
         this.samples = samples;
@@ -24,6 +28,10 @@ public class NaiveSampler extends Sampler {
 
     public int getSamples() {
         return samples;
+    }
+
+    public void setSamples(int samples) {
+        this.samples = samples;
     }
 
     @Override
