@@ -4,7 +4,6 @@ import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.lattice.MovableLattice;
 import com.ariweiland.biophysics.lattice.PullMove;
-import com.ariweiland.biophysics.lattice.RebridgeMove;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.HashMap;
@@ -131,17 +130,18 @@ public class WangLandauSampler extends Sampler {
                 int pulls = 0;
                 int rebridges = 0;
                 for (int i=0; i<moveCount; i++) {
-                    List<RebridgeMove> rebridgeMoves = trial.getRebridgeMoves();
-                    if (rebridgeMoves.isEmpty() || RandomUtils.tryChance(moveRatio)) { // pull move
+                    if (RandomUtils.tryChance(moveRatio)) { // pull move
                         PullMove move = RandomUtils.selectRandom(pullMoves);
                         trial.pull(move);
                         pulls++;
-                    } else {      // bond-rebridging move
-                        RebridgeMove move = RandomUtils.selectRandom(rebridgeMoves);
-                        trial.rebridge(move);
+                        pullMoves = trial.getPullMoves();
+                    } else if (trial.rebridge(RandomUtils.randomInt(trial.size()))) {
                         rebridges++;
+                        pullMoves = trial.getPullMoves();
+                    } else {
+                        i--;
+                        // nothing changed, so don't need to update pullMoves
                     }
-                    pullMoves = trial.getPullMoves();
                 }
                 double threshold = g(old.getEnergy()) / g(trial.getEnergy()) * nOld / pullMoves.size();
                 // potentially slightly faster because randoms do not always need to be generated
