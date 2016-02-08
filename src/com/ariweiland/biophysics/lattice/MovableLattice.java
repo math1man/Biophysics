@@ -8,6 +8,7 @@ import com.ariweiland.biophysics.peptide.Residue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -245,24 +246,26 @@ public class MovableLattice extends Lattice {
                 int ip = RandomUtils.randomInt(loopEnd - loopStart) + loopStart;
                 Point pointP = pointSequence.get(ip);
                 Point nextP = pointSequence.get(ip + 1);
-                List<Direction> optionsP = new ArrayList<>();
-                for (Direction d : point.getDirectionTo(next).getNormals(getDimension())) {
+                List<Direction> normals = Arrays.asList(point.getDirectionTo(next).getNormals(getDimension()));
+                Collections.shuffle(normals); // try all normals, but try them in a random order
+                normal = null;
+                int jp = 0;
+                int kp = 0;
+                for (int m = 0; m < normals.size() && normal == null; m++) {
+                    Direction d = normals.get(m);
                     Point pjp = pointP.getAdjacent(d);
                     Point pkp = nextP.getAdjacent(d);
                     if (lattice.containsKey(pjp) && lattice.containsKey(pkp)) {
-                        int jp = lattice.get(pjp).index;
-                        int kp = lattice.get(pkp).index;
+                        jp = lattice.get(pjp).index;
+                        kp = lattice.get(pkp).index;
                         if (Math.abs(jp - kp) == 1 && ((kp > loopEnd && jp > loopEnd) || (kp < loopStart && jp < loopStart))) {
-                            optionsP.add(d);
+                            normal = d;
                         }
                     }
                 }
-                if (optionsP.isEmpty()) {
+                if (normal == null) {
                     return false;
                 }
-                Direction normalP = RandomUtils.selectRandom(optionsP);
-                int jp = lattice.get(pointP.getAdjacent(normalP)).index;
-                int kp = lattice.get(nextP.getAdjacent(normalP)).index;
                 int min = i;
                 for (int a : Arrays.asList(k, ip, jp, kp)) {
                     if (a < min) {
@@ -338,7 +341,6 @@ public class MovableLattice extends Lattice {
                 }
             }
         }
-        // update energy
         energy = 0;
         for (Point p : pointSequence) {
             Peptide peptide = lattice.get(p);
