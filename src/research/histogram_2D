@@ -2,16 +2,16 @@
 Node count: 20
 
 Brute Force:
-30945167 total states counted
-Elapsed time: 85.284 s
+83779155 total states counted
+Elapsed time: 137.087 s
 Bins	Counts
--6.0 	4.200979106042633E-6
--5.0 	1.2137598094073947E-4
--4.0 	0.0014773874059235163
--3.0 	0.01154778062758556
--2.0 	0.07726259806579813
--1.0 	0.32721852817921454
-0.0 	0.5823681287614315
+-6.0 	2.5782069537464303E-6
+-5.0 	8.071220102422852E-5
+-4.0 	0.0011247905281450976
+-3.0 	0.009334517637471994
+-2.0 	0.06527618952470934
+-1.0 	0.29998244790127093
+0.0 	0.6241987640004247
 
 Naive:
 9222667 total states counted
@@ -55,7 +55,7 @@ Bins	Counts
 (P)-(P)-(H)-(P)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(P)-(P)-(P)-(P)-(P)-(P)-(H)-(P)-(P)-(H)-(H)
 Node count: 22
 
-Brute Force:
+Brute Force (BAD):
 222787833 total states counted
 Elapsed time: 635.386 s
 Bins	Counts
@@ -98,9 +98,9 @@ Bins	Counts
 (P)-(P)-(H)-(H)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)-(P)-(P)-(P)-(H)-(H)-(P)-(H)-(H)-(H)-(P)-(H)-(P)
 Node count: 24
 
-Brute Force:
+Brute Force (BAD):
 1599079535 total states counted
-Elapsed time: 5562.152 s
+Elapsed time: 1.545 hours
 Bins	Counts
 -8.0 	7.154115695689896E-7
 -7.0 	1.5601475382523733E-5

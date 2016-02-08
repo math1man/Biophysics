@@ -77,7 +77,7 @@ Bins	Counts
 (H)-(H)-(P)-(P)-(H)-(P)-(H)-(P)-(H)-(P)-(P)-(H)-(P)-(H)-(P)-(P)
 Node count: 16
 
-Brute Force:
+Brute Force (BAD):
 744811245 total states counted
 Elapsed time: 3414.912 s
 Bins	Counts
