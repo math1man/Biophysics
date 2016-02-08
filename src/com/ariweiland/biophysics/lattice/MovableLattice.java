@@ -86,21 +86,10 @@ public class MovableLattice extends Lattice {
         pointSequence.clear();
     }
 
-    @Override
-    public double getEnergy() {
-        return energy;
-    }
-
-    @Override
-    public int getSurfaceSize() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int boundingPerimeter() {
-        throw new UnsupportedOperationException();
-    }
-
+    /**
+     * TODO: make this surface-safe
+     * @return
+     */
     public List<PullMove> getPullMoves() {
         List<PullMove> moves = new ArrayList<>();
         for (int i=0; i<size()-1; i++) {
