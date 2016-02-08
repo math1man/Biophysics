@@ -1,6 +1,7 @@
 (P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(H)-(P)
 Node count: 14
 
+Brute Force:
 157329085 total states counted
 Elapsed time: 184.689 s
 Bins	Counts
