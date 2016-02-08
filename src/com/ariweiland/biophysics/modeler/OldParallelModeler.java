@@ -18,35 +18,40 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class OldParallelModeler extends ParallelModeler {
 
+    public OldParallelModeler() {
+        super(2);
+    }
+
     @Override
     protected PriorityBlockingQueue<Folding> initializeHeap(Polypeptide polypeptide) {
         PriorityBlockingQueue<Folding> initialHeap = new PriorityBlockingQueue<>();
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice();
-        line.put(0, 0, first);
+        Lattice line = new Lattice(2, size);
+        line.put(new Point(0, 0), first);
 
         if (size > 1) {
             Peptide second = polypeptide.get(1);
-            line.put(1, 0, second);
+            line.put(new Point(1, 0), second);
 
             // fill the queue initially.  this removes symmetrical solutions
             // if size == 2, the for loop will be ignored and none of this will matter
-            double lowerBound = polypeptide.getMinEnergy() - 2 * first.minInteraction() - 2 * second.minInteraction();
+            double lowerBound = polypeptide.getMinEnergy(2) - 2 * first.minInteraction() - 2 * second.minInteraction();
             for (int i=2; i<size; i++) {
                 Peptide next = polypeptide.get(i);
                 lowerBound -= 2 * next.minInteraction();
                 Lattice bend = new Lattice(line);
-                bend.put(i - 1, 1, next);
+                Point point = new Point(i - 1, 1);
+                bend.put(point, next);
                 if (i == size - 1) {
                     lowerBound = bend.getEnergy();
                 }
-                initialHeap.add(new Folding(bend, i - 1, 1, i, lowerBound));
-                line.put(i, 0, next);
+                initialHeap.add(new Folding(bend, point, i, lowerBound));
+                line.put(new Point(i, 0), next);
             }
         }
-        initialHeap.add(new Folding(line, size - 1, 0, size - 1, line.getEnergy()));
+        initialHeap.add(new Folding(line, new Point(size - 1, 0), size - 1, line.getEnergy()));
         return initialHeap;
     }
 
@@ -57,7 +62,7 @@ public class OldParallelModeler extends ParallelModeler {
         int nextIndex = folding.index + 1;
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
-            for (Direction d : Direction.values()) {
+            for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
                     Lattice l = new Lattice(folding.lattice);
@@ -65,10 +70,10 @@ public class OldParallelModeler extends ParallelModeler {
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle
                     // of perimeter 4 larger does not seem to restrict the solution at all
-                    if (l.boundingPerimeter() <= getPerimeterBound(polypeptide)) {
+                    if (l.boundingPerimeter() <= getSurfaceBound(polypeptide)) {
                         double bound = folding.energyBound - 2 * p.minInteraction();
                         if (nextIndex < size - 1) {
-                            for (Direction d1 : Direction.values()) {
+                            for (Direction d1 : Direction.values(2)) {
                                 if (d1 != d.getReverse()) {
                                     bound += p.interaction(l.get(next.getAdjacent(d1)));
                                 }

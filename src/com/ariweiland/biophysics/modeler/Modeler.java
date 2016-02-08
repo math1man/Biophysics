@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.modeler;
 
+import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Peptide;
@@ -14,6 +15,19 @@ import java.util.Queue;
 public abstract class Modeler {
 
     public static final int MAX_HEAP_SIZE = 4194304; // 262144, 524288, 1048576, 2097152, 4194304
+
+    private final int dimension;
+
+    protected Modeler(int dimension) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
+        }
+        this.dimension = dimension;
+    }
+
+    public int getDimension() {
+        return dimension;
+    }
 
     /**
      * This method should stop the current folding process, if one is occurring.
@@ -37,23 +51,34 @@ public abstract class Modeler {
     public abstract Folding iterate(Polypeptide polypeptide, Queue<Folding> queue);
 
     /**
-     * Returns the perimeter of the smallest
-     * rectangle with an area of at least n.
+     * For 2 dimensions, returns the perimeter of the
+     * smallest rectangle the polypeptide can fit in.
      * For m^2 < n <= (m+1)^2,
      *  - returns 4m + 6 if n <= m(m+1)
      *  - returns 4m + 8 otherwise
+     *
+     * For 3 dimensions, returns the surface area of
+     * the smallest box the polypeptide can fit in.
+     * It returns 6 * m^2 where m = n^(1/3) + 1
+     *
      * @param polypeptide
      * @return
      */
-    protected int getPerimeterBound(Polypeptide polypeptide) {
+    protected int getSurfaceBound(Polypeptide polypeptide) {
         int n = polypeptide.size();
-        int m = (int) Math.sqrt(n-1);
-        int maxPerim = 4 * m + 2;
-        if (n > m * (m+1)) {
-            maxPerim += 2;
+        if (getDimension() == 2) {
+            int m = (int) Math.sqrt(n - 1);
+            int maxPerim = 4 * m + 2;
+            if (n > m * (m + 1)) {
+                maxPerim += 2;
+            }
+            // add 4 because the ideal perimeter bound is overly limiting
+            return maxPerim + 4;
+        } else {
+            // add 1 because the ideal surface bound is overly limiting
+            double m = Math.pow(n, 1.0 / 3.0) + 1;
+            return (int) (6 * m * m);
         }
-        // add 4 because the ideal perimeter bound is overly limiting
-        return maxPerim + 4;
     }
 
     /**
@@ -68,12 +93,12 @@ public abstract class Modeler {
     }
 
     public static void main(String[] args) {
-        Modeler modeler = new CurrentSurfaceModeler(Residue.P);
+        Modeler modeler = new CurrentParallelModeler(3);
 //        Polypeptide polypeptide = Polypeptide.GLUCAGON;
 //        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(P)-(H)-(P)-(H)-(H)-(P)-(H)-(P)");
         Polypeptide polypeptide = new Polypeptide();
-        for (int i=0; i<12; i++) {
-            if (Math.random() < 0.4) {
+        for (int i=0; i<20; i++) {
+            if (RandomUtils.tryChance(0.4)) {
                 polypeptide.add(Residue.H);
             } else {
                 polypeptide.add(Residue.P);
@@ -81,7 +106,7 @@ public abstract class Modeler {
         }
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
-        System.out.println("Perimeter Bound: " + modeler.getPerimeterBound(polypeptide));
+        System.out.println("Perimeter Bound: " + modeler.getSurfaceBound(polypeptide));
         System.out.println();
 
         long start = System.currentTimeMillis();
@@ -90,6 +115,6 @@ public abstract class Modeler {
         lattice.visualize();
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Lattice energy: " + lattice.getEnergy());
-        System.out.println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
+        System.out.println("Perimeter: " + lattice.getSurfaceSize() + "/" + lattice.boundingPerimeter());
     }
 }

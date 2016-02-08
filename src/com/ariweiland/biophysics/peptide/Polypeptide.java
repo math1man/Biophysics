@@ -76,11 +76,12 @@ public class Polypeptide {
     /**
      * Returns the absolute minimum energy of this polypeptide
      * @return
+     * @param dimension
      */
-    public double getMinEnergy() {
+    public double getMinEnergy(int dimension) {
         double minEnergy = 0;
         for (Map.Entry<Residue, Integer> e : typeCount.entrySet()) {
-            minEnergy += 2 * e.getKey().minInteraction() * e.getValue();
+            minEnergy += (dimension - 1) * 2 * e.getKey().minInteraction() * e.getValue();
         }
         return minEnergy;
     }

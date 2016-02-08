@@ -15,6 +15,10 @@ public abstract class ParallelModeler extends Modeler {
     private AtomicBoolean running = new AtomicBoolean();
     private PeptideThread[] threads;
 
+    protected ParallelModeler(int dimension) {
+        super(dimension);
+    }
+
     /**
      * Dynamically calculates an ideal seed count for a given polypeptide.
      *
@@ -22,11 +26,12 @@ public abstract class ParallelModeler extends Modeler {
      *
      * This results in a seed count of 1000 for size 10, 10000 for size 20,
      * 100000 for size 30, etc. with intermediate sizes being in between.
+     *
      * @param polypeptide
      * @return
      */
     protected int getSeedCount(Polypeptide polypeptide) {
-        double exponent = polypeptide.size() / 10.0 + 1.0;
+        double exponent = polypeptide.size() / 10.0 + 1.0; // TODO + getDimension() - 1.0;
         return (int) Math.pow(10.0, exponent);
     }
 
@@ -67,7 +72,7 @@ public abstract class ParallelModeler extends Modeler {
 
         int processors = Runtime.getRuntime().availableProcessors();
         threads = new PeptideThread[processors];
-        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>();
+        PriorityBlockingQueue<Folding> solutions = new PriorityBlockingQueue<>(initialHeap.size());
 
         System.out.println("Processors: " + processors);
         System.out.println("Initial Heap Size: " + initialHeap.size());
@@ -80,14 +85,16 @@ public abstract class ParallelModeler extends Modeler {
         for (int i=0; i< processors; i++) {
             try {
                 threads[i].join();
+                count += threads[i].getCount();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+        System.out.println("States Visited: " + count);
         if (running.get()) {
             return solutions.poll().lattice;
         } else {
-            return new Lattice();
+            return new Lattice(getDimension());
         }
     }
 }

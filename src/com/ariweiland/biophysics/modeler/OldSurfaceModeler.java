@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.modeler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.SurfaceLattice;
+import com.ariweiland.biophysics.lattice.Lattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -16,7 +16,7 @@ import java.util.Queue;
 public class OldSurfaceModeler extends SurfaceModeler {
 
     public OldSurfaceModeler(Residue surface) {
-        super(surface);
+        super(2, surface);
     }
 
     /**
@@ -29,7 +29,7 @@ public class OldSurfaceModeler extends SurfaceModeler {
 
     @Override
     protected double getInitialEnergyBound(Polypeptide polypeptide) {
-        return polypeptide.getMinEnergy()
+        return polypeptide.getMinEnergy(2)
                 + getFavorableWaterInteraction(polypeptide.get(0))
                 - polypeptide.size() * getAbsWaterSurfaceInteraction();
     }
@@ -53,11 +53,9 @@ public class OldSurfaceModeler extends SurfaceModeler {
      */
     @Override
     protected double getBoundAdjust(int y, Peptide p) {
-        double boundAdjust = getFavorableWaterInteraction(p) - 2 * p.minInteraction() + getAbsWaterSurfaceInteraction();
+        double boundAdjust = 2 * getFavorableWaterInteraction(p) - 2 * p.minInteraction() + getAbsWaterSurfaceInteraction();
         if (y == 1) {
-            boundAdjust += p.interaction(getSurface());
-        } else {
-            boundAdjust += getFavorableWaterInteraction(p);
+            boundAdjust += p.interaction(getSurface()) - getFavorableWaterInteraction(p);
         }
         return boundAdjust;
     }
@@ -70,16 +68,16 @@ public class OldSurfaceModeler extends SurfaceModeler {
         if (nextIndex < size) {
             Peptide p = polypeptide.get(nextIndex);
             // try to add the peptide in every direction
-            for (Direction d : Direction.values()) {
+            for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next) && next.y < getMaxY(polypeptide)) {
-                    SurfaceLattice l = new SurfaceLattice((SurfaceLattice) folding.lattice);
+                    Lattice l = new Lattice(folding.lattice);
                     l.put(next, p);
                     // set the bound from the previous bound, minus the min interactions for this peptide,
                     // minus one favorable water interaction which
                     double bound = folding.energyBound - 2 * p.minInteraction() - getFavorableWaterInteraction(p);
                     if (nextIndex < size - 1) {
-                        for (Direction d1 : Direction.values()) {
+                        for (Direction d1 : Direction.values(2)) {
                             if (d1 != d.getReverse()) {
                                 if (l.containsPoint(next.getAdjacent(d1))) {
                                     Peptide adjacent = l.get(next.getAdjacent(d1));

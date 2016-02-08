@@ -12,6 +12,8 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
+ * TODO: add dimension
+ *
  * @author Ari Weiland
  */
 public class FoldingGui extends ConsoleProgram {
@@ -79,9 +81,9 @@ public class FoldingGui extends ConsoleProgram {
         } else if (source.equals(sequence) || source.equals(fold)) {
             Modeler modeler;
             if (surface.isSelected()) {
-                modeler = new CurrentSurfaceModeler(surfaceType);
+                modeler = new CurrentSurfaceModeler(2, surfaceType);
             } else {
-                modeler = new CurrentParallelModeler();
+                modeler = new CurrentParallelModeler(2);
             }
             thread = new GuiThread(new Polypeptide(sequence.getText()), modeler);
             thread.start();
@@ -129,7 +131,7 @@ public class FoldingGui extends ConsoleProgram {
 
             println("Elapsed time: " + (elapsed / 1000.0) + " s");
             println("Lattice energy: " + lattice.getEnergy());
-            println("Perimeter: " + lattice.getPerimeter() + "/" + lattice.boundingPerimeter());
+            println("Perimeter: " + lattice.getSurfaceSize() + "/" + lattice.boundingPerimeter());
             println();
             terminate();
         }

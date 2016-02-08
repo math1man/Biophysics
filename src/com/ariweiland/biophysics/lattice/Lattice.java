@@ -9,37 +9,69 @@ import java.util.*;
 
 /**
  * This class represents a folded polypeptide, laid out in 2D rectangular grid.
- * It also keeps track of various relevant properties, such as the bounding box
- * and perimeter of the polypeptide in the lattice and the lattice energy.
+ * It also keeps track of various relevant properties, such as the bounding box/cube
+ * and perimeter/surface area of the polypeptide in the lattice and the lattice energy.
  * @author Ari Weiland
  */
 public class Lattice {
 
-    private final Map<Point, Peptide> lattice;
+    private final int dimension;
+    private final Residue surface;
+    protected final Map<Point, Peptide> lattice;
+    protected double energy = 0;
+    protected int surfaceSize = 0;
     protected int plusXBound = 0;
     protected int minusXBound = 0;
     protected int plusYBound = 0;
     protected int minusYBound = 0;
-    private int perimeter = 0;
-    private double energy = 0;
+    protected int plusZBound = 0;
+    protected int minusZBound = 0;
 
-    public Lattice() {
-        this(new HashMap<Point, Peptide>());
+    public Lattice(int dimension) {
+        this(dimension, null);
     }
 
-    public Lattice(Map<Point, Peptide> lattice) {
+    public Lattice(int dimension, int initialCapacity) {
+        this(dimension, null, initialCapacity);
+    }
+
+    public Lattice(int dimension, Residue surface) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
+        }
+        this.dimension = dimension;
+        this.surface = surface;
         this.lattice = new HashMap<>();
-        putAll(lattice);
+    }
+
+    public Lattice(int dimension, Residue surface, int initialCapacity) {
+        if (dimension < 2 || dimension > 3) {
+            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
+        }
+        this.dimension = dimension;
+        this.surface = surface;
+        this.lattice = new HashMap<>(initialCapacity);
     }
 
     public Lattice(Lattice lattice) {
-        this.lattice = new HashMap<>(lattice.lattice);
-        this.plusXBound = lattice.plusXBound;
-        this.minusXBound = lattice.minusXBound;
-        this.plusYBound = lattice.plusYBound;
-        this.minusYBound = lattice.minusYBound;
-        this.perimeter = lattice.perimeter;
+        if (lattice.dimension < 2 || lattice.dimension > 3) {
+            throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
+        }
+        this.dimension = lattice.dimension;
+        this.surface = lattice.surface;
+        this.lattice = new HashMap<>(lattice.lattice); // TODO: this is throwing java.lang.OutOfMemoryError: GC overhead limit exceeded
         this.energy = lattice.energy;
+        this.surfaceSize = lattice.surfaceSize;
+        this.plusXBound  = lattice.plusXBound;
+        this.minusXBound = lattice.minusXBound;
+        this.plusYBound  = lattice.plusYBound;
+        this.minusYBound = lattice.minusYBound;
+        this.plusZBound  = lattice.plusZBound;
+        this.minusZBound = lattice.minusZBound;
+    }
+
+    public int getDimension() {
+        return dimension;
     }
 
     /**
@@ -60,21 +92,11 @@ public class Lattice {
 
     /**
      * Returns true if the specified point is occupied
-     * @param x
-     * @param y
-     * @return
-     */
-    public boolean containsPoint(int x, int y) {
-        return containsPoint(new Point(x, y));
-    }
-
-    /**
-     * Returns true if the specified point is occupied
      * @param point
      * @return
      */
     public boolean containsPoint(Point point) {
-        return lattice.containsKey(point);
+        return lattice.containsKey(point) || (surface != null && point.y == 0);
     }
 
     /**
@@ -88,33 +110,18 @@ public class Lattice {
 
     /**
      * Returns the peptide at the specified point, or null
-     * @param x
-     * @param y
-     * @return
-     */
-    public Peptide get(int x, int y) {
-        return get(new Point(x, y));
-    }
-
-    /**
-     * Returns the peptide at the specified point, or null
      * @param point
      * @return
      */
     public Peptide get(Point point) {
+        if (hasSurface()) {
+            if (point.y < 0) {
+                throw new IllegalArgumentException("Surface lattices do not have points below y == 0");
+            } else if (point.y == 0) {
+                return new Peptide(-2, surface);
+            }
+        }
         return lattice.get(point);
-    }
-
-    /**
-     * Puts the peptide in the lattice at the specified point.
-     * Returns the peptide that previously occupied the point.
-     * @param x
-     * @param y
-     * @param peptide
-     * @return
-     */
-    public void put(int x, int y, Peptide peptide) {
-        put(new Point(x, y), peptide);
     }
 
     /**
@@ -125,14 +132,22 @@ public class Lattice {
      * @return
      */
     public void put(Point point, Peptide peptide) {
+        if (dimension == 2 && point.z != 0) {
+            throw new IllegalArgumentException("2D points cannot have a z-component");
+        }
+        if (hasSurface() && point.y < 1) {
+            throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
+        }
         if (containsPoint(point)) {
             throw new IllegalArgumentException("That point is already occupied");
         }
         if (isEmpty()) {
-            plusXBound = point.x;
+            plusXBound  = point.x;
             minusXBound = point.x;
-            plusYBound = point.y;
+            plusYBound  = point.y;
             minusYBound = point.y;
+            plusZBound  = point.z;
+            minusZBound = point.z;
         } else {
             if (point.x > plusXBound) {
                 plusXBound = point.x;
@@ -144,12 +159,17 @@ public class Lattice {
             } else if (point.y < minusYBound) {
                 minusYBound = point.y;
             }
+            if (point.z > plusZBound) {
+                plusZBound = point.z;
+            } else if (point.z < minusZBound) {
+                minusZBound = point.z;
+            }
         }
-        for (Direction d : Direction.values()) {
+        for (Direction d : Direction.values(dimension)) {
             Peptide adj = get(point.getAdjacent(d));
             if (adj != null) {
                 if (adj.index >= 0) { // this is for use with surface lattice, so that it properly handles surface-perimeter
-                    perimeter -= 1;
+                    surfaceSize -= 1;
                 }
                 // if they are not adjoining peptides
                 if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
@@ -157,7 +177,7 @@ public class Lattice {
                 }
                 energy -= adj.interaction(Residue.H2O);
             } else {
-                perimeter += 1;
+                surfaceSize += 1;
                 energy += peptide.interaction(Residue.H2O);
             }
         }
@@ -179,12 +199,14 @@ public class Lattice {
      */
     public void clear() {
         lattice.clear();
-        plusXBound = 0;
-        minusXBound = 0;
-        plusYBound = 0;
-        minusYBound = 0;
-        perimeter = 0;
         energy = 0;
+        surfaceSize = 0;
+        plusXBound  = 0;
+        minusXBound = 0;
+        plusYBound  = 0;
+        minusYBound = 0;
+        plusZBound  = 0;
+        minusZBound = 0;
     }
 
     /**
@@ -196,6 +218,22 @@ public class Lattice {
     }
 
     /**
+     * Returns whether or not this lattice has a surface
+     * @return
+     */
+    public boolean hasSurface() {
+        return surface != null;
+    }
+
+    /**
+     * Returns the surface of this lattice, or null if it does not have a surface
+     * @return
+     */
+    public Residue getSurface() {
+        return surface;
+    }
+
+    /**
      * Returns the lattice energy
      * @return
      */
@@ -204,55 +242,90 @@ public class Lattice {
     }
 
     /**
-     * Returns the perimeter of the peptides in the lattice
+     * Returns the surface size of the peptides in the lattice
      * @return
      */
-    public int getPerimeter() {
-        return perimeter;
+    public int getSurfaceSize() {
+        return surfaceSize;
     }
 
     /**
-     * Returns the perimeter of the smallest bounding
-     * box that contains the peptides in the lattice
+     * Returns the perimeter of the smallest bounding box or surface area of
+     * the smallest bounding cube that contains the peptides in the lattice
      * @return
      */
     public int boundingPerimeter() {
-        return 2 * (plusXBound - minusXBound + plusYBound - minusYBound + 2);
+        int xRange = plusXBound - minusXBound + 1;
+        int yRange = plusYBound - minusYBound + 1;
+        if (dimension == 2) {
+            return 2 * (xRange + yRange);
+        } else {
+            int zRange = plusZBound - minusZBound + 1;
+            return 2 * (xRange * yRange + xRange * zRange + yRange * zRange);
+        }
     }
 
     /**
      * Draws an ASCII visualization of the peptides in the lattice to the console.
-     * Also returns the drawing as a list of strings.
+     * Also returns the drawing as a list of strings. Currently only draws 2D lattices.
      */
     public List<String> visualize() {
         List<String> lines = new ArrayList<>();
-        for (int i=plusYBound; i>=minusYBound; i--) {
-            StringBuilder latticeString = new StringBuilder();
-            StringBuilder connectionsString = new StringBuilder();
-            for (int j=minusXBound; j<=plusXBound; j++) {
-                Peptide p = get(j, i);
-                if (p != null) {
-                    latticeString.append(p.residue);
-                    int index = p.index;
-                    if (containsPoint(j + 1, i) && (get(j + 1, i).index == index + 1 || get(j + 1, i).index == index - 1)) {
-                        latticeString.append("-");
+        for (int k=minusZBound; k<=plusZBound; k++) {
+            for (int i=plusYBound; i>=minusYBound; i--) {
+                StringBuilder latticeString = new StringBuilder();
+                StringBuilder connectionsString = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    Peptide p = get(new Point(j, i, k));
+                    if (p != null) {
+                        int index = p.index;
+                        String residue = p.residue.toString();
+                        Point up = new Point(j, i, k + 1);
+                        if (containsPoint(up) && (get(up).index == index + 1 || get(up).index == index - 1)) {
+                            residue = residue.replace('(', '{').replace(')', '}');
+                        }
+                        latticeString.append(residue);
+                        Point right = new Point(j + 1, i, k);
+                        if (containsPoint(right) && (get(right).index == index + 1 || get(right).index == index - 1)) {
+                            latticeString.append("-");
+                        } else {
+                            latticeString.append(" ");
+                        }
+                        Point below = new Point(j, i - 1, k);
+                        if (containsPoint(below) && (get(below).index == index + 1 || get(below).index == index - 1)) {
+                            connectionsString.append(" |  ");
+                        } else {
+                            connectionsString.append("    ");
+                        }
                     } else {
-                        latticeString.append(" ");
-                    }
-                    if (containsPoint(j, i - 1) && (get(j, i - 1).index == index + 1 || get(j, i - 1).index == index - 1)) {
-                        connectionsString.append(" |  ");
-                    } else {
+                        latticeString.append("    ");
                         connectionsString.append("    ");
                     }
-                } else {
-                    latticeString.append("    ");
-                    connectionsString.append("    ");
                 }
+                lines.add(latticeString.toString());
+                lines.add(connectionsString.toString());
+                System.out.println(latticeString);
+                System.out.println(connectionsString);
             }
-            lines.add(latticeString.toString());
-            lines.add(connectionsString.toString());
-            System.out.println(latticeString);
-            System.out.println(connectionsString);
+            if (hasSurface()) {
+                StringBuilder surface = new StringBuilder();
+                StringBuilder base = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    surface.append(this.surface).append(" ");
+                    base.append("-+--");
+                }
+                lines.add(surface.toString());
+                lines.add(base.toString());
+                System.out.println(surface);
+                System.out.println(base);
+            } else {
+                StringBuilder edge = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    edge.append("====");
+                }
+                lines.add(edge.toString());
+                System.out.println(edge);
+            }
         }
         return lines;
     }
