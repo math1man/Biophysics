@@ -17,7 +17,7 @@ import java.util.List;
  * calculates energy instead of maintaining it throughout.
  * @author Ari Weiland
  */
-public class MovableLattice extends Lattice {
+public class MovableLattice extends BoundingLattice {
 
     private final List<Point> pointSequence;
 
@@ -40,7 +40,7 @@ public class MovableLattice extends Lattice {
     }
 
     // TODO this constructor is untested with normal Lattices
-    public MovableLattice(Lattice lattice) {
+    public MovableLattice(BoundingLattice lattice) {
         super(lattice);
         if (lattice instanceof MovableLattice) {
             pointSequence = new ArrayList<>(((MovableLattice) lattice).pointSequence);

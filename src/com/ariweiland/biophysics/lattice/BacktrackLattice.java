@@ -1,6 +1,5 @@
 package com.ariweiland.biophysics.lattice;
 
-import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -10,7 +9,7 @@ import java.util.Stack;
 /**
  * @author Ari Weiland
  */
-public class BacktrackLattice extends Lattice {
+public class BacktrackLattice extends FastLattice {
 
     private final Stack<Double> energyStack = new Stack<>();
     private final Stack<Point> pointStack = new Stack<>();
@@ -32,30 +31,9 @@ public class BacktrackLattice extends Lattice {
     }
 
     @Override
-    public Peptide get(Point point) {
-        if (hasSurface() && point.y == 0) {
-            return new Peptide(-2, getSurface());
-        } else {
-            return lattice.get(point);
-        }
-    }
-
-    @Override
     public void put(Point point, Peptide peptide) {
         energyStack.push(energy);
-        for (Direction d : Direction.values(getDimension())) {
-            Peptide adj = get(point.getAdjacent(d));
-            if (adj != null) {
-                // if they are not adjoining peptides
-                if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
-                    energy += peptide.interaction(adj);
-                }
-                energy -= adj.interaction(Residue.H2O);
-            } else {
-                energy += peptide.interaction(Residue.H2O);
-            }
-        }
-        lattice.put(point, peptide);
+        super.put(point, peptide);
         pointStack.push(point);
     }
 

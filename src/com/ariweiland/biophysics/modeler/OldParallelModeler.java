@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.modeler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.BoundingLattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
@@ -28,7 +28,7 @@ public class OldParallelModeler extends ParallelModeler {
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice(2, size);
+        BoundingLattice line = new BoundingLattice(2, size);
         line.put(new Point(0, 0), first);
 
         if (size > 1) {
@@ -41,7 +41,7 @@ public class OldParallelModeler extends ParallelModeler {
             for (int i=2; i<size; i++) {
                 Peptide next = polypeptide.get(i);
                 lowerBound -= 2 * next.minInteraction();
-                Lattice bend = new Lattice(line);
+                BoundingLattice bend = new BoundingLattice(line);
                 Point point = new Point(i - 1, 1);
                 bend.put(point, next);
                 if (i == size - 1) {
@@ -65,7 +65,7 @@ public class OldParallelModeler extends ParallelModeler {
             for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
                 if (!folding.lattice.containsPoint(next)) {
-                    Lattice l = new Lattice(folding.lattice);
+                    BoundingLattice l = new BoundingLattice(folding.lattice);
                     l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle

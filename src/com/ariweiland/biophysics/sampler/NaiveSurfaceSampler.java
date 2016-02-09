@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.sampler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.RandomUtils;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.BoundingLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
@@ -39,7 +39,7 @@ public class NaiveSurfaceSampler extends Sampler {
         Map<Double, Double> counter = new HashMap<>();
         int count = 0;
         for (int i=0; i<samples; i++) {
-            Lattice lattice = new Lattice(dimension, surface, size);
+            BoundingLattice lattice = new BoundingLattice(dimension, surface, size);
             // start out at a random y value between 1 and size, inclusive
             Point last = new Point(0, RandomUtils.randomInt(size) + 1, 0);
             lattice.put(last, polypeptide.get(0));

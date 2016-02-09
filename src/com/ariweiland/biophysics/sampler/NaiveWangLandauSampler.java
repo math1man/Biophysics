@@ -3,7 +3,8 @@ package com.ariweiland.biophysics.sampler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.RandomUtils;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.FastLattice;
+import com.ariweiland.biophysics.lattice.BoundingLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.ArrayList;
@@ -88,16 +89,15 @@ public class NaiveWangLandauSampler extends Sampler {
         double f = Math.E;
         g.clear();
 
-        Lattice base = new Lattice(dimension, size);
-        base.put(new Point(0, 0, 0), polypeptide.get(0));
-        base.put(new Point(1, 0, 0), polypeptide.get(1));
         int count = 0;
         while (Math.log(f) > F_FINAL) {
             h.clear();
-            Lattice old = null;
+            BoundingLattice old = null;
             while (!isSufficientlyFlat()) {
-                Lattice trial = new Lattice(base);
+                FastLattice trial = new FastLattice(dimension, size);
+                trial.put(new Point(0, 0, 0), polypeptide.get(0));
                 Point last = new Point(1, 0, 0);
+                trial.put(last, polypeptide.get(1));
                 boolean isBoxedIn = false;
                 for (int j=2; j<size && !isBoxedIn; j++) {
                     List<Direction> opens = new ArrayList<>();

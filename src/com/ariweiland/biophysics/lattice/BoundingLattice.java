@@ -13,7 +13,7 @@ import java.util.*;
  * and perimeter/surface area of the polypeptide in the lattice and the lattice energy.
  * @author Ari Weiland
  */
-public class Lattice {
+public class BoundingLattice {
 
     private final int dimension;
     private final Residue surface;
@@ -27,15 +27,15 @@ public class Lattice {
     private int plusZBound = 0;
     private int minusZBound = 0;
 
-    public Lattice(int dimension) {
+    public BoundingLattice(int dimension) {
         this(dimension, null);
     }
 
-    public Lattice(int dimension, int initialCapacity) {
+    public BoundingLattice(int dimension, int initialCapacity) {
         this(dimension, null, initialCapacity);
     }
 
-    public Lattice(int dimension, Residue surface) {
+    public BoundingLattice(int dimension, Residue surface) {
         if (dimension < 2 || dimension > 3) {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }
@@ -44,7 +44,7 @@ public class Lattice {
         this.lattice = new HashMap<>();
     }
 
-    public Lattice(int dimension, Residue surface, int initialCapacity) {
+    public BoundingLattice(int dimension, Residue surface, int initialCapacity) {
         if (dimension < 2 || dimension > 3) {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }
@@ -53,7 +53,7 @@ public class Lattice {
         this.lattice = new HashMap<>(initialCapacity);
     }
 
-    public Lattice(Lattice lattice) {
+    public BoundingLattice(BoundingLattice lattice) {
         if (lattice.dimension < 2 || lattice.dimension > 3) {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }

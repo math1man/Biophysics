@@ -11,12 +11,12 @@ import com.ariweiland.biophysics.Point;
  */
 public class Folding implements Comparable<Folding> {
 
-    public final Lattice lattice;
+    public final BoundingLattice lattice;
     public final Point lastPoint;
     public final int index;
     public final double energyBound;
 
-    public Folding(Lattice lattice, Point lastPoint, int index, double energyBound) {
+    public Folding(BoundingLattice lattice, Point lastPoint, int index, double energyBound) {
         this.lattice = lattice;
         this.lastPoint = lastPoint;
         this.index = index;

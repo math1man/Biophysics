@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.modeler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.BoundingLattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
@@ -26,7 +26,7 @@ public class CurrentParallelModeler extends ParallelModeler {
         int size = polypeptide.size();
         // initialize the lattices
         Peptide first = polypeptide.get(0);
-        Lattice line = new Lattice(dim, size);
+        BoundingLattice line = new BoundingLattice(dim, size);
         line.put(new Point(0, 0, 0), first);
 
         if (size > 1) {
@@ -42,7 +42,7 @@ public class CurrentParallelModeler extends ParallelModeler {
                     + dim * getFavorableWaterInteraction(second);
             for (int i=2; i<size; i++) {
                 Peptide next = polypeptide.get(i);
-                Lattice bend = new Lattice(line);
+                BoundingLattice bend = new BoundingLattice(line);
                 Point point = new Point(i - 1, 1, 0);
                 bend.put(point, next);
                 line.put(new Point(i, 0, 0), next);
@@ -68,7 +68,7 @@ public class CurrentParallelModeler extends ParallelModeler {
             for (Direction nextDir : Direction.values(dim)) {
                 Point next = folding.lastPoint.getAdjacent(nextDir);
                 if (!folding.lattice.containsPoint(next)) {
-                    Lattice l = new Lattice(folding.lattice);
+                    BoundingLattice l = new BoundingLattice(folding.lattice);
                     l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle

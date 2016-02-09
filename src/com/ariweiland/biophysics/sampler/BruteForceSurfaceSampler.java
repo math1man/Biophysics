@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.sampler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.BoundingLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
@@ -35,7 +35,7 @@ public class BruteForceSurfaceSampler extends Sampler {
         for (int y = 1; y < maxY; y++) {
             int[] state = new int[size]; // we won't actually use the 0 index
             Arrays.fill(state, -1);
-            Lattice first = new Lattice(dimension, surface, size);
+            BoundingLattice first = new BoundingLattice(dimension, surface, size);
             first.put(new Point(0, y, 0), polypeptide.get(0));
             Folding[] foldings = new Folding[size];
             foldings[0] = new Folding(first, new Point(0, y, 0), 0, 0);
@@ -50,7 +50,7 @@ public class BruteForceSurfaceSampler extends Sampler {
                     foldIndex--;
                 } else {
                     Point next = foldings[foldIndex - 1].lastPoint.getAdjacent(Direction.values()[state[foldIndex]]);
-                    Lattice lattice = new Lattice(foldings[foldIndex - 1].lattice);
+                    BoundingLattice lattice = new BoundingLattice(foldings[foldIndex - 1].lattice);
                     // Check that the generated state is valid
                     if (!lattice.containsPoint(next) && next.y < maxY) {
                         lattice.put(next, polypeptide.get(foldIndex));

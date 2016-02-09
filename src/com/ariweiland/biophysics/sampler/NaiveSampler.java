@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.sampler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.RandomUtils;
-import com.ariweiland.biophysics.lattice.Lattice;
+import com.ariweiland.biophysics.lattice.BoundingLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.ArrayList;
@@ -38,12 +38,12 @@ public class NaiveSampler extends Sampler {
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
-        Lattice base = new Lattice(dimension, size);
+        BoundingLattice base = new BoundingLattice(dimension, size);
         base.put(new Point(0, 0, 0), polypeptide.get(0));
         base.put(new Point(1, 0, 0), polypeptide.get(1));
         int count = 0;
         for (int i=0; i<samples; i++) {
-            Lattice lattice = new Lattice(base);
+            BoundingLattice lattice = new BoundingLattice(base);
             Point last = new Point(1, 0, 0);
             boolean isBoxedIn = false;
             for (int j=2; j<size && !isBoxedIn; j++) {
