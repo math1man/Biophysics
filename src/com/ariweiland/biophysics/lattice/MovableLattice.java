@@ -87,7 +87,7 @@ public class MovableLattice extends Lattice {
     }
 
     /**
-     * TODO: make this surface-safe
+     * TODO: make pull moves surface-safe
      * @return
      */
     public List<PullMove> getPullMoves() {
@@ -161,6 +161,167 @@ public class MovableLattice extends Lattice {
                     j--;
                 } else {
                     j = -1; // break
+                }
+            }
+        }
+    }
+
+    public List<RebridgeMove> getRebridgeMoves() {
+        List<RebridgeMove> moves = new ArrayList<>();
+        int last = size() - 1;
+        for (int i=0; i<last; i++) {
+            Point point = pointSequence.get(i);
+            Point next = pointSequence.get(i + 1);
+            for (Direction d : point.getDirectionTo(next).getNormals(getDimension())) {
+                Point pj = point.getAdjacent(d);
+                Point pk = next.getAdjacent(d);
+                if (lattice.containsKey(pj) && lattice.containsKey(pk)) {
+                    int j = lattice.get(pj).index;
+                    int k = lattice.get(pk).index;
+                    // indices j and k are adjacent, and not consecutive to i and i+1
+                    if (Math.abs(j - k) == 1) {
+                        if (k > j) { // parallel
+                            moves.add(new RebridgeMove(i, j, k));
+                        } else if (k > i + 2 || j < i - 1) { // antiparallel
+                            // need to make sure that i, i+1, j, and k are not consecutive
+                            int loopStart;
+                            int loopEnd;
+                            if (i > j) { // loop is on the j side
+                                loopStart = j;
+                                loopEnd = i;
+                            } else {     // loop is on the k side
+                                loopStart = i + 1;
+                                loopEnd = k;
+                            }
+                            for (int ip = loopStart; ip < loopEnd; ip++) {
+                                Point pointP = pointSequence.get(ip);
+                                Point nextP = pointSequence.get(ip + 1);
+                                for (Direction d2 : pointP.getDirectionTo(nextP).getNormals(getDimension())) {
+                                    Point pjp = pointP.getAdjacent(d2);
+                                    Point pkp = nextP.getAdjacent(d2);
+                                    if (lattice.containsKey(pjp) && lattice.containsKey(pkp)) {
+                                        int jp = lattice.get(pjp).index;
+                                        int kp = lattice.get(pkp).index;
+                                        if (Math.abs(jp - kp) == 1 && ((kp > loopEnd && jp > loopEnd) || (kp < loopStart && jp < loopStart))) {
+                                            moves.add(new RebridgeMove(i, j, k, ip, jp, kp));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // end rebridge moves
+//        Point point = pointSequence.get(last);
+//        for (Direction d : Direction.values(getDimension())) {
+//            Point adj = point.getAdjacent(d);
+//            if (!pointSequence.get(last - 1).equals(adj) && lattice.containsKey(adj)) {
+//                int j = lattice.get(point.getAdjacent(d)).index;
+//                moves.add(new RebridgeMove(last, j, j + 1));
+//            }
+//        }
+        return moves;
+    }
+
+    /**
+     * Applies a rebridge move as specified by the input parameter.
+     * @param move
+     */
+    public void rebridge(RebridgeMove move) {
+        int i = move.i;
+        int j = move.j;
+        int k = move.k;
+        int ip = move.ip;
+        if (ip == -1) { // end case or parallel case, type 2
+            reversePeptideSequence(j > i ? i + 1 : k, j > i ? j : i);
+        } else { // antiparallel case, type 1
+            int jp = move.jp;
+            int kp = move.kp;
+            int min = i;
+            for (int a : Arrays.asList(k, ip, jp, kp)) {
+                if (a < min) {
+                    min = a;
+                }
+            }
+            int max = i + 1;
+            for (int a : Arrays.asList(j, ip + 1, jp, kp)) {
+                if (a > max) {
+                    max = a;
+                }
+            }
+            int[] changes = new int[max - min];
+            // these booleans prevent the reordering to try to go both ways on each swap
+            boolean ij = true; boolean ik = true; boolean ijp = true; boolean ikp = true;
+            int direction = 1; // direction indicates whether we should increment or decrement
+            // changes[n] keeps track of the point/peptide reordering
+            // the (min+n)th peptide should be moved to the changes[n]'th point of the original sequence
+            changes[0] = min;
+            for (int n = 1; n < changes.length; n++) {
+                int index = n + min;            // index specifies which peptide is being moved
+                int lastPoint = changes[n - 1]; // lastPoint specifies the previous point in the modified sequence
+                int nextPoint;                  // nextPoint will specify the point to follow lastPoint
+                if (lastPoint == i && ij) {
+                    nextPoint = j;
+                    ij = false;
+                    direction = 1;
+                } else if (lastPoint == j && ij) {
+                    nextPoint = i;
+                    ij = false;
+                    direction = -1;
+                } else if (lastPoint == i + 1 && ik) {
+                    nextPoint = k;
+                    ik = false;
+                    direction = -1;
+                } else if (lastPoint == k && ik) {
+                    nextPoint = i + 1;
+                    ik = false;
+                    direction = 1;
+                } else if (lastPoint == ip && ijp) {
+                    nextPoint = jp;
+                    ijp = false;
+                    direction = jp - kp;
+                } else if (lastPoint == jp && ijp) {
+                    nextPoint = ip;
+                    ijp = false;
+                    direction = -1;
+                } else if (lastPoint == ip + 1 && ikp) {
+                    nextPoint = kp;
+                    ikp = false;
+                    direction = kp - jp;
+                } else if (lastPoint == kp && ikp) {
+                    nextPoint = ip + 1;
+                    ikp = false;
+                    direction = 1;
+                } else {
+                    nextPoint = lastPoint + direction;
+                }
+                changes[n] = nextPoint;
+                Point oldPoint = pointSequence.get(index);    // oldPoint is the location of the index'th peptide
+                int newIndex = nextPoint;                     // newIndex is the current location of the point
+                while (newIndex < index) {                    // where the index'th peptide needs to go
+                    newIndex = changes[newIndex - min];       // this while loop handles complex swapping behavior
+                }
+                Point newPoint = pointSequence.get(newIndex); // newPoint is the point that peptide needs to be moved to
+                if (!oldPoint.equals(newPoint)) {             // if newPoint and oldPoint are different, do the swap
+                    Peptide temp = lattice.remove(oldPoint);
+                    lattice.put(oldPoint, lattice.remove(newPoint));
+                    lattice.put(newPoint, temp);
+                    pointSequence.set(newIndex, oldPoint);
+                    pointSequence.set(index, newPoint);
+                }
+            }
+        }
+        energy = 0;
+        for (Point p : pointSequence) {
+            Peptide peptide = lattice.get(p);
+            for (Direction d : Direction.values(getDimension())) {
+                Peptide adj = lattice.get(p.getAdjacent(d));
+                // don't count if lower index to avoid double counting
+                // don't count if the next index because that is not an interaction
+                if (adj == null || adj.index > peptide.index + 1) {
+                    energy += peptide.interaction(adj);
                 }
             }
         }

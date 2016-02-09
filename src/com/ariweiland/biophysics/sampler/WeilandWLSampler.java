@@ -4,6 +4,7 @@ import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.lattice.MovableLattice;
 import com.ariweiland.biophysics.lattice.PullMove;
+import com.ariweiland.biophysics.lattice.RebridgeMove;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.HashMap;
@@ -13,7 +14,8 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class WangLandauSampler extends Sampler {
+public class WeilandWLSampler extends Sampler {
+
 
     public static final double F_FINAL = 0.00000001; // 10^-8
 
@@ -24,19 +26,19 @@ public class WangLandauSampler extends Sampler {
     private final Map<Double, Double> g = new HashMap<>();
     private final Map<Double, Integer> h = new HashMap<>();
 
-    public WangLandauSampler() {
+    public WeilandWLSampler() {
         this(0.8);
     }
 
-    public WangLandauSampler(double flatness) {
+    public WeilandWLSampler(double flatness) {
         this(flatness, 1);
     }
 
-    public WangLandauSampler(double flatness, int moveCount) {
+    public WeilandWLSampler(double flatness, int moveCount) {
         this(flatness, moveCount, 0.2);
     }
 
-    public WangLandauSampler(double flatness, int moveCount, double moveRatio) {
+    public WeilandWLSampler(double flatness, int moveCount, double moveRatio) {
         this.flatness = flatness;
         this.moveCount = moveCount;
         this.moveRatio = moveRatio;
@@ -130,18 +132,17 @@ public class WangLandauSampler extends Sampler {
                 int pulls = 0;
                 int rebridges = 0;
                 for (int i=0; i<moveCount; i++) {
-                    if (RandomUtils.tryChance(moveRatio)) { // pull move
+                    List<RebridgeMove> rebridgeMoves = trial.getRebridgeMoves();
+                    if (rebridgeMoves.isEmpty() || RandomUtils.tryChance(moveRatio)) { // pull move
                         PullMove move = RandomUtils.selectRandom(pullMoves);
                         trial.pull(move);
                         pulls++;
-                        pullMoves = trial.getPullMoves();
-                    } else if (trial.rebridge(RandomUtils.randomInt(trial.size()))) {
+                    } else {      // bond-rebridging move
+                        RebridgeMove move = RandomUtils.selectRandom(rebridgeMoves);
+                        trial.rebridge(move);
                         rebridges++;
-                        pullMoves = trial.getPullMoves();
-                    } else {
-                        i--;
-                        // nothing changed, so don't need to update pullMoves
                     }
+                    pullMoves = trial.getPullMoves();
                 }
                 double threshold = g(old.getEnergy()) / g(trial.getEnergy()) * nOld / pullMoves.size();
                 // potentially slightly faster because randoms do not always need to be generated

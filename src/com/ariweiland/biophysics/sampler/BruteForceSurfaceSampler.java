@@ -65,8 +65,6 @@ public class BruteForceSurfaceSampler extends Sampler {
                                 counter.put(energy, 0.0);
                             }
                             counter.put(energy, 1 + counter.get(energy));
-                            state[foldIndex] = -1;
-                            foldIndex--;
                             count++;
                             if (count % 1000000 == 0) {
                                 System.out.println((count / 1000000) + "M states counted");

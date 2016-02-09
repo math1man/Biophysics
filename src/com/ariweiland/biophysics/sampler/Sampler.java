@@ -25,7 +25,7 @@ public abstract class Sampler {
 
     public static void main(String[] args) {
         Sampler sampler = new BruteForceSampler();
-        Polypeptide polypeptide = new Polypeptide("(P)-(P)-(P)-(H)-(P)-(H)-(P)-(P)-(H)-(P)-(H)-(P)-(H)-(P)-(H)-(H)-(H)-(P)-(H)-(P)\n");
+        Polypeptide polypeptide = new Polypeptide("(H)-(H)-(P)-(P)-(H)-(P)-(H)-(P)-(H)-(P)-(P)-(H)-(P)-(H)-(P)-(P)");
 //        Polypeptide polypeptide = new Polypeptide();
 //        for (int i=0; i<24; i++) {
 //            if (RandomUtils.tryChance(0.4)) {
@@ -37,8 +37,9 @@ public abstract class Sampler {
         System.out.println(polypeptide);
         System.out.println("Node count: " + polypeptide.size());
         System.out.println();
+        System.out.println(sampler.getClass().getSimpleName());
         long start = System.currentTimeMillis();
-        Map<Double, Double> density = sampler.normalize(sampler.getDensity(2, polypeptide));
+        Map<Double, Double> density = sampler.normalize(sampler.getDensity(3, polypeptide));
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("Elapsed time: " + (elapsed / 1000.0) + " s");
         System.out.println("Bins\tCounts");
