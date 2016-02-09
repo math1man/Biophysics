@@ -9,25 +9,25 @@ import java.util.Stack;
 /**
  * @author Ari Weiland
  */
-public class BacktrackLattice extends FastLattice {
+public class BacktrackLattice extends Lattice {
 
     private final Stack<Double> energyStack = new Stack<>();
     private final Stack<Point> pointStack = new Stack<>();
 
     public BacktrackLattice(int dimension) {
-        super(dimension);
-    }
-
-    public BacktrackLattice(int dimension, int initialCapacity) {
-        super(dimension, initialCapacity);
+        this(dimension, null);
     }
 
     public BacktrackLattice(int dimension, Residue surface) {
         super(dimension, surface);
     }
 
-    public BacktrackLattice(int dimension, Residue surface, int initialCapacity) {
-        super(dimension, surface, initialCapacity);
+    public BacktrackLattice(int dimension, int initialCapacity) {
+        this(dimension, initialCapacity, null);
+    }
+
+    public BacktrackLattice(int dimension, int initialCapacity, Residue surface) {
+        super(dimension, initialCapacity, surface);
     }
 
     @Override

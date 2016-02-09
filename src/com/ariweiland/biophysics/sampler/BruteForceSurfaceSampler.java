@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.sampler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.BoundingLattice;
+import com.ariweiland.biophysics.lattice.CheckedLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
@@ -35,8 +35,9 @@ public class BruteForceSurfaceSampler extends Sampler {
         for (int y = 1; y < maxY; y++) {
             int[] state = new int[size]; // we won't actually use the 0 index
             Arrays.fill(state, -1);
-            BoundingLattice first = new BoundingLattice(dimension, surface, size);
+            CheckedLattice first = new CheckedLattice(dimension, size, surface);
             first.put(new Point(0, y, 0), polypeptide.get(0));
+            // TODO: update this shit
             Folding[] foldings = new Folding[size];
             foldings[0] = new Folding(first, new Point(0, y, 0), 0, 0);
             int foldIndex = 1; // the first residue is directionless
@@ -50,9 +51,9 @@ public class BruteForceSurfaceSampler extends Sampler {
                     foldIndex--;
                 } else {
                     Point next = foldings[foldIndex - 1].lastPoint.getAdjacent(Direction.values()[state[foldIndex]]);
-                    BoundingLattice lattice = new BoundingLattice(foldings[foldIndex - 1].lattice);
+                    CheckedLattice lattice = new CheckedLattice(foldings[foldIndex - 1].lattice);
                     // Check that the generated state is valid
-                    if (!lattice.containsPoint(next) && next.y < maxY) {
+                    if (!lattice.contains(next) && next.y < maxY) {
                         lattice.put(next, polypeptide.get(foldIndex));
                         if (foldIndex < size - 1) {
                             // If valid and there are still more rows to position, go to the next row

@@ -2,7 +2,7 @@ package com.ariweiland.biophysics.modeler;
 
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.BoundingLattice;
+import com.ariweiland.biophysics.lattice.CheckedLattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -29,12 +29,12 @@ public class OldModeler2 extends Modeler {
     }
 
     @Override
-    public BoundingLattice fold(Polypeptide polypeptide) {
+    public CheckedLattice fold(Polypeptide polypeptide) {
         running.set(true);
         // initialize the lattices
         int size = polypeptide.size();
         Peptide first = polypeptide.get(0);
-        BoundingLattice line = new BoundingLattice(2, size);
+        CheckedLattice line = new CheckedLattice(2, size);
         line.put(new Point(0, 0), first);
         if (size == 1) {
             return line;
@@ -51,7 +51,7 @@ public class OldModeler2 extends Modeler {
         for (int i=2; i<size; i++) {
             Peptide next = polypeptide.get(i);
             lowerBound -= 2 * next.minInteraction();
-            BoundingLattice bend = new BoundingLattice(line);
+            CheckedLattice bend = new CheckedLattice(line);
             Point point = new Point(i - 1, 1);
             bend.put(point, next);
             if (i == size - 1) {
@@ -74,7 +74,7 @@ public class OldModeler2 extends Modeler {
         }
         System.out.println(count + " states visited, " + heap.size() + " states left in queue");
         if (solution == null) {
-            return new BoundingLattice(2);
+            return new CheckedLattice(2);
         } else {
             return solution.lattice;
         }
@@ -89,8 +89,8 @@ public class OldModeler2 extends Modeler {
             Peptide p = polypeptide.get(nextIndex);
             for (Direction d : Direction.values(2)) {
                 Point next = folding.lastPoint.getAdjacent(d);
-                if (!folding.lattice.containsPoint(next)) {
-                    BoundingLattice l = new BoundingLattice(folding.lattice);
+                if (!folding.lattice.contains(next)) {
+                    CheckedLattice l = new CheckedLattice(folding.lattice);
                     l.put(next, p);
                     // though limiting the protein to the smallest possible rectangle is
                     // overly limiting, empirically it seems that limiting it to a rectangle

@@ -17,7 +17,7 @@ import java.util.List;
  * calculates energy instead of maintaining it throughout.
  * @author Ari Weiland
  */
-public class MovableLattice extends BoundingLattice {
+public class MovableLattice extends Lattice {
 
     private final List<Point> pointSequence;
 
@@ -25,58 +25,28 @@ public class MovableLattice extends BoundingLattice {
         this(dimension, null);
     }
 
-    public MovableLattice(int dimension, int initialCapacity) {
-        this(dimension, null, initialCapacity);
-    }
-
     public MovableLattice(int dimension, Residue surface) {
         super(dimension, surface);
         pointSequence = new ArrayList<>();
     }
 
-    public MovableLattice(int dimension, Residue surface, int initialCapacity) {
-        super(dimension, surface, initialCapacity);
+    public MovableLattice(int dimension, int initialCapacity) {
+        this(dimension, initialCapacity, null);
+    }
+
+    public MovableLattice(int dimension, int initialCapacity, Residue surface) {
+        super(dimension, initialCapacity, surface);
         pointSequence = new ArrayList<>(initialCapacity);
     }
 
-    // TODO this constructor is untested with normal Lattices
-    public MovableLattice(BoundingLattice lattice) {
+    public MovableLattice(MovableLattice lattice) {
         super(lattice);
-        if (lattice instanceof MovableLattice) {
-            pointSequence = new ArrayList<>(((MovableLattice) lattice).pointSequence);
-        } else {
-            pointSequence = new ArrayList<>(lattice.size());
-            for (Point p : keySet()) {
-                Peptide peptide = this.lattice.get(p);
-                pointSequence.add(peptide.index, p);
-            }
-        }
+        this.pointSequence = new ArrayList<>(lattice.pointSequence);
     }
 
     @Override
     public void put(Point point, Peptide peptide) {
-        if (getDimension() == 2 && point.z != 0) {
-            throw new IllegalArgumentException("2D points cannot have a z-component");
-        }
-        if (hasSurface() && point.y < 1) {
-            throw new IllegalArgumentException("Cannot put a point on or below the surface (y <= 0)");
-        }
-        if (containsPoint(point)) {
-            throw new IllegalArgumentException("That point is already occupied");
-        }
-        for (Direction d : Direction.values(getDimension())) {
-            Peptide adj = get(point.getAdjacent(d));
-            if (adj != null) {
-                // if they are not adjoining peptides
-                if (adj.index != peptide.index + 1 && adj.index != peptide.index - 1) {
-                    energy += peptide.interaction(adj);
-                }
-                energy -= adj.interaction(Residue.H2O);
-            } else {
-                energy += peptide.interaction(Residue.H2O);
-            }
-        }
-        lattice.put(point, peptide);
+        super.put(point, peptide);
         pointSequence.add(point);
     }
 
@@ -99,7 +69,7 @@ public class MovableLattice extends BoundingLattice {
                 Point l = next.getAdjacent(d);
                 Point c = point.getAdjacent(d);
                 // position L is open and i is 0, point c is open, or it's occupied by peptide i-1
-                if (!containsPoint(l) && (i == 0 || !lattice.containsKey(c) || lattice.get(c).index == i - 1)) {
+                if (!contains(l) && (i == 0 || !lattice.containsKey(c) || lattice.get(c).index == i - 1)) {
                     moves.add(new PullMove(i, d)); // TODO try reversing the above &&
                 }
             }
@@ -341,7 +311,7 @@ public class MovableLattice extends BoundingLattice {
             List<Direction> options = new ArrayList<>();
             for (Direction d : Direction.values(getDimension())) {
                 Point adj = point.getAdjacent(d);
-                if (containsPoint(adj) && adj != pointSequence.get(i - 1)) {
+                if (contains(adj) && adj != pointSequence.get(i - 1)) {
                     options.add(d);
                 }
             }

@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.modeler;
 import com.ariweiland.biophysics.Direction;
 import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.BoundingLattice;
+import com.ariweiland.biophysics.lattice.CheckedLattice;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
@@ -74,8 +74,8 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
             // try to add the peptide in every direction
             for (Direction nextDir : Direction.values(dim)) {
                 Point next = folding.lastPoint.getAdjacent(nextDir);
-                if (!folding.lattice.containsPoint(next) && next.y < getMaxY(polypeptide)) {
-                    BoundingLattice l = new BoundingLattice(folding.lattice);
+                if (!folding.lattice.contains(next) && next.y < getMaxY(polypeptide)) {
+                    CheckedLattice l = new CheckedLattice(folding.lattice);
                     l.put(next, p);
                     // set the bound from the previous bound, minus the min interactions for this peptide,
                     // minus one favorable water interaction which
@@ -84,7 +84,7 @@ public class CurrentSurfaceModeler extends SurfaceModeler {
                         for (Direction d : Direction.values(dim)) {
                             // the adjustments for the attached residue are already handled
                             if (d != nextDir.getReverse()) {
-                                if (l.containsPoint(next.getAdjacent(d))) {
+                                if (l.contains(next.getAdjacent(d))) {
                                     Peptide adjacent = l.get(next.getAdjacent(d));
                                     bound += p.interaction(adjacent) - getFavorableWaterInteraction(adjacent);
                                 } else {

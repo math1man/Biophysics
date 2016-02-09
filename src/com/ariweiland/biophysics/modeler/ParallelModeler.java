@@ -1,7 +1,7 @@
 package com.ariweiland.biophysics.modeler;
 
 import com.ariweiland.biophysics.lattice.Folding;
-import com.ariweiland.biophysics.lattice.BoundingLattice;
+import com.ariweiland.biophysics.lattice.CheckedLattice;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.concurrent.PriorityBlockingQueue;
@@ -56,7 +56,7 @@ public abstract class ParallelModeler extends Modeler {
     }
 
     @Override
-    public BoundingLattice fold(Polypeptide polypeptide) {
+    public CheckedLattice fold(Polypeptide polypeptide) {
         running.set(true);
         PriorityBlockingQueue<Folding> initialHeap = initializeHeap(polypeptide);
 
@@ -94,7 +94,7 @@ public abstract class ParallelModeler extends Modeler {
         if (running.get()) {
             return solutions.poll().lattice;
         } else {
-            return new BoundingLattice(getDimension());
+            return new CheckedLattice(getDimension());
         }
     }
 }
