@@ -19,10 +19,14 @@ public class NaiveWangLandauSampler extends Sampler {
 
     public static final double F_FINAL = 0.00000001; // 10^-8
 
-    private final double flatness; // must be between 0 and 1 exclusive
+    private double flatness; // must be between 0 and 1 exclusive
 
     private final Map<Double, Double> g = new HashMap<>();
     private final Map<Double, Integer> h = new HashMap<>();
+
+    public NaiveWangLandauSampler() {
+        this(0.8);
+    }
 
     public NaiveWangLandauSampler(double flatness) {
         this.flatness = flatness;
@@ -30,6 +34,10 @@ public class NaiveWangLandauSampler extends Sampler {
 
     public double getFlatness() {
         return flatness;
+    }
+
+    public void setFlatness(double flatness) {
+        this.flatness = flatness;
     }
 
     private boolean isSufficientlyFlat() {
