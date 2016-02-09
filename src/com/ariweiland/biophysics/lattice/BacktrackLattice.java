@@ -33,7 +33,11 @@ public class BacktrackLattice extends Lattice {
 
     @Override
     public Peptide get(Point point) {
-        return lattice.get(point);
+        if (hasSurface() && point.y == 0) {
+            return new Peptide(-2, getSurface());
+        } else {
+            return lattice.get(point);
+        }
     }
 
     @Override
