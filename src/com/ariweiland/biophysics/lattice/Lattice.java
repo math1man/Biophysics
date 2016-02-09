@@ -19,13 +19,13 @@ public class Lattice {
     private final Residue surface;
     protected final Map<Point, Peptide> lattice;
     protected double energy = 0;
-    protected int surfaceSize = 0;
-    protected int plusXBound = 0;
-    protected int minusXBound = 0;
-    protected int plusYBound = 0;
-    protected int minusYBound = 0;
-    protected int plusZBound = 0;
-    protected int minusZBound = 0;
+    private int surfaceSize = 0;
+    private int plusXBound = 0;
+    private int minusXBound = 0;
+    private int plusYBound = 0;
+    private int minusYBound = 0;
+    private int plusZBound = 0;
+    private int minusZBound = 0;
 
     public Lattice(int dimension) {
         this(dimension, null);
