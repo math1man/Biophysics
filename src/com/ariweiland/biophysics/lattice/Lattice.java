@@ -100,15 +100,6 @@ public class Lattice {
     }
 
     /**
-     * Returns true if the specified peptide is in the lattice
-     * @param peptide
-     * @return
-     */
-    public boolean containsValue(Peptide peptide) {
-        return lattice.containsValue(peptide);
-    }
-
-    /**
      * Returns the peptide at the specified point, or null
      * @param point
      * @return
