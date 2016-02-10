@@ -100,8 +100,7 @@ public abstract class WangLandauSampler extends Sampler {
     }
 
     protected double calculateThreshold(Lattice old, Lattice trial, double fineDetail) {
-        return g(old.getEnergy()).divide(g(trial.getEnergy()), MC)
-                .multiply(BigDecimal.valueOf(fineDetail), MC).doubleValue();
+        return g(old.getEnergy()).divide(g(trial.getEnergy()), MC).doubleValue() * fineDetail;
     }
 
     protected Map<Double, Double> convertG() {
