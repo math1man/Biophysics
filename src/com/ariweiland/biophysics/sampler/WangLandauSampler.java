@@ -39,6 +39,12 @@ public class WangLandauSampler extends Sampler {
         this.flatness = flatness;
     }
 
+    public WangLandauSampler(double minEnergy, double flatness, int moveCount) {
+        this.minEnergy = minEnergy;
+        this.flatness = flatness;
+        this.moveCount = moveCount;
+    }
+
     public WangLandauSampler(double minEnergy, double flatness, int moveCount, double moveRatio) {
         this.minEnergy = minEnergy;
         this.flatness = flatness;
@@ -78,7 +84,7 @@ public class WangLandauSampler extends Sampler {
         this.moveRatio = moveRatio;
     }
 
-    private boolean isSufficientlyFlat() {
+    protected boolean isSufficientlyFlat() {
         if (g.isEmpty() || h.size() != g.size()) {
             return false;
         }
@@ -95,7 +101,7 @@ public class WangLandauSampler extends Sampler {
         return true;
     }
 
-    private void updateMaps(double energy, BigDecimal f) {
+    protected void updateMaps(double energy, BigDecimal f) {
         g.put(energy, g(energy).multiply(f, MC));
         if (h.containsKey(energy)) {
             h.put(energy, h.get(energy) + 1);
@@ -104,7 +110,7 @@ public class WangLandauSampler extends Sampler {
         }
     }
 
-    private BigDecimal g(double energy) {
+    protected BigDecimal g(double energy) {
         if (!g.containsKey(energy) || g.get(energy).equals(BigDecimal.ZERO)) {
             BigDecimal min = BigDecimal.ZERO;
             for (BigDecimal d : g.values()) {
@@ -171,10 +177,10 @@ public class WangLandauSampler extends Sampler {
                 }
                 updateMaps(old.getEnergy(), bdf);
                 count++;
-                if (count % 100000 == 0) {
-                    System.out.println((count / 1000) + "K trials");
-                    System.out.println("\t" + (pullCount) + " pull moves");
-                    System.out.println("\t" + (rebridgeCount) + " rebridge moves");
+                if (count % 1000000 == 0) {
+                    System.out.println((count / 1000000) + "M trials");
+                    System.out.println("\t" + (pullCount/1000000.0) + "M pull moves");
+                    System.out.println("\t" + (rebridgeCount/1000000.0) + "M rebridge moves");
                 }
             }
             f = Math.sqrt(f);
