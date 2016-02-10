@@ -18,6 +18,7 @@ import java.util.*;
 public class Lattice {
 
     private final int dimension;
+    private final boolean hasSurface;
     private final Residue surface;
     protected final Map<Point, Peptide> lattice;
     protected double energy = 0;
@@ -31,8 +32,9 @@ public class Lattice {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }
         this.dimension = dimension;
-        this.lattice = new HashMap<>();
+        this.hasSurface = (surface != null);
         this.surface = surface;
+        this.lattice = new HashMap<>();
     }
 
     public Lattice(int dimension, int initialCapacity) {
@@ -44,12 +46,14 @@ public class Lattice {
             throw new IllegalArgumentException("Dimension of less than 2 or more than 3 does not make sense");
         }
         this.dimension = dimension;
-        this.lattice = new HashMap<>(initialCapacity);
+        this.hasSurface = (surface != null);
         this.surface = surface;
+        this.lattice = new HashMap<>(initialCapacity);
     }
 
     public Lattice(Lattice lattice) {
         this.dimension = lattice.dimension;
+        this.hasSurface = lattice.hasSurface;
         this.surface = lattice.surface;
         this.lattice = new HashMap<>(lattice.lattice);
         this.energy = lattice.energy;
@@ -64,7 +68,7 @@ public class Lattice {
      * @return
      */
     public boolean hasSurface() {
-        return surface != null;
+        return hasSurface;
     }
 
     /**
@@ -97,7 +101,7 @@ public class Lattice {
      * @return
      */
     public boolean contains(Point point) {
-        return lattice.containsKey(point) || (surface != null && point.y == 0);
+        return lattice.containsKey(point) || (hasSurface && point.y == 0);
     }
 
     /**

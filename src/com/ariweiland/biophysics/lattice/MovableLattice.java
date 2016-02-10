@@ -70,7 +70,7 @@ public class MovableLattice extends Lattice {
                 Point c = point.getAdjacent(d);
                 // position L is open and i is 0, point c is open, or it's occupied by peptide i-1
                 if (!contains(l) && (i == 0 || !lattice.containsKey(c) || lattice.get(c).index == i - 1)) {
-                    moves.add(new PullMove(i, d)); // TODO try reversing the above &&
+                    moves.add(new PullMove(i, d));
                 }
             }
         }

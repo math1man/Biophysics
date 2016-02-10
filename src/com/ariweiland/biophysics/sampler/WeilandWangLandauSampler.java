@@ -88,9 +88,7 @@ public class WeilandWangLandauSampler extends WangLandauSampler {
                     }
                     pullMoves = trial.getPullMoves();
                 }
-                double threshold = calculateThreshold(old, trial, ((double) nOld) / pullMoves.size());
-                // potentially slightly faster because randoms do not always need to be generated
-                if (RandomUtils.tryChance(threshold)) {
+                if (RandomUtils.tryChance(threshold(old, trial, ((double) nOld) / pullMoves.size()))) {
                     old = trial;
                     pullCount += pulls;
                     rebridgeCount += rebridges;

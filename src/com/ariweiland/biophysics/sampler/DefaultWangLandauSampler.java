@@ -87,9 +87,7 @@ public class DefaultWangLandauSampler extends WangLandauSampler {
                         // nothing changed, so don't need to update pullMoves
                     }
                 }
-                double threshold = calculateThreshold(old, trial, ((double) nOld) / pullMoves.size());
-                // potentially slightly faster because randoms do not always need to be generated
-                if (RandomUtils.tryChance(threshold)) {
+                if (RandomUtils.tryChance(threshold(old, trial, ((double) nOld) / pullMoves.size()))) {
                     old = trial;
                     pullCount += pulls;
                     rebridgeCount += rebridges;

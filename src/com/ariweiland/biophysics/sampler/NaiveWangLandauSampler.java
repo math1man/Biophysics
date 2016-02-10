@@ -55,7 +55,7 @@ public class NaiveWangLandauSampler extends WangLandauSampler {
                     }
                 }
                 if (trial.size() == size) {
-                    if (old == null || RandomUtils.tryChance(calculateThreshold(old, trial, 1.0))) {
+                    if (old == null || RandomUtils.tryChance(threshold(old, trial, 1.0))) {
                         old = trial;
                     }
                     updateMaps(old.getEnergy(), f.asBigDecimal());

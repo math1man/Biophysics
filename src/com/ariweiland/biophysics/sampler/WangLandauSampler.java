@@ -80,7 +80,7 @@ public abstract class WangLandauSampler extends Sampler {
         return g.get(energy);
     }
 
-    protected double calculateThreshold(Lattice old, Lattice trial, double detailedBalance) {
+    protected double threshold(Lattice old, Lattice trial, double detailedBalance) {
         return g(old.getEnergy()).divide(g(trial.getEnergy()), MC).doubleValue() * detailedBalance;
     }
 
@@ -125,6 +125,11 @@ public abstract class WangLandauSampler extends Sampler {
         public void sqrt() {
             f = Math.sqrt(f);
             bdf = BigDecimal.valueOf(f);
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(f);
         }
     }
 }
