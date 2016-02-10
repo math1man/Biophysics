@@ -18,19 +18,15 @@ public class NaiveWangLandauSampler extends WangLandauSampler {
 
     public NaiveWangLandauSampler() {}
 
-    public NaiveWangLandauSampler(double minEnergy) {
-        super(minEnergy);
-    }
-
-    public NaiveWangLandauSampler(double minEnergy, double flatness) {
-        super(minEnergy, flatness);
+    public NaiveWangLandauSampler(double flatness) {
+        super(flatness);
     }
 
     @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
         int size = polypeptide.size();
         FValue f = new FValue(Math.E);
-        initializeG();
+        g.clear();
 
         int count = 0;
         while (Math.log(f.asDouble()) > F_FINAL) {

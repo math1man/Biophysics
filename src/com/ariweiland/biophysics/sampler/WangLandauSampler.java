@@ -14,8 +14,8 @@ public abstract class WangLandauSampler extends Sampler {
 
     public static final MathContext MC = MathContext.DECIMAL32;
     public static final double F_FINAL = 0.00000001; // 10^-8
+    public static final int MIN_H = 20;
 
-    private double minEnergy = 0;   // must be less than or equal to 0
     private double flatness = 0.8;  // must be between 0 and 1 exclusive
 
     protected final Map<Double, BigDecimal> g = new HashMap<>();
@@ -23,21 +23,8 @@ public abstract class WangLandauSampler extends Sampler {
 
     public WangLandauSampler() {}
 
-    public WangLandauSampler(double minEnergy) {
-        this.minEnergy = minEnergy;
-    }
-
-    public WangLandauSampler(double minEnergy, double flatness) {
-        this.minEnergy = minEnergy;
+    public WangLandauSampler(double flatness) {
         this.flatness = flatness;
-    }
-
-    public double getMinEnergy() {
-        return minEnergy;
-    }
-
-    public void setMinEnergy(double minEnergy) {
-        this.minEnergy = minEnergy;
     }
 
     public double getFlatness() {
@@ -48,21 +35,15 @@ public abstract class WangLandauSampler extends Sampler {
         this.flatness = flatness;
     }
 
-    protected void initializeG() {
-        g.clear();
-        if (minEnergy != 0) { // if there is a minimum energy specified, initialize g
-            for (double e = minEnergy; e <= 0; e++) {
-                g.put(e, BigDecimal.ZERO);
-            }
-        }
-    }
-
     protected boolean isSufficientlyFlat() {
         if (g.isEmpty() || h.size() != g.size()) {
             return false;
         }
         double total = 0;
         for (int i : h.values()) {
+            if (i < MIN_H) {
+                return false;
+            }
             total += i;
         }
         double average = total / h.size();
@@ -99,8 +80,8 @@ public abstract class WangLandauSampler extends Sampler {
         return g.get(energy);
     }
 
-    protected double calculateThreshold(Lattice old, Lattice trial, double fineDetail) {
-        return g(old.getEnergy()).divide(g(trial.getEnergy()), MC).doubleValue() * fineDetail;
+    protected double calculateThreshold(Lattice old, Lattice trial, double detailedBalance) {
+        return g(old.getEnergy()).divide(g(trial.getEnergy()), MC).doubleValue() * detailedBalance;
     }
 
     protected Map<Double, Double> convertG() {

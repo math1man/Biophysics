@@ -17,24 +17,19 @@ public class ClassicWangLandauSampler extends WangLandauSampler {
     private int moveCount = 1;      // must be positive
     private double moveRatio = 0.2; // must be between 0 and 1 exclusive
 
-    public ClassicWangLandauSampler() {
+    public ClassicWangLandauSampler() {}
+
+    public ClassicWangLandauSampler(double flatness) {
+        super(flatness);
     }
 
-    public ClassicWangLandauSampler(double minEnergy) {
-        super(minEnergy);
-    }
-
-    public ClassicWangLandauSampler(double minEnergy, double flatness) {
-        super(minEnergy, flatness);
-    }
-
-    public ClassicWangLandauSampler(double minEnergy, double flatness, int moveCount) {
-        super(minEnergy, flatness);
+    public ClassicWangLandauSampler(double flatness, int moveCount) {
+        super(flatness);
         this.moveCount = moveCount;
     }
 
-    public ClassicWangLandauSampler(double minEnergy, double flatness, int moveCount, double moveRatio) {
-        super(minEnergy, flatness);
+    public ClassicWangLandauSampler(double flatness, int moveCount, double moveRatio) {
+        super(flatness);
         this.moveCount = moveCount;
         this.moveRatio = moveRatio;
     }
@@ -65,7 +60,7 @@ public class ClassicWangLandauSampler extends WangLandauSampler {
             old.put(new Point(i, 0, 0), polypeptide.get(i));
         }
         updateMaps(old.getEnergy(), f.asBigDecimal());
-        initializeG();
+        g.clear();
 
         int count = 0;
         int pullCount = 0;

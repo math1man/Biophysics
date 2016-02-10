@@ -21,21 +21,17 @@ public class WeilandWLSampler extends WangLandauSampler {
     public WeilandWLSampler() {
     }
 
-    public WeilandWLSampler(double minEnergy) {
-        super(minEnergy);
+    public WeilandWLSampler(double flatness) {
+        super(flatness);
     }
 
-    public WeilandWLSampler(double minEnergy, double flatness) {
-        super(minEnergy, flatness);
-    }
-
-    public WeilandWLSampler(double minEnergy, double flatness, int moveCount) {
-        super(minEnergy, flatness);
+    public WeilandWLSampler(double flatness, int moveCount) {
+        super(flatness);
         this.moveCount = moveCount;
     }
 
-    public WeilandWLSampler(double minEnergy, double flatness, int moveCount, double moveRatio) {
-        super(minEnergy, flatness);
+    public WeilandWLSampler(double flatness, int moveCount, double moveRatio) {
+        super(flatness);
         this.moveCount = moveCount;
         this.moveRatio = moveRatio;
     }
@@ -66,7 +62,7 @@ public class WeilandWLSampler extends WangLandauSampler {
             old.put(new Point(i, 0, 0), polypeptide.get(i));
         }
         updateMaps(old.getEnergy(), f.asBigDecimal());
-        initializeG();
+        g.clear();
 
         int count = 0;
         int pullCount = 0;
