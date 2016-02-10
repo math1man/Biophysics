@@ -24,7 +24,7 @@ public abstract class Sampler {
     }
 
     public static void main(String[] args) {
-        Sampler sampler = new NaiveWangLandauSampler();
+        Sampler sampler = new WangLandauSampler(-9.0);
         Polypeptide polypeptide = new Polypeptide("HPPPHPHPHHPPPHPHPH");
 //        Polypeptide polypeptide = new Polypeptide();
 //        for (int i=0; i<24; i++) {
