@@ -4,7 +4,6 @@ import com.ariweiland.biophysics.Point;
 import com.ariweiland.biophysics.RandomUtils;
 import com.ariweiland.biophysics.lattice.MovableLattice;
 import com.ariweiland.biophysics.lattice.PullMove;
-import com.ariweiland.biophysics.lattice.RebridgeMove;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
 import java.util.List;
@@ -13,24 +12,23 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class WeilandWLSampler extends WangLandauSampler {
+public class DefaultWangLandauSampler extends WangLandauSampler {
 
     private int moveCount = 1;      // must be positive
     private double moveRatio = 0.2; // must be between 0 and 1 exclusive
 
-    public WeilandWLSampler() {
-    }
+    public DefaultWangLandauSampler() {}
 
-    public WeilandWLSampler(double flatness) {
+    public DefaultWangLandauSampler(double flatness) {
         super(flatness);
     }
 
-    public WeilandWLSampler(double flatness, int moveCount) {
+    public DefaultWangLandauSampler(double flatness, int moveCount) {
         super(flatness);
         this.moveCount = moveCount;
     }
 
-    public WeilandWLSampler(double flatness, int moveCount, double moveRatio) {
+    public DefaultWangLandauSampler(double flatness, int moveCount, double moveRatio) {
         super(flatness);
         this.moveCount = moveCount;
         this.moveRatio = moveRatio;
@@ -76,17 +74,18 @@ public class WeilandWLSampler extends WangLandauSampler {
                 int pulls = 0;
                 int rebridges = 0;
                 for (int i=0; i<moveCount; i++) {
-                    List<RebridgeMove> rebridgeMoves = trial.getRebridgeMoves();
-                    if (rebridgeMoves.isEmpty() || RandomUtils.tryChance(moveRatio)) { // pull move
+                    if (RandomUtils.tryChance(moveRatio)) { // pull move
                         PullMove move = RandomUtils.selectRandom(pullMoves);
                         trial.pull(move);
                         pulls++;
-                    } else {      // bond-rebridging move
-                        RebridgeMove move = RandomUtils.selectRandom(rebridgeMoves);
-                        trial.rebridge(move);
+                        pullMoves = trial.getPullMoves();
+                    } else if (trial.rebridge(RandomUtils.randomInt(trial.size()))) {
                         rebridges++;
+                        pullMoves = trial.getPullMoves();
+                    } else {
+                        i--;
+                        // nothing changed, so don't need to update pullMoves
                     }
-                    pullMoves = trial.getPullMoves();
                 }
                 double threshold = calculateThreshold(old, trial, ((double) nOld) / pullMoves.size());
                 // potentially slightly faster because randoms do not always need to be generated
@@ -99,8 +98,8 @@ public class WeilandWLSampler extends WangLandauSampler {
                 count++;
                 if (count % 1000000 == 0) {
                     System.out.println((count / 1000000) + "M trials");
-                    System.out.println("\t" + (((double) pullCount)/count) + " pull move proportion");
-                    System.out.println("\t" + (((double) rebridgeCount)/count) + " rebridge move proportion");
+                    System.out.println(String.format("\t%.4f pull move proportion", ((double) pullCount /count)));
+                    System.out.println(String.format("\t%.4f rebridge move proportion", ((double) rebridgeCount /count)));
                 }
             }
             f.sqrt();
@@ -108,6 +107,8 @@ public class WeilandWLSampler extends WangLandauSampler {
         System.out.println(count + " total trials");
         System.out.println(pullCount + " total pull moves");
         System.out.println(rebridgeCount + " total rebridge moves");
+
         return convertG();
     }
+
 }

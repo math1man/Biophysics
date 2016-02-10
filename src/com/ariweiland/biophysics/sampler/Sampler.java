@@ -24,7 +24,7 @@ public abstract class Sampler {
     }
 
     public static void main(String[] args) {
-        Sampler sampler = new ClassicWangLandauSampler();
+        Sampler sampler = new DefaultWangLandauSampler();
         Polypeptide polypeptide = new Polypeptide("HPPPHPHPHHPPPHPHPH");
 //        Polypeptide polypeptide = new Polypeptide();
 //        for (int i=0; i<24; i++) {
@@ -49,5 +49,4 @@ public abstract class Sampler {
             System.out.println(d + " \t" + density.get(d));
         }
     }
-
 }

@@ -311,7 +311,7 @@ public class MovableLattice extends Lattice {
             List<Direction> options = new ArrayList<>();
             for (Direction d : Direction.values(getDimension())) {
                 Point adj = point.getAdjacent(d);
-                if (contains(adj) && adj != pointSequence.get(i - 1)) {
+                if (lattice.containsKey(adj) && adj != pointSequence.get(i - 1)) {
                     options.add(d);
                 }
             }
