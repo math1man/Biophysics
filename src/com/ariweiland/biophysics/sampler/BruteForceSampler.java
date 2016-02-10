@@ -35,7 +35,7 @@ public class BruteForceSampler extends Sampler {
             } else {
                 Point next = lattice.getLastPoint().getAdjacent(Direction.values()[state[index]]);
                 // Check that the generated state is valid
-                if (!lattice.containsPoint(next)) {
+                if (!lattice.contains(next)) {
                     lattice.put(next, polypeptide.get(index));
                     if (lattice.size() == size) {
                         // Otherwise, increment the counter

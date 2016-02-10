@@ -65,7 +65,7 @@ public class WeilandNaiveSampler extends Sampler {
             for (int j=2; j<size && !isBoxedIn; j++) {
                 List<Direction> opens = new ArrayList<>();
                 for (Direction d : Direction.values(dimension)) {
-                    if (!lattice.containsPoint(last.getAdjacent(d))) {
+                    if (!lattice.contains(last.getAdjacent(d))) {
                         opens.add(d);
                     }
                 }

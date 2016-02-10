@@ -6,6 +6,8 @@ import com.ariweiland.biophysics.lattice.MovableLattice;
 import com.ariweiland.biophysics.lattice.PullMove;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,31 +17,41 @@ import java.util.Map;
  */
 public class WangLandauSampler extends Sampler {
 
+    public static final MathContext MC = MathContext.DECIMAL32;
     public static final double F_FINAL = 0.00000001; // 10^-8
 
-    private double flatness; // must be between 0 and 1 exclusive
-    private int moveCount;
-    private double moveRatio;
+    private double minEnergy = 0;   // must be less than or equal to 0
+    private double flatness = 0.8;  // must be between 0 and 1 exclusive
+    private int moveCount = 1;      // must be positive
+    private double moveRatio = 0.2; // must be between 0 and 1 exclusive
 
-    private final Map<Double, Double> g = new HashMap<>();
+    private final Map<Double, BigDecimal> g = new HashMap<>();
     private final Map<Double, Integer> h = new HashMap<>();
 
-    public WangLandauSampler() {
-        this(0.8);
+    public WangLandauSampler() {}
+
+    public WangLandauSampler(double minEnergy) {
+        this.minEnergy = minEnergy;
     }
 
-    public WangLandauSampler(double flatness) {
-        this(flatness, 1);
+    public WangLandauSampler(double minEnergy, double flatness) {
+        this.minEnergy = minEnergy;
+        this.flatness = flatness;
     }
 
-    public WangLandauSampler(double flatness, int moveCount) {
-        this(flatness, moveCount, 0.2);
-    }
-
-    public WangLandauSampler(double flatness, int moveCount, double moveRatio) {
+    public WangLandauSampler(double minEnergy, double flatness, int moveCount, double moveRatio) {
+        this.minEnergy = minEnergy;
         this.flatness = flatness;
         this.moveCount = moveCount;
         this.moveRatio = moveRatio;
+    }
+
+    public double getMinEnergy() {
+        return minEnergy;
+    }
+
+    public void setMinEnergy(double minEnergy) {
+        this.minEnergy = minEnergy;
     }
 
     public double getFlatness() {
@@ -83,25 +95,25 @@ public class WangLandauSampler extends Sampler {
         return true;
     }
 
-    private void updateMaps(double e, double f) {
-        g.put(e, g(e) * f);
-        if (h.containsKey(e)) {
-            h.put(e, h.get(e) + 1);
+    private void updateMaps(double energy, BigDecimal f) {
+        g.put(energy, g(energy).multiply(f, MC));
+        if (h.containsKey(energy)) {
+            h.put(energy, h.get(energy) + 1);
         } else {
-            h.put(e, 1);
+            h.put(energy, 1);
         }
     }
 
-    private double g(double energy) {
-        if (!g.containsKey(energy)) {
-            double min = 0;
-            for (double d : g.values()) {
-                if (min == 0 || d < min) {
+    private BigDecimal g(double energy) {
+        if (!g.containsKey(energy) || g.get(energy).equals(BigDecimal.ZERO)) {
+            BigDecimal min = BigDecimal.ZERO;
+            for (BigDecimal d : g.values()) {
+                if (min.equals(BigDecimal.ZERO) || d.compareTo(BigDecimal.ZERO) > 0 && d.compareTo(min) < 0) {
                     min = d;
                 }
             }
-            if (min == 0) {
-                min = Double.MIN_VALUE; // the starting value
+            if (min.equals(BigDecimal.ZERO)) {
+                min = BigDecimal.ONE; // the starting value
             }
             g.put(energy, min);
         }
@@ -114,13 +126,19 @@ public class WangLandauSampler extends Sampler {
         int pullCount = 0;
         int rebridgeCount = 0;
         double f = Math.E;
+        BigDecimal bdf = BigDecimal.valueOf(f);
         g.clear();
+        if (minEnergy != 0) { // if there is a minimum energy specified, initialize g
+            for (double e = minEnergy; e <= 0; e++) {
+                g.put(e, BigDecimal.ZERO);
+            }
+        }
         int size = polypeptide.size();
         MovableLattice old = new MovableLattice(dimension, size);
         for (int i=0; i<size; i++) {
             old.put(new Point(i, 0, 0), polypeptide.get(i));
         }
-        updateMaps(old.getEnergy(), f);
+        updateMaps(old.getEnergy(), bdf);
         while (Math.log(f) > F_FINAL) {
             h.clear();
             while (!isSufficientlyFlat()) {
@@ -143,14 +161,15 @@ public class WangLandauSampler extends Sampler {
                         // nothing changed, so don't need to update pullMoves
                     }
                 }
-                double threshold = g(old.getEnergy()) / g(trial.getEnergy()) * nOld / pullMoves.size();
+                double threshold = g(old.getEnergy()).divide(g(trial.getEnergy()), MC)
+                        .multiply(BigDecimal.valueOf(((double) nOld) / pullMoves.size()), MC).doubleValue();
                 // potentially slightly faster because randoms do not always need to be generated
                 if (RandomUtils.tryChance(threshold)) {
                     old = trial;
                     pullCount += pulls;
                     rebridgeCount += rebridges;
                 }
-                updateMaps(old.getEnergy(), f);
+                updateMaps(old.getEnergy(), bdf);
                 count++;
                 if (count % 100000 == 0) {
                     System.out.println((count / 1000) + "K trials");
@@ -159,10 +178,23 @@ public class WangLandauSampler extends Sampler {
                 }
             }
             f = Math.sqrt(f);
+            bdf = BigDecimal.valueOf(f);
         }
         System.out.println(count + " total trials");
         System.out.println(pullCount + " total pull moves");
         System.out.println(rebridgeCount + " total rebridge moves");
-        return g;
+
+        Map<Double, Double> output = new HashMap<>();
+        BigDecimal min = g.get(0.0);
+        for (BigDecimal bd : g.values()) {
+            if (bd.compareTo(min) < 0) {
+                min = bd;
+            }
+        }
+        for (double e : g.keySet()) {
+            BigDecimal d = g.get(e);
+            output.put(e, d.divide(min, MC).doubleValue());
+        }
+        return output;
     }
 }

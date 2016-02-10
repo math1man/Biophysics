@@ -88,21 +88,20 @@ public class NaiveWangLandauSampler extends Sampler {
         double f = Math.E;
         g.clear();
 
-        Lattice base = new Lattice(dimension, size);
-        base.put(new Point(0, 0, 0), polypeptide.get(0));
-        base.put(new Point(1, 0, 0), polypeptide.get(1));
         int count = 0;
         while (Math.log(f) > F_FINAL) {
             h.clear();
             Lattice old = null;
             while (!isSufficientlyFlat()) {
-                Lattice trial = new Lattice(base);
+                Lattice trial = new Lattice(dimension, size);
+                trial.put(new Point(0, 0, 0), polypeptide.get(0));
                 Point last = new Point(1, 0, 0);
+                trial.put(last, polypeptide.get(1));
                 boolean isBoxedIn = false;
                 for (int j=2; j<size && !isBoxedIn; j++) {
                     List<Direction> opens = new ArrayList<>();
                     for (Direction d : Direction.values(dimension)) {
-                        if (!trial.containsPoint(last.getAdjacent(d))) {
+                        if (!trial.contains(last.getAdjacent(d))) {
                             opens.add(d);
                         }
                     }
