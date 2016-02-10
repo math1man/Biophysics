@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public abstract class WangLandauSampler extends Sampler {
 
-    public static final MathContext MC = MathContext.DECIMAL32;
+    public static final MathContext MC = MathContext.DECIMAL64;
     public static final double F_FINAL = 0.00000001; // 10^-8
     public static final int MIN_H = 20;
 
@@ -84,17 +84,23 @@ public abstract class WangLandauSampler extends Sampler {
         return g(old.getEnergy()).divide(g(trial.getEnergy()), MC).doubleValue() * detailedBalance;
     }
 
-    protected Map<Double, Double> convertG() {
-        Map<Double, Double> output = new HashMap<>();
+    protected void reduceG() {
         BigDecimal min = g.get(0.0);
-        for (BigDecimal bd : g.values()) {
-            if (bd.compareTo(min) < 0) {
-                min = bd;
+        for (BigDecimal d : g.values()) {
+            if (d.compareTo(min) < 0) {
+                min = d;
             }
         }
         for (double e : g.keySet()) {
-            BigDecimal d = g.get(e);
-            output.put(e, d.divide(min, MC).doubleValue());
+            g.put(e, g.get(e).divide(min, MC));
+        }
+    }
+
+    protected Map<Double, Double> convertG() {
+        reduceG();
+        Map<Double, Double> output = new HashMap<>();
+        for (double e : g.keySet()) {
+            output.put(e, g.get(e).doubleValue());
         }
         return output;
     }

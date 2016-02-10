@@ -103,6 +103,7 @@ public class WeilandWangLandauSampler extends WangLandauSampler {
                     System.out.println("\t" + (((double) rebridgeCount)/count) + " rebridge move proportion");
                 }
             }
+            reduceG();
             f.sqrt();
         }
         System.out.println(count + " total trials");

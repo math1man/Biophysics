@@ -102,6 +102,7 @@ public class DefaultWangLandauSampler extends WangLandauSampler {
                     System.out.println(String.format("\t%.4f rebridge move proportion", ((double) rebridgeCount /count)));
                 }
             }
+            reduceG();
             f.sqrt();
         }
         System.out.println(count + " total trials");

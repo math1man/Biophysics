@@ -65,6 +65,7 @@ public class NaiveWangLandauSampler extends WangLandauSampler {
                     }
                 }
             }
+            reduceG();
             f.sqrt();
         }
         System.out.println(count + " total states counted");
