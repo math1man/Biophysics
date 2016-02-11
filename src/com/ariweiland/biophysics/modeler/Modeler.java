@@ -1,8 +1,8 @@
 package com.ariweiland.biophysics.modeler;
 
 import com.ariweiland.biophysics.RandomUtils;
-import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.lattice.CheckedLattice;
+import com.ariweiland.biophysics.lattice.Folding;
 import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
