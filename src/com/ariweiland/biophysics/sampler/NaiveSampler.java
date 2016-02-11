@@ -38,12 +38,13 @@ public class NaiveSampler extends Sampler {
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
+        Lattice base = new Lattice(dimension, size);
+        base.put(new Point(0, 0, 0), polypeptide.get(0));
+        base.put(new Point(1, 0, 0), polypeptide.get(1));
         int count = 0;
         for (int i=0; i<samples; i++) {
-            Lattice lattice = new Lattice(dimension, size);
-            lattice.put(new Point(0, 0, 0), polypeptide.get(0));
+            Lattice lattice = new Lattice(base);
             Point last = new Point(1, 0, 0);
-            lattice.put(last, polypeptide.get(1));
             boolean isBoxedIn = false;
             for (int j=2; j<size && !isBoxedIn; j++) {
                 List<Direction> opens = new ArrayList<>();
@@ -55,13 +56,12 @@ public class NaiveSampler extends Sampler {
                 if (opens.isEmpty()) {
                     isBoxedIn = true;
                 } else {
-                    Direction d = RandomUtils.selectRandom(opens);
-                    Point next = last.getAdjacent(d);
+                    Point next = last.getAdjacent(RandomUtils.selectRandom(opens));
                     lattice.put(next, polypeptide.get(j));
                     last = next;
                 }
             }
-            if (lattice.size() == size) {
+            if (!isBoxedIn) {
                 double energy = lattice.getEnergy();
                 if (!counter.containsKey(energy)) {
                     counter.put(energy, 0.0);

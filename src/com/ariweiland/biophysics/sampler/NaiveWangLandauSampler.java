@@ -28,15 +28,17 @@ public class NaiveWangLandauSampler extends WangLandauSampler {
         FValue f = new FValue(Math.E);
         g.clear();
 
+        Lattice base = new Lattice(dimension, size);
+        base.put(new Point(0, 0, 0), polypeptide.get(0));
+        base.put(new Point(1, 0, 0), polypeptide.get(1));
+
         int count = 0;
         while (Math.log(f.asDouble()) > F_FINAL) {
             h.clear();
             Lattice old = null;
             while (!isSufficientlyFlat()) {
-                Lattice trial = new Lattice(dimension, size);
-                trial.put(new Point(0, 0, 0), polypeptide.get(0));
+                Lattice trial = new Lattice(base);
                 Point last = new Point(1, 0, 0);
-                trial.put(last, polypeptide.get(1));
                 boolean isBoxedIn = false;
                 for (int j=2; j<size && !isBoxedIn; j++) {
                     List<Direction> opens = new ArrayList<>();
@@ -48,13 +50,12 @@ public class NaiveWangLandauSampler extends WangLandauSampler {
                     if (opens.isEmpty()) {
                         isBoxedIn = true;
                     } else {
-                        Direction d = RandomUtils.selectRandom(opens);
-                        Point next = last.getAdjacent(d);
+                        Point next = last.getAdjacent(RandomUtils.selectRandom(opens));
                         trial.put(next, polypeptide.get(j));
                         last = next;
                     }
                 }
-                if (trial.size() == size) {
+                if (!isBoxedIn) {
                     if (old == null || RandomUtils.tryChance(threshold(old, trial, 1.0))) {
                         old = trial;
                     }
