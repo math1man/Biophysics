@@ -24,9 +24,9 @@ public abstract class Sampler {
     }
 
     public static void main(String[] args) {
-        Sampler sampler = new DefaultWangLandauSampler();
-        Polypeptide polypeptide = Polypeptide.fibonacci(7);
-//        Polypeptide polypeptide = new Polypeptide("(H)-(P)-(P)-(P)-(H)-(P)-(H)-(P)-(H)-(H)-(P)-(P)-(P)-(H)-(P)-(H)-(P)-(H)");
+        Sampler sampler = new BruteForceSampler();
+//        Polypeptide polypeptide = Polypeptide.fibonacci(7);
+        Polypeptide polypeptide = new Polypeptide("(P)-(P)-(P)-(H)-(H)-(P)-(P)-(H)-(H)-(P)-(P)-(P)-(P)-(P)-(H)-(H)-(H)-(H)-(H)-(H)-(H)-(P)-(P)-(H)-(H)-(P)");
 //        Polypeptide polypeptide = new Polypeptide();
 //        for (int i=0; i<24; i++) {
 //            if (RandomUtils.tryChance(0.4)) {
