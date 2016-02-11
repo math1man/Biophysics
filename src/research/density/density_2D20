@@ -3,7 +3,7 @@ Node count: 20
 
 Brute Force:
 83779155 total states counted
-Elapsed time: 49.589 s
+Elapsed time: 41.133 s
 Bins	Counts
 -6.0 	2.5782069537464303E-6
 -5.0 	8.071220102422852E-5

@@ -13,6 +13,18 @@ public class Polypeptide {
     private final List<Residue> polypeptide;
     private final Map<Residue, Integer> typeCount = new HashMap<>();
 
+    public static Polypeptide fibonacci(int i) {
+        if (i < 0) {
+            throw new IllegalArgumentException("i must be >= 0");
+        } else if (i == 0) {
+            return new Polypeptide("H");
+        } else if (i == 1) {
+            return new Polypeptide("P");
+        } else {
+            return new Polypeptide(fibonacci(i - 2).toString() + fibonacci(i - 1).toString());
+        }
+    }
+
     public Polypeptide() {
         this(new ArrayList<Residue>());
     }
