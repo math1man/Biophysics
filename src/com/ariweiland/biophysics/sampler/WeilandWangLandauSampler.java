@@ -56,12 +56,6 @@ public class WeilandWangLandauSampler extends WangLandauSampler {
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
         int size = polypeptide.size();
         FValue f = new FValue(Math.E);
-
-        MovableLattice old = new MovableLattice(dimension, size);
-        for (int i=0; i<size; i++) {
-            old.put(new Point(i, 0, 0), polypeptide.get(i));
-        }
-        updateMaps(old.getEnergy(), f.asBigDecimal());
         g.clear();
 
         int count = 0;
@@ -69,6 +63,10 @@ public class WeilandWangLandauSampler extends WangLandauSampler {
         int rebridgeCount = 0;
         while (Math.log(f.asDouble()) > F_FINAL) {
             h.clear();
+            MovableLattice old = new MovableLattice(dimension, size);
+            for (int i=0; i<size; i++) {
+                old.put(new Point(i, 0, 0), polypeptide.get(i));
+            }
             while (!isSufficientlyFlat()) {
                 MovableLattice trial = new MovableLattice(old);
                 List<PullMove> pullMoves = old.getPullMoves();
