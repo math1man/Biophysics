@@ -1,5 +1,7 @@
 package com.ariweiland.biophysics;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * Simple wrapper class for a coordinate in a lattice.
  * Also has a convenience method to get adjacent points.
@@ -100,8 +102,7 @@ public class Point {
 
     @Override
     public int hashCode() {
-        int hashCode = (x >>> 20) ^ (x >>> 12) ^ x ^ (y >>> 22) ^ (y >>> 10) ^ y ^ (z >>> 18) ^ (z >>> 14) ^ z;
-        return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
+        return new HashCodeBuilder().append(x).append(y).append(z).toHashCode();
     }
 
     @Override
