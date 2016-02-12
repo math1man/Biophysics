@@ -18,6 +18,7 @@ public class NaiveSampler extends Sampler {
 
     private int samples;
 
+    private boolean running;
     public NaiveSampler() {
         this(10000000);
     }
@@ -35,14 +36,20 @@ public class NaiveSampler extends Sampler {
     }
 
     @Override
+    public void terminate() {
+        running = false;
+    }
+
+    @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
+        running = true;
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
         Lattice base = new Lattice(dimension, size);
         base.put(new Point(0, 0, 0), polypeptide.get(0));
         base.put(new Point(1, 0, 0), polypeptide.get(1));
         int count = 0;
-        for (int i=0; i<samples; i++) {
+        for (int i=0; i<samples && running; i++) {
             Lattice lattice = new Lattice(base);
             Point last = new Point(1, 0, 0);
             boolean isBoxedIn = false;

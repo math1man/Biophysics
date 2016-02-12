@@ -18,6 +18,7 @@ public class WeilandNaiveSampler extends Sampler {
 
     private final int samples;
     private final double minChance;
+    private boolean running;
 
     public WeilandNaiveSampler(int samples, double minChance) {
         this.samples = samples;
@@ -36,7 +37,7 @@ public class WeilandNaiveSampler extends Sampler {
      * @param b
      * @return
      */
-    private boolean accept1(Point a, Point b) {
+    private boolean accept(Point a, Point b) {
 
         double a0 = a.x * a.x + a.y * a.y + a.z * a.z;
         double b0 = b.x * b.x + b.y * b.y + b.z * b.z;
@@ -51,14 +52,20 @@ public class WeilandNaiveSampler extends Sampler {
     }
 
     @Override
+    public void terminate() {
+        running = false;
+    }
+
+    @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
+        running = true;
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
         Lattice base = new Lattice(dimension, size);
         base.put(new Point(0, 0, 0), polypeptide.get(0));
         base.put(new Point(1, 0, 0), polypeptide.get(1));
         int count = 0;
-        for (int i=0; i<samples; i++) {
+        for (int i=0; i<samples && running; i++) {
             Lattice lattice = new Lattice(base);
             Point last = new Point(1, 0, 0);
             boolean isBoxedIn = false;
@@ -76,7 +83,7 @@ public class WeilandNaiveSampler extends Sampler {
                     do {
                         Direction d = RandomUtils.selectRandom(opens);
                         next = last.getAdjacent(d);
-                    } while (!accept1(last, next));
+                    } while (!accept(last, next));
                     lattice.put(next, polypeptide.get(j));
                     last = next;
                 }

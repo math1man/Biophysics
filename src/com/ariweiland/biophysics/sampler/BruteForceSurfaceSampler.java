@@ -17,22 +17,30 @@ import java.util.Map;
 public class BruteForceSurfaceSampler extends Sampler {
 
     private final Residue surface;
+    private boolean running;
 
     public BruteForceSurfaceSampler(Residue surface) {
         this.surface = surface;
     }
+
 
     public Residue getSurface() {
         return surface;
     }
 
     @Override
+    public void terminate() {
+        running = false;
+    }
+
+    @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
+        running = true;
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
         long count = 0;
         int maxY = size + 1;
-        for (int y = 1; y < maxY; y++) {
+        for (int y = 1; y < maxY && running; y++) {
             int[] state = new int[size]; // we won't actually use the 0 index
             Arrays.fill(state, -1);
             CheckedLattice first = new CheckedLattice(dimension, size, surface);
@@ -41,7 +49,7 @@ public class BruteForceSurfaceSampler extends Sampler {
             Folding[] foldings = new Folding[size];
             foldings[0] = new Folding(first, new Point(0, y, 0), 0, 0);
             int foldIndex = 1; // the first residue is directionless
-            while (foldIndex > 0) {
+            while (running && (foldIndex > 0)) {
                 // Change the direction of the currently specified residue
                 state[foldIndex]++;
                 // If we go over, reset that direction and decrement the foldIndex

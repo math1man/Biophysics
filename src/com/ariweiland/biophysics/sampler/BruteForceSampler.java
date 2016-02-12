@@ -14,8 +14,16 @@ import java.util.Map;
  */
 public class BruteForceSampler extends Sampler {
 
+    private boolean running;
+
+    @Override
+    public void terminate() {
+        running = false;
+    }
+
     @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
+        running = true;
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
         int[] state = new int[size]; // we won't actually use the 0 index
@@ -24,7 +32,7 @@ public class BruteForceSampler extends Sampler {
         lattice.put(new Point(0, 0, 0), polypeptide.get(0));
         lattice.put(new Point(1, 0, 0), polypeptide.get(1));
         long count = 0;
-        while (lattice.size() > 1) {
+        while (lattice.size() > 1 && running) {
             // Change the direction of the currently specified residue
             int index = lattice.size();
             state[index]++;

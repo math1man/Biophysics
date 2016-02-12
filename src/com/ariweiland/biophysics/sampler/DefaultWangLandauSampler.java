@@ -16,8 +16,10 @@ public class DefaultWangLandauSampler extends WangLandauSampler {
 
     private int moveCount = 1;      // must be positive
     private double moveRatio = 0.2; // must be between 0 and 1 exclusive
+    private boolean running;
 
     public DefaultWangLandauSampler() {}
+
 
     public DefaultWangLandauSampler(double flatness) {
         super(flatness);
@@ -51,7 +53,13 @@ public class DefaultWangLandauSampler extends WangLandauSampler {
     }
 
     @Override
+    public void terminate() {
+        running = false;
+    }
+
+    @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
+        running = true;
         int size = polypeptide.size();
         FValue f = new FValue(Math.E);
         g.clear();
@@ -59,13 +67,13 @@ public class DefaultWangLandauSampler extends WangLandauSampler {
         int count = 0;
         int pullCount = 0;
         int rebridgeCount = 0;
-        while (Math.log(f.asDouble()) > F_FINAL) {
+        while (Math.log(f.asDouble()) > F_FINAL && running) {
             h.clear();
             MovableLattice old = new MovableLattice(dimension, size);
             for (int i=0; i<size; i++) {
                 old.put(new Point(i, 0, 0), polypeptide.get(i));
             }
-            while (!isSufficientlyFlat()) {
+            while (!isSufficientlyFlat() && running) {
                 MovableLattice trial = new MovableLattice(old);
                 List<PullMove> pullMoves = old.getPullMoves();
                 int nOld = pullMoves.size();

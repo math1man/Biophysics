@@ -16,6 +16,8 @@ import java.util.Map;
  */
 public class NaiveWangLandauSampler extends WangLandauSampler {
 
+    private boolean running;
+
     public NaiveWangLandauSampler() {}
 
     public NaiveWangLandauSampler(double flatness) {
@@ -23,7 +25,13 @@ public class NaiveWangLandauSampler extends WangLandauSampler {
     }
 
     @Override
+    public void terminate() {
+        running = false;
+    }
+
+    @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
+        running = true;
         int size = polypeptide.size();
         FValue f = new FValue(Math.E);
         g.clear();
@@ -33,10 +41,10 @@ public class NaiveWangLandauSampler extends WangLandauSampler {
         base.put(new Point(1, 0, 0), polypeptide.get(1));
 
         int count = 0;
-        while (Math.log(f.asDouble()) > F_FINAL) {
+        while (Math.log(f.asDouble()) > F_FINAL && running) {
             h.clear();
             Lattice old = null;
-            while (!isSufficientlyFlat()) {
+            while (!isSufficientlyFlat() && running) {
                 Lattice trial = new Lattice(base);
                 Point last = new Point(1, 0, 0);
                 boolean isBoxedIn = false;

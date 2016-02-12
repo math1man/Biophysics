@@ -9,6 +9,8 @@ import java.util.*;
  */
 public abstract class Sampler {
 
+    public abstract void terminate();
+
     public abstract Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide);
     
     public Map<Double, Double> normalize(Map<Double, Double> density) {

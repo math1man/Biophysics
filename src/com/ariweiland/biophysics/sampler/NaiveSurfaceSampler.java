@@ -19,6 +19,7 @@ public class NaiveSurfaceSampler extends Sampler {
 
     private final int samples;
     private final Residue surface;
+    private boolean running;
 
     public NaiveSurfaceSampler(int samples, Residue surface) {
         this.samples = samples;
@@ -34,11 +35,17 @@ public class NaiveSurfaceSampler extends Sampler {
     }
 
     @Override
+    public void terminate() {
+        running = false;
+    }
+
+    @Override
     public Map<Double, Double> getDensity(int dimension, Polypeptide polypeptide) {
+        running = true;
         int size = polypeptide.size();
         Map<Double, Double> counter = new HashMap<>();
         int count = 0;
-        for (int i=0; i<samples; i++) {
+        for (int i=0; i<samples && running; i++) {
             Lattice lattice = new Lattice(dimension, size, surface);
             // start out at a random y value between 1 and size, inclusive
             Point last = new Point(0, RandomUtils.randomInt(size) + 1, 0);
