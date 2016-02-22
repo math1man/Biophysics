@@ -175,10 +175,10 @@ public class SamplerProgram extends ConsoleProgram {
                 for (int i=minLength; i<=maxLength && running; i++) {
                     List<Residue> residues = new ArrayList<>();
                     for (int j=0; j<i; j++) {
-                        if (j < (i * ratio)) {
-                            residues.add(Residue.P);
-                        } else {
+                        if (j < (int) (i * ratio)) {
                             residues.add(Residue.H);
+                        } else {
+                            residues.add(Residue.P);
                         }
                     }
                     Collections.shuffle(residues);
