@@ -5,10 +5,7 @@ import com.ariweiland.biophysics.peptide.Polypeptide;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Ari Weiland
@@ -76,45 +73,42 @@ public class Research {
         return -sum;
     }
 
-    public static void main(String[] args) {
-        Map<Polypeptide, Map<String, Map<Double, Double>>> r50 = readFile("src/research/density/mass_r50.txt");
-        Map<Integer, List<Double>> naiveDataPoints = new HashMap<>();
-        Map<Integer, List<Double>> wlDataPoints = new HashMap<>();
-        for (Polypeptide p : r50.keySet()) {
+    public static List<ErrorDataPoint> getErrorData(Map<Polypeptide, Map<String, Map<Double, Double>>> data,
+                                                    String expectedFlag, String outcomeFlag) {
+        List<ErrorDataPoint> dataPoints = new ArrayList<>();
+        for (Polypeptide p : data.keySet()) {
             int size = p.size();
-            if (!naiveDataPoints.containsKey(size)) {
-                naiveDataPoints.put(size, new ArrayList<Double>());
-                wlDataPoints.put(size, new ArrayList<Double>());
-            }
-            Map<Double, Double> expected = r50.get(p).get("B");
-            Map<Double, Double> naive = r50.get(p).get("N");
-            Map<Double, Double> wl = r50.get(p).get("W");
+            Map<Double, Double> expected = data.get(p).get(expectedFlag);
+            Map<Double, Double> outcome = data.get(p).get(outcomeFlag);
 
-            if (naive != null && naive.size() == expected.size()) {
-                naiveDataPoints.get(size).add(chiSquaredRatio(expected, naive));
-            }
-            if (wl != null && wl.size() == expected.size()) {
-                wlDataPoints.get(size).add(chiSquaredRatio(expected, wl));
+            if (outcome != null && outcome.size() == expected.size()) {
+                dataPoints.add(new ErrorDataPoint(size, meanSquaredRatio(expected, outcome)));
             }
         }
-        
-        StringBuilder naiveData = new StringBuilder("{");
-        for (int size : naiveDataPoints.keySet()) {
-            for (double error : naiveDataPoints.get(size)) {
-                naiveData.append("{").append(size).append(",").append(error).append("},\n");
-            }
+        Collections.sort(dataPoints);
+        return dataPoints;
+    }
+
+    public static String asMathematicaCode(List<ErrorDataPoint> dataPoints) {
+        StringBuilder dataString = new StringBuilder("{");
+        for (ErrorDataPoint edp : dataPoints) {
+            dataString.append("{").append(edp.length).append(",").append(edp.error).append("},\n");
         }
-        naiveData.delete(naiveData.length() - 2, naiveData.length()).append("}");
-        System.out.println(naiveData);
+        dataString.delete(dataString.length() - 2, dataString.length()).append("}");
+        return dataString.toString();
+    }
+
+    public static void main(String[] args) {
+        Map<Polypeptide, Map<String, Map<Double, Double>>> r30 = readFile("src/research/density/mass_r30.txt");
+        // apparently I did not copy the r50 data... FML
+//        Map<Polypeptide, Map<String, Map<Double, Double>>> r50 = readFile("src/research/density/mass_r50.txt");
+        Map<Polypeptide, Map<String, Map<Double, Double>>> r70 = readFile("src/research/density/mass_r70.txt");
+
+        List<ErrorDataPoint> naiveDataPoints = getErrorData(r70, "B", "N");
+        List<ErrorDataPoint> wlDataPoints = getErrorData(r70, "B", "W");
+
+        System.out.println(asMathematicaCode(naiveDataPoints));
         System.out.println();
-
-        StringBuilder wlData = new StringBuilder("{");
-        for (int size : wlDataPoints.keySet()) {
-            for (double error : wlDataPoints.get(size)) {
-                wlData.append("{").append(size).append(",").append(error).append("},\n");
-            }
-        }
-        wlData.delete(wlData.length() - 2, wlData.length()).append("}");
-        System.out.println(wlData);
+        System.out.println(asMathematicaCode(wlDataPoints));
     }
 }
