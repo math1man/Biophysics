@@ -94,14 +94,13 @@ public class Research {
         for (ErrorDataPoint edp : dataPoints) {
             dataString.append("{").append(edp.length).append(",").append(edp.error).append("},\n");
         }
+        // remove the final comma and newline, then add the closing }
         dataString.delete(dataString.length() - 2, dataString.length()).append("}");
         return dataString.toString();
     }
 
     public static void main(String[] args) {
         Map<Polypeptide, Map<String, Map<Double, Double>>> r30 = readFile("src/research/density/mass_r30.txt");
-        // apparently I did not copy the r50 data... FML
-//        Map<Polypeptide, Map<String, Map<Double, Double>>> r50 = readFile("src/research/density/mass_r50.txt");
         Map<Polypeptide, Map<String, Map<Double, Double>>> r70 = readFile("src/research/density/mass_r70.txt");
 
         List<ErrorDataPoint> naiveDataPoints = getErrorData(r70, "B", "N");
