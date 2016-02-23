@@ -81,8 +81,8 @@ public class Research {
         Map<Polypeptide, Map<String, Map<Double, Double>>> r30 = readFile("src/research/density/mass_r30.txt");
         Map<Polypeptide, Map<String, Map<Double, Double>>> r70 = readFile("src/research/density/mass_r70.txt");
 
-        List<ErrorDataPoint> naiveDataPoints = getErrorData(r30, ErrorFunction.MEAN_SQUARED, "B", "N");
-        List<ErrorDataPoint> wlDataPoints = getErrorData(r30, ErrorFunction.MEAN_SQUARED, "B", "W");
+        List<ErrorDataPoint> naiveDataPoints = getErrorData(r70, ErrorFunction.CHI_SQUARED_LOG, "B", "N");
+        List<ErrorDataPoint> wlDataPoints = getErrorData(r70, ErrorFunction.CHI_SQUARED_LOG, "B", "W");
 
         System.out.println(asMathematicaCode(naiveDataPoints));
         System.out.println();
