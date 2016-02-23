@@ -51,30 +51,8 @@ public class Research {
         return output;
     }
 
-    public static double meanSquaredRatio(Map<Double, Double> expected, Map<Double, Double> outcome) {
-        double sum = 0;
-        for (double energy : expected.keySet()) {
-            double e = expected.get(energy);
-            double o = outcome.get(energy);
-            double ratio = Math.log(o / e);
-            sum += ratio * ratio;
-        }
-        return sum / expected.size();
-    }
-
-    public static double chiSquaredRatio(Map<Double, Double> expected, Map<Double, Double> outcome) {
-        double sum = 0;
-        for (double energy : expected.keySet()) {
-            double e = expected.get(energy);
-            double o = outcome.get(energy);
-            double ratio = Math.log(o / e);
-            sum += ratio * ratio / Math.log(e);
-        }
-        return -sum;
-    }
-
     public static List<ErrorDataPoint> getErrorData(Map<Polypeptide, Map<String, Map<Double, Double>>> data,
-                                                    String expectedFlag, String outcomeFlag) {
+                                                    ErrorFunction ef, String expectedFlag, String outcomeFlag) {
         List<ErrorDataPoint> dataPoints = new ArrayList<>();
         for (Polypeptide p : data.keySet()) {
             int size = p.size();
@@ -82,7 +60,7 @@ public class Research {
             Map<Double, Double> outcome = data.get(p).get(outcomeFlag);
 
             if (outcome != null && outcome.size() == expected.size()) {
-                dataPoints.add(new ErrorDataPoint(size, meanSquaredRatio(expected, outcome)));
+                dataPoints.add(new ErrorDataPoint(size, ef.error(expected, outcome)));
             }
         }
         Collections.sort(dataPoints);
@@ -103,8 +81,8 @@ public class Research {
         Map<Polypeptide, Map<String, Map<Double, Double>>> r30 = readFile("src/research/density/mass_r30.txt");
         Map<Polypeptide, Map<String, Map<Double, Double>>> r70 = readFile("src/research/density/mass_r70.txt");
 
-        List<ErrorDataPoint> naiveDataPoints = getErrorData(r70, "B", "N");
-        List<ErrorDataPoint> wlDataPoints = getErrorData(r70, "B", "W");
+        List<ErrorDataPoint> naiveDataPoints = getErrorData(r30, ErrorFunction.MEAN_SQUARED, "B", "N");
+        List<ErrorDataPoint> wlDataPoints = getErrorData(r30, ErrorFunction.MEAN_SQUARED, "B", "W");
 
         System.out.println(asMathematicaCode(naiveDataPoints));
         System.out.println();
