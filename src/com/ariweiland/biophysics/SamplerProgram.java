@@ -2,7 +2,6 @@ package com.ariweiland.biophysics;
 
 import acm.program.ConsoleProgram;
 import com.ariweiland.biophysics.peptide.Polypeptide;
-import com.ariweiland.biophysics.peptide.Residue;
 import com.ariweiland.biophysics.sampler.BruteForceSampler;
 import com.ariweiland.biophysics.sampler.DefaultWangLandauSampler;
 import com.ariweiland.biophysics.sampler.NaiveSampler;
@@ -173,16 +172,7 @@ public class SamplerProgram extends ConsoleProgram {
                 println("Max Seq Len: " + maxLength);
                 println();
                 for (int i=minLength; i<=maxLength && running; i++) {
-                    List<Residue> residues = new ArrayList<>();
-                    for (int j=0; j<i; j++) {
-                        if (j < (int) (i * ratio)) {
-                            residues.add(Residue.H);
-                        } else {
-                            residues.add(Residue.P);
-                        }
-                    }
-                    Collections.shuffle(residues);
-                    Polypeptide polypeptide = new Polypeptide(residues);
+                    Polypeptide polypeptide = Polypeptide.random(i, ratio);
                     println("Folding " + polypeptide + "...");
                     println("Node count: " + polypeptide.size());
                     println();

@@ -180,4 +180,102 @@ public class Lattice {
         return Math.round(energy * 100) / 100.0;
     }
 
+    /**
+     * Draws an ASCII visualization of the peptides in the lattice to the console.
+     * Also returns the drawing as a list of strings. Currently only draws 2D lattices.
+     */
+    public List<String> visualize() {
+        int plusXBound = 0;
+        int minusXBound = 0;
+        int plusYBound = 0;
+        int minusYBound = 0;
+        int plusZBound = 0;
+        int minusZBound = 0;
+        boolean isFirst = true;
+        for (Point point : points()) {
+            if (isFirst) {
+                plusXBound  = point.x;
+                minusXBound = point.x;
+                plusYBound  = point.y;
+                minusYBound = point.y;
+                plusZBound  = point.z;
+                minusZBound = point.z;
+                isFirst = false;
+            } else {
+                if (point.x > plusXBound) {
+                    plusXBound = point.x;
+                } else if (point.x < minusXBound) {
+                    minusXBound = point.x;
+                }
+                if (point.y > plusYBound) {
+                    plusYBound = point.y;
+                } else if (point.y < minusYBound) {
+                    minusYBound = point.y;
+                }
+                if (point.z > plusZBound) {
+                    plusZBound = point.z;
+                } else if (point.z < minusZBound) {
+                    minusZBound = point.z;
+                }
+            }
+        }
+        List<String> lines = new ArrayList<>();
+        for (int k=minusZBound; k<=plusZBound; k++) {
+            for (int i=plusYBound; i>=minusYBound; i--) {
+                StringBuilder latticeString = new StringBuilder();
+                StringBuilder connectionsString = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    Peptide p = get(new Point(j, i, k));
+                    if (p != null) {
+                        int index = p.index;
+                        String residue = p.residue.toString();
+                        Point up = new Point(j, i, k + 1);
+                        if (contains(up) && (get(up).index == index + 1 || get(up).index == index - 1)) {
+                            residue = residue.replace('(', '{').replace(')', '}');
+                        }
+                        latticeString.append(residue);
+                        Point right = new Point(j + 1, i, k);
+                        if (contains(right) && (get(right).index == index + 1 || get(right).index == index - 1)) {
+                            latticeString.append("-");
+                        } else {
+                            latticeString.append(" ");
+                        }
+                        Point below = new Point(j, i - 1, k);
+                        if (contains(below) && (get(below).index == index + 1 || get(below).index == index - 1)) {
+                            connectionsString.append(" |  ");
+                        } else {
+                            connectionsString.append("    ");
+                        }
+                    } else {
+                        latticeString.append("    ");
+                        connectionsString.append("    ");
+                    }
+                }
+                lines.add(latticeString.toString());
+                lines.add(connectionsString.toString());
+                System.out.println(latticeString);
+                System.out.println(connectionsString);
+            }
+            if (hasSurface()) {
+                StringBuilder surface = new StringBuilder();
+                StringBuilder base = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    surface.append(getSurface()).append(" ");
+                    base.append("-+--");
+                }
+                lines.add(surface.toString());
+                lines.add(base.toString());
+                System.out.println(surface);
+                System.out.println(base);
+            } else {
+                StringBuilder edge = new StringBuilder();
+                for (int j=minusXBound; j<=plusXBound; j++) {
+                    edge.append("====");
+                }
+                lines.add(edge.toString());
+                System.out.println(edge);
+            }
+        }
+        return lines;
+    }
 }

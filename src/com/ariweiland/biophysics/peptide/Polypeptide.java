@@ -25,6 +25,19 @@ public class Polypeptide {
         }
     }
 
+    public static Polypeptide random(int length, double ratio) {
+        List<Residue> residues = new ArrayList<>();
+        for (int j=0; j<length; j++) {
+            if (j < (int) (length * ratio)) {
+                residues.add(Residue.H);
+            } else {
+                residues.add(Residue.P);
+            }
+        }
+        Collections.shuffle(residues);
+        return new Polypeptide(residues);
+    }
+
     public Polypeptide() {
         this(new ArrayList<Residue>());
     }

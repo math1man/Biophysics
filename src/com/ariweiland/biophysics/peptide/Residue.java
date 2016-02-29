@@ -71,68 +71,59 @@ public class Residue {
         return symbol;
     }
 
+    private static double hhInt = 0;
+    private static double hpInt = 0;
+    private static double ppInt = 0;
+    private static double shInt = 0;
+    private static double spInt = 0;
+
+    public static void setInteractionScheme(double hh, double hp, double pp) {
+        hhInt = hh;
+        hpInt = hp;
+        ppInt = pp;
+    }
+
+    public static void setSurfaceInteractions(double sh, double sp) {
+        shInt = sh;
+        spInt = sp;
+    }
+
     public static double interaction(Residue r1, Residue r2) {
-        if (r1 == NEUT || r2 == NEUT) {
-            return 0;
-        } else if (r1 == POS) {
-            if (r2 == POS) {
-                return ION_ION;
-            } else if (r2 == NEG) {
-                return -ION_ION;
-            } else if (r2 == P || r2 == H2O) {
-                return -ION_DIPOLE;
-//            } else if (r2 == S) {
-//                return 0;
-            }
-        } else if (r1 == NEG) {
-            if (r2 == POS) {
-                return -ION_ION;
-            } else if (r2 == NEG) {
-                return ION_ION;
-            } else if (r2 == P || r2 == H2O) {
-                return -ION_DIPOLE;
-//            } else if (r2 == S) {
-//                return 0;
-            }
-        } else if (r1 == P) {
-            if (r2 == POS || r2 == NEG) {
-                return -ION_DIPOLE;
-//            } else if (r2 == P || r2 == H2O) {
-//                return -DIPOLE_DIPOLE;
-//            } else if (r2 == S) {
-//                return 0;
+        if (r1 == P) {
+            if (r2 == H) {
+                return hpInt;
+            } else if (r2 == P) {
+                return ppInt;
+            } else if (r2 == S) {
+                return spInt;
             }
         } else if (r1 == H) {
             if (r2 == H) {
-                return -HYDROPHOBIC;
-//            } else if (r2 == H2O) {
-//                return HYDROPHOBIC;
+                return hhInt;
+            } else if (r2 == P) {
+                return hpInt;
             } else if (r2 == S) {
-                return -HYDROPHOBIC;
-            }
-        } else if (r1 == S) {
-            return 0;
-        } else { // H2O
-            if (r2 == POS || r2 == NEG) {
-                return -ION_DIPOLE;
-//            } else if (r2 == P || r2 == H2O) {
-//                return -DIPOLE_DIPOLE;
+                return shInt;
             }
         }
         return 0;
     }
 
+    private static double min(double... values) {
+        double min = values[0];
+        for (double v : values) {
+            min = Math.min(min, v);
+        }
+        return min;
+    }
+
     public static double minInteraction(Residue residue) {
-        if (residue == NEUT) {
-            return 0;
-        } else if (residue == POS || residue == NEG) {
-            return -ION_ION;
-        } else if (residue == P || residue == H2O) {
-            return -ION_DIPOLE;
+        if (residue == P) {
+            return min(hpInt, ppInt, spInt, 0);
         } else if (residue == H) {
-            return -HYDROPHOBIC;
-        } else { // surface
-            return -HYDROPHOBIC;
+            return min(hpInt, hhInt, shInt, 0);
+        } else {
+            return 0;
         }
     }
 }

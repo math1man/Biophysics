@@ -1,11 +1,9 @@
 package com.ariweiland.biophysics.lattice;
 
 import com.ariweiland.biophysics.Direction;
-import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.Point;
+import com.ariweiland.biophysics.peptide.Peptide;
 import com.ariweiland.biophysics.peptide.Residue;
-
-import java.util.*;
 
 /**
  * This class represents a folded polypeptide, laid out in 2D rectangular grid.
@@ -133,68 +131,4 @@ public class CheckedLattice extends Lattice {
         }
     }
 
-    /**
-     * Draws an ASCII visualization of the peptides in the lattice to the console.
-     * Also returns the drawing as a list of strings. Currently only draws 2D lattices.
-     */
-    public List<String> visualize() {
-        List<String> lines = new ArrayList<>();
-        for (int k=minusZBound; k<=plusZBound; k++) {
-            for (int i=plusYBound; i>=minusYBound; i--) {
-                StringBuilder latticeString = new StringBuilder();
-                StringBuilder connectionsString = new StringBuilder();
-                for (int j=minusXBound; j<=plusXBound; j++) {
-                    Peptide p = get(new Point(j, i, k));
-                    if (p != null) {
-                        int index = p.index;
-                        String residue = p.residue.toString();
-                        Point up = new Point(j, i, k + 1);
-                        if (contains(up) && (get(up).index == index + 1 || get(up).index == index - 1)) {
-                            residue = residue.replace('(', '{').replace(')', '}');
-                        }
-                        latticeString.append(residue);
-                        Point right = new Point(j + 1, i, k);
-                        if (contains(right) && (get(right).index == index + 1 || get(right).index == index - 1)) {
-                            latticeString.append("-");
-                        } else {
-                            latticeString.append(" ");
-                        }
-                        Point below = new Point(j, i - 1, k);
-                        if (contains(below) && (get(below).index == index + 1 || get(below).index == index - 1)) {
-                            connectionsString.append(" |  ");
-                        } else {
-                            connectionsString.append("    ");
-                        }
-                    } else {
-                        latticeString.append("    ");
-                        connectionsString.append("    ");
-                    }
-                }
-                lines.add(latticeString.toString());
-                lines.add(connectionsString.toString());
-                System.out.println(latticeString);
-                System.out.println(connectionsString);
-            }
-            if (hasSurface()) {
-                StringBuilder surface = new StringBuilder();
-                StringBuilder base = new StringBuilder();
-                for (int j=minusXBound; j<=plusXBound; j++) {
-                    surface.append(getSurface()).append(" ");
-                    base.append("-+--");
-                }
-                lines.add(surface.toString());
-                lines.add(base.toString());
-                System.out.println(surface);
-                System.out.println(base);
-            } else {
-                StringBuilder edge = new StringBuilder();
-                for (int j=minusXBound; j<=plusXBound; j++) {
-                    edge.append("====");
-                }
-                lines.add(edge.toString());
-                System.out.println(edge);
-            }
-        }
-        return lines;
-    }
 }
