@@ -177,7 +177,7 @@ public class Lattice {
      * @return
      */
     public double getEnergy() {
-        return Math.round(energy * 100) / 100.0;
+        return Math.round(energy * 1000) / 1000.0;
     }
 
     /**

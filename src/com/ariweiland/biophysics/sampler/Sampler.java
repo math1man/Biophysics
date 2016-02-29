@@ -30,9 +30,9 @@ public abstract class Sampler {
         List<Double> keys = new ArrayList<>(density.keySet());
         Collections.sort(keys);
         StringBuilder dataString = new StringBuilder("{");
-        for (double d : keys) {
-            String cleaned = density.get(d).toString().replace("E", "*10^");
-            dataString.append("{").append(d).append(",").append(cleaned).append("},\n");
+        for (double e : keys) {
+            String cd = density.get(e).toString().replace("E", "*10^");
+            dataString.append("{").append(e).append(",").append(cd).append("},\n");
         }
         // remove the final comma and newline, then add the closing }
         dataString.delete(dataString.length() - 2, dataString.length()).append("}");
@@ -41,9 +41,9 @@ public abstract class Sampler {
 
     public static void main(String[] args) {
 
-        Sampler sampler = new BruteForceSurfaceSampler(Residue.H);
-        Residue.setInteractionScheme(-7, -1, 0);
-        Residue.setSurfaceInteractions(0, 0);
+        Sampler sampler = new BruteForceSurfaceSampler(Residue.S);
+        Residue.setInteractionScheme(-1, -1/7.0, 0);
+        Residue.setSurfaceInteractions(-1/12.0, -1/12.0);
         int dimension = 2;
 
         Polypeptide polypeptide = Polypeptide.fibonacci(6);
