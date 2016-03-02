@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics;
+package com.ariweiland.biophysics.programs;
 
 import acm.program.ConsoleProgram;
 import com.ariweiland.biophysics.lattice.CheckedLattice;
@@ -16,7 +16,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Ari Weiland
  */
-public class FoldingGui extends ConsoleProgram {
+public class FoldingProgram extends ConsoleProgram {
 
     private final JTextField sequence = new JTextField("HP_+m", 40);
 
@@ -138,6 +138,6 @@ public class FoldingGui extends ConsoleProgram {
     }
 
     public static void main(String[] args) {
-        new FoldingGui().start();
+        new FoldingProgram().start();
     }
 }

@@ -1,4 +1,4 @@
-package com.ariweiland.biophysics;
+package com.ariweiland.biophysics.programs;
 
 import acm.program.ConsoleProgram;
 import com.ariweiland.biophysics.peptide.Polypeptide;
