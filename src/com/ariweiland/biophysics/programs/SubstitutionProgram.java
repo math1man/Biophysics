@@ -18,10 +18,10 @@ import java.util.Map;
  */
 public class SubstitutionProgram extends ConsoleProgram {
 
-    private final JButton fibonacci = new JButton("Fibonacci Sequence");
+    private final JButton fibonacci = new JButton("Fibonacci");
     private final JTextField fibN = new JTextField("7");
 
-    private final JButton random = new JButton("Random Sequence");
+    private final JButton random = new JButton("Random");
     private final JTextField length = new JTextField("20");
     private final JTextField ratio = new JTextField("0.4");
 
@@ -30,7 +30,7 @@ public class SubstitutionProgram extends ConsoleProgram {
     private final JRadioButton dim3 = new JRadioButton("3D");
     private int dimension = 2;
 
-    private final JButton fold = new JButton("Start");
+    private final JButton start = new JButton("Start");
     private final JButton stop = new JButton("Stop");
     private final JButton clear = new JButton("Clear");
     private final JButton time = new JButton("Current Runtime");
@@ -63,7 +63,7 @@ public class SubstitutionProgram extends ConsoleProgram {
         add(dim3, WEST);
         dim3.addActionListener(this);
 
-        add(fold, WEST);
+        add(start, WEST);
         add(stop, WEST);
         add(clear, WEST);
 
@@ -110,7 +110,7 @@ public class SubstitutionProgram extends ConsoleProgram {
             dimension = 2;
         } else if (source.equals(dim3)) {
             dimension = 3;
-        } else if (source.equals(fold)) {
+        } else if (source.equals(start) || source.equals(sequence)) {
             thread = new MyThread(dimension, new Polypeptide(sequence.getText()));
             startTime = System.currentTimeMillis();
             thread.start();
@@ -124,6 +124,18 @@ public class SubstitutionProgram extends ConsoleProgram {
             long elapsed = System.currentTimeMillis() - startTime;
             println(String.format("\n>>> Current Running Time: %.2f minutes\n", elapsed / 60000.0));
         }
+    }
+
+    private void setFoldingEnabled(boolean isEnabled) {
+        fibonacci.setEnabled(isEnabled);
+        fibN.setEnabled(isEnabled);
+        random.setEnabled(isEnabled);
+        length.setEnabled(isEnabled);
+        dim2.setEnabled(isEnabled);
+        dim3.setEnabled(isEnabled);
+        ratio.setEnabled(isEnabled);
+        start.setEnabled(isEnabled);
+        sequence.setEnabled(isEnabled);
     }
 
     private class MyThread extends Thread {
@@ -142,7 +154,7 @@ public class SubstitutionProgram extends ConsoleProgram {
         public void terminate() {
             running = false;
             sampler.terminate();
-            fold.setEnabled(true);
+            setFoldingEnabled(true);
         }
 
         private Polypeptide changePeptide(Polypeptide p, int i) {
@@ -157,7 +169,7 @@ public class SubstitutionProgram extends ConsoleProgram {
 
         @Override
         public void run() {
-            fold.setEnabled(false);
+            setFoldingEnabled(false);
             for (int i=-1; i<original.size() && running; i++) {
                 Polypeptide polypeptide;
                 if (i < 0) {
