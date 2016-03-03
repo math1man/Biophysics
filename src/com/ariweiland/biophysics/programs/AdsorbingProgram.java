@@ -148,14 +148,21 @@ public class AdsorbingProgram extends ConsoleProgram {
             String[] split = surfaceEnergyRange.getText().split(":");
             if (split.length == 3) {
                 try {
+                    Polypeptide polypeptide = new Polypeptide(sequence.getText());
                     double min = Double.valueOf(split[0]);
                     double increment = Double.valueOf(split[1]);
                     double max = Double.valueOf(split[2]);
-                    if (min > max) {
+                    if (polypeptide.size() < 3) {
+                        JOptionPane.showMessageDialog(null, "Polypeptide '" + polypeptide + "' is invalid. The polypeptide must be at least 3 peptides long.",
+                                "Invalid Polypeptide", JOptionPane.ERROR_MESSAGE);
+                    } else if (min > max) {
                         JOptionPane.showMessageDialog(null, "The minimum energy must be less than or equal to the max energy.",
                                 "Invalid Energies", JOptionPane.ERROR_MESSAGE);
+                    } else if (increment <= 0) {
+                        JOptionPane.showMessageDialog(null, "The energy increment must be greater than 0.",
+                                "Invalid Increment", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        thread = new MyThread(dimension, new Polypeptide(sequence.getText()), min, increment, max);
+                        thread = new MyThread(dimension, polypeptide, min, increment, max);
                         startTime = System.currentTimeMillis();
                         thread.start();
                     }
@@ -221,7 +228,7 @@ public class AdsorbingProgram extends ConsoleProgram {
         public void run() {
             setFoldingEnabled(false);
             println(polypeptide);
-            for (double i = minSurfaceEnergy; i < maxSurfaceEnergy && running; i += surfaceEnergyIncrement) {
+            for (double i = minSurfaceEnergy; i < maxSurfaceEnergy + surfaceEnergyIncrement && running; i += surfaceEnergyIncrement) {
                 Residue.setSurfaceInteractions(-i, -i); // attractive interactions
                 println();
                 println(String.format("Attractive Surface Interaction: %.3f", i));

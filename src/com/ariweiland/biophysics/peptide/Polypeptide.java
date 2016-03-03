@@ -113,11 +113,13 @@ public class Polypeptide {
 
     @Override
     public String toString() {
-        String output = "" + polypeptide.get(0);
-        for (int i=1; i<size(); i++) {
-            output += "-";
-            output += polypeptide.get(i);
+        StringBuilder sb = new StringBuilder();
+        if (!polypeptide.isEmpty()) {
+            sb.append(polypeptide.get(0));
+            for (int i=1; i<size(); i++) {
+                sb.append("-").append(polypeptide.get(i));
+            }
         }
-        return output;
+        return sb.toString();
     }
 }
