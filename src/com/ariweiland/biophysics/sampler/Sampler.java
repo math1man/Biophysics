@@ -1,5 +1,6 @@
 package com.ariweiland.biophysics.sampler;
 
+import com.ariweiland.biophysics.SpecificHeat;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
 
@@ -26,12 +27,12 @@ public abstract class Sampler {
         return normalized;
     }
 
-    public static String asMathematicaCode(Map<Double, Double> density) {
-        List<Double> keys = new ArrayList<>(density.keySet());
+    public static String asMathematicaCode(Map<Double, Double> data) {
+        List<Double> keys = new ArrayList<>(data.keySet());
         Collections.sort(keys);
         StringBuilder dataString = new StringBuilder("{");
         for (double e : keys) {
-            String cd = density.get(e).toString().replace("E", "*10^");
+            String cd = data.get(e).toString().replace("E", "*10^");
             dataString.append("{").append(e).append(",").append(cd).append("},\n");
         }
         // remove the final comma and newline, then add the closing }
@@ -65,5 +66,7 @@ public abstract class Sampler {
         }
         System.out.println();
         System.out.println(asMathematicaCode(density));
+        System.out.println();
+        System.out.println(asMathematicaCode(SpecificHeat.specificHeatGraph(density, 1.0, polypeptide.size())));
     }
 }
