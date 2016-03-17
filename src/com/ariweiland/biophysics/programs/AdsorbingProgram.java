@@ -208,7 +208,7 @@ public class AdsorbingProgram extends ConsoleProgram {
                 println();
                 println(String.format("Attractive Surface Interaction: %.3f", i));
                 long start = System.currentTimeMillis();
-                Map<Double, Double> density = sampler.normalize(sampler.getDensity(dimension, polypeptide));
+                Map<Double, Double> density = sampler.getDensity(dimension, polypeptide);
                 long elapsed = System.currentTimeMillis() - start;
                 println("Elapsed time: " + (elapsed / 1000.0) + " s");
                 println("Bins\tCounts");

@@ -135,29 +135,22 @@ public class PreciseAdsorbingProgram extends ConsoleProgram {
         } else if (source.equals(dim3)) {
             dimension = 3;
         } else if (source.equals(start) || source.equals(sequence)) {
-            String[] split = surfaceEnergy.getText().split(":");
-            if (split.length == 3) {
-                try {
-                    Polypeptide polypeptide = new Polypeptide(sequence.getText());
-                    double value = Double.valueOf(surfaceEnergy.getText());
-                    if (polypeptide.size() < 3) {
-                        JOptionPane.showMessageDialog(null, "Polypeptide '" + polypeptide + "' is invalid. The polypeptide must be at least 3 peptides long.",
-                                "Invalid Polypeptide", JOptionPane.ERROR_MESSAGE);
-                    } else if (value < 0) {
-                        JOptionPane.showMessageDialog(null, "The energy must be greater than or equal to zero.",
-                                "Invalid Energy", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        thread = new MyThread(dimension, polypeptide, value);
-                        startTime = System.currentTimeMillis();
-                        thread.start();
-                    }
-                } catch (NumberFormatException e1) {
-                    JOptionPane.showMessageDialog(null, "The surface energy is not a number.", "Invalid Energy", JOptionPane.ERROR_MESSAGE);
+            try {
+                Polypeptide polypeptide = new Polypeptide(sequence.getText());
+                double value = Double.valueOf(surfaceEnergy.getText());
+                if (polypeptide.size() < 3) {
+                    JOptionPane.showMessageDialog(null, "Polypeptide '" + polypeptide + "' is invalid. The polypeptide must be at least 3 peptides long.",
+                            "Invalid Polypeptide", JOptionPane.ERROR_MESSAGE);
+                } else if (value < 0) {
+                    JOptionPane.showMessageDialog(null, "The energy must be greater than or equal to zero.",
+                            "Invalid Energy", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    thread = new MyThread(dimension, polypeptide, value);
+                    startTime = System.currentTimeMillis();
+                    thread.start();
                 }
-            } else {
-                JOptionPane.showMessageDialog(null, "The surface energy range must be of the form '#1:#2:#3', " +
-                                "where #1 is the minimum value, #2 is the increment, and #3 is the maximum value.",
-                        "Invalid Energy Range", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException e1) {
+                JOptionPane.showMessageDialog(null, "The surface energy is not a number.", "Invalid Energy", JOptionPane.ERROR_MESSAGE);
             }
         } else if (source.equals(stop)) {
             if (thread != null) {
@@ -216,11 +209,15 @@ public class PreciseAdsorbingProgram extends ConsoleProgram {
             println("Bins\tCounts");
             List<Double> keys = new ArrayList<>(density.keySet());
             Collections.sort(keys);
+            double total = 0;
             for (double d : keys) {
                 println(d + " \t" + density.get(d));
+                total += density.get(d);
             }
             println();
             println(Sampler.asMathematicaCode(density));
+            println();
+            println("Total: " + total);
             terminate();
         }
     }
