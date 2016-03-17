@@ -3,7 +3,7 @@ package com.ariweiland.biophysics.programs;
 import acm.program.ConsoleProgram;
 import com.ariweiland.biophysics.peptide.Polypeptide;
 import com.ariweiland.biophysics.peptide.Residue;
-import com.ariweiland.biophysics.sampler.BruteForceSurfaceSampler;
+import com.ariweiland.biophysics.sampler.BruteForcePreciseSurfaceSampler;
 import com.ariweiland.biophysics.sampler.Sampler;
 
 import javax.swing.*;
@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * @author Ari Weiland
  */
-public class AdsorbingProgram extends ConsoleProgram {
+public class PreciseAdsorbingProgram extends ConsoleProgram {
 
     private final JButton fibonacci = new JButton("Fibonacci");
     private final JTextField fibN = new JTextField("7");
@@ -30,7 +30,7 @@ public class AdsorbingProgram extends ConsoleProgram {
     private final JRadioButton dim3 = new JRadioButton("3D");
     private int dimension = 2;
 
-    private final JTextField surfaceEnergyRange = new JTextField("0:0.05:1");
+    private final JTextField surfaceEnergy = new JTextField("0.08");
 
     private final JButton start = new JButton("Start");
     private final JButton stop = new JButton("Stop");
@@ -46,7 +46,7 @@ public class AdsorbingProgram extends ConsoleProgram {
     public void init() {
         setSize(800, 600);
 
-        Residue.setInteractionScheme(-1, -1.0/7, 0);
+        Residue.setInteractionScheme(-1, -1.0 / 7, 0);
 
         add(fibonacci, WEST);
         add(fibN, WEST);
@@ -65,8 +65,8 @@ public class AdsorbingProgram extends ConsoleProgram {
         add(dim3, WEST);
         dim3.addActionListener(this);
 
-        add(surfaceEnergyRange, WEST);
-        surfaceEnergyRange.addActionListener(this);
+        add(surfaceEnergy, WEST);
+        surfaceEnergy.addActionListener(this);
 
         add(start, WEST);
         add(stop, WEST);
@@ -81,6 +81,21 @@ public class AdsorbingProgram extends ConsoleProgram {
         sequence.grabFocus();
 
         addActionListeners();
+    }
+
+    private double getSurfaceEnergy() {
+        try {
+            double value = Double.valueOf(surfaceEnergy.getText());
+            if (value < 0) {
+                JOptionPane.showMessageDialog(null, "The energy must be greater than or equal to zero.",
+                        "Invalid Energy", JOptionPane.ERROR_MESSAGE);
+            } else {
+                return value;
+            }
+        } catch (NumberFormatException e1) {
+            JOptionPane.showMessageDialog(null, "The surface energy is not a number.", "Invalid Energy", JOptionPane.ERROR_MESSAGE);
+        }
+        return 0;
     }
 
     @Override
@@ -120,29 +135,24 @@ public class AdsorbingProgram extends ConsoleProgram {
         } else if (source.equals(dim3)) {
             dimension = 3;
         } else if (source.equals(start) || source.equals(sequence)) {
-            String[] split = surfaceEnergyRange.getText().split(":");
+            String[] split = surfaceEnergy.getText().split(":");
             if (split.length == 3) {
                 try {
                     Polypeptide polypeptide = new Polypeptide(sequence.getText());
-                    double min = Double.valueOf(split[0]);
-                    double increment = Double.valueOf(split[1]);
-                    double max = Double.valueOf(split[2]);
+                    double value = Double.valueOf(surfaceEnergy.getText());
                     if (polypeptide.size() < 3) {
                         JOptionPane.showMessageDialog(null, "Polypeptide '" + polypeptide + "' is invalid. The polypeptide must be at least 3 peptides long.",
                                 "Invalid Polypeptide", JOptionPane.ERROR_MESSAGE);
-                    } else if (min > max) {
-                        JOptionPane.showMessageDialog(null, "The minimum energy must be less than or equal to the max energy.",
-                                "Invalid Energies", JOptionPane.ERROR_MESSAGE);
-                    } else if (increment <= 0) {
-                        JOptionPane.showMessageDialog(null, "The energy increment must be greater than 0.",
-                                "Invalid Increment", JOptionPane.ERROR_MESSAGE);
+                    } else if (value < 0) {
+                        JOptionPane.showMessageDialog(null, "The energy must be greater than or equal to zero.",
+                                "Invalid Energy", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        thread = new MyThread(dimension, polypeptide, min, increment, max);
+                        thread = new MyThread(dimension, polypeptide, value);
                         startTime = System.currentTimeMillis();
                         thread.start();
                     }
                 } catch (NumberFormatException e1) {
-                    JOptionPane.showMessageDialog(null, "One of the surface energy parameters is not a number.", "Invalid Parameters", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "The surface energy is not a number.", "Invalid Energy", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 JOptionPane.showMessageDialog(null, "The surface energy range must be of the form '#1:#2:#3', " +
@@ -175,26 +185,19 @@ public class AdsorbingProgram extends ConsoleProgram {
 
     private class MyThread extends Thread {
 
-        private final Sampler sampler = new BruteForceSurfaceSampler(Residue.S);
+        private final Sampler sampler = new BruteForcePreciseSurfaceSampler(Residue.S);
 
         private final int dimension;
         private final Polypeptide polypeptide;
-        private final double minSurfaceEnergy;
-        private final double surfaceEnergyIncrement;
-        private final double maxSurfaceEnergy;
+        private final double surfaceEnergy;
 
-        private boolean running = true;
-
-        public MyThread(int dimension, Polypeptide polypeptide, double minSurfaceEnergy, double surfaceEnergyIncrement, double maxSurfaceEnergy) {
+        public MyThread(int dimension, Polypeptide polypeptide, double surfaceEnergy) {
             this.dimension = dimension;
             this.polypeptide = polypeptide;
-            this.minSurfaceEnergy = minSurfaceEnergy;
-            this.surfaceEnergyIncrement = surfaceEnergyIncrement;
-            this.maxSurfaceEnergy = maxSurfaceEnergy;
+            this.surfaceEnergy = surfaceEnergy;
         }
 
         public void terminate() {
-            running = false;
             sampler.terminate();
             setFoldingEnabled(true);
         }
@@ -203,29 +206,27 @@ public class AdsorbingProgram extends ConsoleProgram {
         public void run() {
             setFoldingEnabled(false);
             println(polypeptide);
-            for (double i = minSurfaceEnergy; i < maxSurfaceEnergy + surfaceEnergyIncrement && running; i += surfaceEnergyIncrement) {
-                Residue.setSurfaceInteractions(-i, -i); // attractive interactions
-                println();
-                println(String.format("Attractive Surface Interaction: %.3f", i));
-                long start = System.currentTimeMillis();
-                Map<Double, Double> density = sampler.normalize(sampler.getDensity(dimension, polypeptide));
-                long elapsed = System.currentTimeMillis() - start;
-                println("Elapsed time: " + (elapsed / 1000.0) + " s");
-                println("Bins\tCounts");
-                List<Double> keys = new ArrayList<>(density.keySet());
-                Collections.sort(keys);
-                for (double d : keys) {
-                    println(d + " \t" + density.get(d));
-                }
-                println();
-                println(Sampler.asMathematicaCode(density));
+            Residue.setSurfaceInteractions(-surfaceEnergy, -surfaceEnergy); // attractive interactions
+            println();
+            println(String.format("Attractive Surface Interaction: %.3f", surfaceEnergy));
+            long start = System.currentTimeMillis();
+            Map<Double, Double> density = sampler.getDensity(dimension, polypeptide);
+            long elapsed = System.currentTimeMillis() - start;
+            println("Elapsed time: " + (elapsed / 1000.0) + " s");
+            println("Bins\tCounts");
+            List<Double> keys = new ArrayList<>(density.keySet());
+            Collections.sort(keys);
+            for (double d : keys) {
+                println(d + " \t" + density.get(d));
             }
+            println();
+            println(Sampler.asMathematicaCode(density));
             terminate();
         }
     }
 
     public static void main(String[] args) {
-        new AdsorbingProgram().start();
+        new PreciseAdsorbingProgram().start();
     }
 
 }

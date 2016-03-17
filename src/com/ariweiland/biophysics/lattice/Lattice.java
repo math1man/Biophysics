@@ -181,6 +181,21 @@ public class Lattice {
     }
 
     /**
+     * Returns true if the lattice has a surface and at least one residue adjacent to it (y == 1)
+     * @return
+     */
+    public boolean isAdsorbed() {
+        if (hasSurface()) {
+            for (Point p : lattice.keySet()) {
+                if (p.y == 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Draws an ASCII visualization of the peptides in the lattice to the console.
      * Also returns the drawing as a list of strings. Currently only draws 2D lattices.
      */
