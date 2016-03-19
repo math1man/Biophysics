@@ -137,20 +137,21 @@ public class PreciseAdsorbingProgram extends ConsoleProgram {
         } else if (source.equals(start) || source.equals(sequence)) {
             try {
                 Polypeptide polypeptide = new Polypeptide(sequence.getText());
-                double value = Double.valueOf(surfaceEnergy.getText());
+                String[] split = surfaceEnergy.getText().split(",");
+                List<Double> values = new ArrayList<>();
+                for (String s : split) {
+                    values.add(Double.valueOf(s));
+                }
                 if (polypeptide.size() < 3) {
                     JOptionPane.showMessageDialog(null, "Polypeptide '" + polypeptide + "' is invalid. The polypeptide must be at least 3 peptides long.",
                             "Invalid Polypeptide", JOptionPane.ERROR_MESSAGE);
-                } else if (value < 0) {
-                    JOptionPane.showMessageDialog(null, "The energy must be greater than or equal to zero.",
-                            "Invalid Energy", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    thread = new MyThread(dimension, polypeptide, value);
+                    thread = new MyThread(dimension, polypeptide, values);
                     startTime = System.currentTimeMillis();
                     thread.start();
                 }
             } catch (NumberFormatException e1) {
-                JOptionPane.showMessageDialog(null, "The surface energy is not a number.", "Invalid Energy", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "The surface energy list is not all numbers.", "Invalid Energy", JOptionPane.ERROR_MESSAGE);
             }
         } else if (source.equals(stop)) {
             if (thread != null) {
@@ -182,15 +183,18 @@ public class PreciseAdsorbingProgram extends ConsoleProgram {
 
         private final int dimension;
         private final Polypeptide polypeptide;
-        private final double surfaceEnergy;
+        private final List<Double> surfaceEnergies;
 
-        public MyThread(int dimension, Polypeptide polypeptide, double surfaceEnergy) {
+        private boolean running = true;
+
+        public MyThread(int dimension, Polypeptide polypeptide, List<Double> surfaceEnergies) {
             this.dimension = dimension;
             this.polypeptide = polypeptide;
-            this.surfaceEnergy = surfaceEnergy;
+            this.surfaceEnergies = surfaceEnergies;
         }
 
         public void terminate() {
+            running = false;
             sampler.terminate();
             setFoldingEnabled(true);
         }
@@ -199,25 +203,24 @@ public class PreciseAdsorbingProgram extends ConsoleProgram {
         public void run() {
             setFoldingEnabled(false);
             println(polypeptide);
-            Residue.setSurfaceInteractions(-surfaceEnergy, -surfaceEnergy); // attractive interactions
-            println();
-            println(String.format("Attractive Surface Interaction: %.3f", surfaceEnergy));
-            long start = System.currentTimeMillis();
-            Map<Double, Double> density = sampler.getDensity(dimension, polypeptide);
-            long elapsed = System.currentTimeMillis() - start;
-            println("Elapsed time: " + (elapsed / 1000.0) + " s");
-            println("Bins\tCounts");
-            List<Double> keys = new ArrayList<>(density.keySet());
-            Collections.sort(keys);
-            double total = 0;
-            for (double d : keys) {
-                println(d + " \t" + density.get(d));
-                total += density.get(d);
+            for (double se : surfaceEnergies) {
+                Residue.setSurfaceInteractions(-se, -se); // attractive interactions
+                println();
+                println(String.format("Attractive Surface Interaction: %.3f", se));
+                long start = System.currentTimeMillis();
+                Map<Double, Double> density = sampler.normalize(sampler.getDensity(dimension, polypeptide));
+                long elapsed = System.currentTimeMillis() - start;
+                println("Elapsed time: " + (elapsed / 1000.0) + " s");
+                println("Bins\tCounts");
+                List<Double> keys = new ArrayList<>(density.keySet());
+                Collections.sort(keys);
+                for (double d : keys) {
+                    println(d + " \t" + density.get(d));
+                }
+                println();
+                println(Sampler.asMathematicaCode(density));
+                if (!running) break;
             }
-            println();
-            println(Sampler.asMathematicaCode(density));
-            println();
-            println("Total: " + total);
             terminate();
         }
     }
